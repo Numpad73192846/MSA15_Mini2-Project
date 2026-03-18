@@ -8,6 +8,7 @@ import classIcon from '../../assets/image/tutors/class.svg'
 import moneyIcon from '../../assets/image/tutors/money.svg'
 import studentIcon from '../../assets/image/tutors/student.svg'
 import defaultProfileImage from '../../assets/image/tutors/default.png'
+import '../../styles/tutor-mypage.css'
 
 const tabItems = [
 	{ key: 'schedule', label: '일정' },
@@ -16,6 +17,7 @@ const tabItems = [
 	{ key: 'weekly', label: '주간 스케줄' },
 ]
 
+const DAY_TITLES = ['일', '월', '화', '수', '목', '금', '토']
 const EMPTY_LIST = []
 
 const parseDate = (value) => {
@@ -55,6 +57,25 @@ const formatYearMonth = (value) => {
 	const [year, month] = String(value).split('-')
 	if (!year || !month) return String(value)
 	return `${year}년 ${Number(month)}월`
+}
+
+const formatMonthDayDot = (value) => {
+	const date = parseDate(value)
+	if (!date) return '-'
+	const month = String(date.getMonth() + 1).padStart(2, '0')
+	const day = String(date.getDate()).padStart(2, '0')
+	return `${month}.${day}`
+}
+
+const formatWeekRange = (days) => {
+	if (!days?.length) return '-'
+	const first = parseDate(days[0])
+	const last = parseDate(days[days.length - 1])
+	if (!first || !last) return '-'
+	const year = first.getFullYear()
+	const month = String(first.getMonth() + 1).padStart(2, '0')
+	const day = String(first.getDate()).padStart(2, '0')
+	return `${year}.${month}.${day} ~ ${formatMonthDayDot(last)}`
 }
 
 const toTimeValue = (value) => {
@@ -138,8 +159,8 @@ const toEmbedVideoUrl = (value) => {
 }
 
 const StatCard = ({ icon, alt, value, label, valueClassName }) => (
-	<div className='min-w-0 flex-1 rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
-		<div className='px-4 py-5 text-center'>
+	<div className='stat-card rounded-md border border-[#dee2e6] bg-white shadow-sm'>
+		<div className='px-4 py-4 text-center'>
 			<div className='mb-2 flex justify-center'>
 				<img src={icon} alt={alt} className='h-9 w-9' />
 			</div>
@@ -152,22 +173,24 @@ const StatCard = ({ icon, alt, value, label, valueClassName }) => (
 const LessonListItem = ({ lesson, muted = false }) => {
 	const status = getStatusMeta(lesson?.status)
 	return (
-		<div className={`rounded-[14px] border border-[#e9edf5] bg-white px-4 py-3 ${muted ? 'opacity-85' : ''}`}>
-			<div className='mb-1 flex flex-wrap items-center justify-between gap-2'>
-				<div className='text-sm font-semibold text-slate-900'>{lesson?.studentName || '-'}</div>
+		<div className={`rounded-md border border-[#e9ecef] bg-white px-4 py-3 ${muted ? 'opacity-85' : ''}`}>
+			<div className='mb-2 flex flex-wrap items-start justify-between gap-2'>
+				<div>
+					<div className='text-sm font-semibold text-slate-900'>{lesson?.studentName || lesson?.studentNickname || '-'}</div>
+					<div className='text-sm text-slate-600'>{lesson?.subject || '수업'}</div>
+				</div>
 				<span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${status.className}`}>{status.label}</span>
 			</div>
-			<div className='text-sm text-slate-700'>{lesson?.subject || '수업'}</div>
-			<div className='mt-1 text-xs text-slate-500'>
+			<div className='text-xs text-slate-500'>
 				{formatDateTime(lesson?.startAt)} ~ {formatDate(lesson?.endAt, { hour: '2-digit', minute: '2-digit', hour12: false })}
 			</div>
-			<div className='mt-1 text-xs text-[#4f46e5]'>수업료 {formatCurrency(lesson?.price)}</div>
+			<div className='mt-1 text-sm font-semibold text-[#4f46e5]'>수업료 {formatCurrency(lesson?.price)}</div>
 		</div>
 	)
 }
 
 const EmptyPanel = ({ message }) => (
-	<div className='rounded-[14px] border border-dashed border-slate-300 py-6 text-center text-sm text-slate-500'>
+	<div className='rounded-md border border-dashed border-slate-300 py-6 text-center text-sm text-slate-500'>
 		{message}
 	</div>
 )
@@ -178,6 +201,7 @@ const TutorMyPage = () => {
 	const [activeTab, setActiveTab] = useState('schedule')
 	const [weekOffset, setWeekOffset] = useState(0)
 	const [selectedStudentKey, setSelectedStudentKey] = useState('')
+	const [hoveredWeeklyLesson, setHoveredWeeklyLesson] = useState(null)
 	const [mypage, setMypage] = useState(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
@@ -285,9 +309,18 @@ const TutorMyPage = () => {
 			.sort((left, right) => toTimeValue(left?.startAt) - toTimeValue(right?.startAt)),
 	})), [weekDays, weeklySourceLessons])
 
-	const weekRangeLabel = useMemo(() => (
-		`${formatDate(weekDays[0], { year: 'numeric', month: '2-digit', day: '2-digit' })} ~ ${formatDate(weekDays[6], { month: '2-digit', day: '2-digit' })}`
-	), [weekDays])
+	const weekRangeLabel = useMemo(() => formatWeekRange(weekDays), [weekDays])
+
+	const weeklyInfoText = useMemo(() => {
+		if (!hoveredWeeklyLesson) {
+			return '예약된 시간에 마우스를 올리면 학생/수업 정보를 볼 수 있습니다.'
+		}
+
+		const studentName = hoveredWeeklyLesson.studentName || hoveredWeeklyLesson.studentNickname || '학생'
+		const subject = hoveredWeeklyLesson.subject || '수업'
+		const startLabel = formatDateTime(hoveredWeeklyLesson.startAt)
+		return `${studentName} · ${subject} · ${startLabel}`
+	}, [hoveredWeeklyLesson])
 
 	const isTutor = hasRole('ROLE_TUTOR') || hasRole('ROLE_TUTOR_PENDING')
 	const profileName = profile?.name || profile?.nickname || '-'
@@ -306,7 +339,7 @@ const TutorMyPage = () => {
 	if (authLoading || loading) {
 		return (
 			<Layout>
-				<section className='bg-[#f8fafc] py-12'>
+				<section className='tutor-mypage-page bg-[#f8fafc] py-12'>
 					<div className='mx-auto flex min-h-[50vh] w-full max-w-[1140px] items-center justify-center px-3'>
 						<div className='h-10 w-10 animate-spin rounded-full border-4 border-[#4f46e5] border-t-transparent' />
 					</div>
@@ -318,9 +351,9 @@ const TutorMyPage = () => {
 	if (!isLogin) {
 		return (
 			<Layout>
-				<section className='bg-[#f8fafc] py-12'>
+				<section className='tutor-mypage-page bg-[#f8fafc] py-12'>
 					<div className='mx-auto w-full max-w-[1140px] px-3'>
-						<div className='rounded-[18px] border border-[#e5e7eb] bg-white px-6 py-16 text-center shadow-sm'>
+						<div className='rounded-md border border-[#dee2e6] bg-white px-6 py-16 text-center shadow-sm'>
 							<h2 className='text-2xl font-bold text-slate-900'>로그인이 필요합니다</h2>
 							<p className='mt-2 text-slate-500'>튜터 마이페이지는 로그인 후 이용할 수 있습니다.</p>
 							<Link to='/login' className='mt-6 inline-flex h-[38px] items-center rounded-md bg-[#4f46e5] px-5 text-sm font-semibold text-white hover:bg-[#4338ca]'>
@@ -336,9 +369,9 @@ const TutorMyPage = () => {
 	if (!isTutor) {
 		return (
 			<Layout>
-				<section className='bg-[#f8fafc] py-12'>
+				<section className='tutor-mypage-page bg-[#f8fafc] py-12'>
 					<div className='mx-auto w-full max-w-[1140px] px-3'>
-						<div className='rounded-[18px] border border-[#e5e7eb] bg-white px-6 py-16 text-center shadow-sm'>
+						<div className='rounded-md border border-[#dee2e6] bg-white px-6 py-16 text-center shadow-sm'>
 							<h2 className='text-2xl font-bold text-slate-900'>접근 권한이 없습니다</h2>
 							<p className='mt-2 text-slate-500'>튜터 계정에서만 접근 가능합니다.</p>
 							<Link to='/member/mypage' className='mt-6 inline-flex h-[38px] items-center rounded-md border border-slate-300 px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50'>
@@ -354,9 +387,9 @@ const TutorMyPage = () => {
 	if (error) {
 		return (
 			<Layout>
-				<section className='bg-[#f8fafc] py-12'>
+				<section className='tutor-mypage-page bg-[#f8fafc] py-12'>
 					<div className='mx-auto w-full max-w-[1140px] px-3'>
-						<div className='rounded-[18px] border border-[#e5e7eb] bg-white px-6 py-16 text-center shadow-sm'>
+						<div className='rounded-md border border-[#dee2e6] bg-white px-6 py-16 text-center shadow-sm'>
 							<h2 className='text-2xl font-bold text-slate-900'>오류가 발생했습니다</h2>
 							<p className='mt-2 text-slate-500'>{error}</p>
 							<button
@@ -375,17 +408,17 @@ const TutorMyPage = () => {
 
 	return (
 		<Layout>
-			<section className='bg-[#f8fafc] py-12'>
+			<section className='tutor-mypage-page bg-[#f8fafc] py-12'>
 				<div className='mx-auto w-full max-w-[1140px] px-3'>
-					<div className='mb-6 rounded-md border-l-4 border-[#4f46e5] bg-[#f8f9fa] p-4'>
+					<div className='mb-4 rounded-md border-l-4 border-[#4f46e5] bg-[#f8f9fa] p-4'>
 						<h2 className='mb-1 text-[1.75rem] font-bold text-slate-900'>튜터 마이페이지</h2>
 						<p className='mb-0 text-sm text-slate-500'>프로필과 활동 내역을 관리하세요</p>
 					</div>
 
 					<div className='grid gap-6 lg:grid-cols-12'>
 						<aside className='space-y-3 lg:col-span-4'>
-							<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
-								<div className='p-7 text-center'>
+							<div className='rounded-md border border-[#dee2e6] bg-white shadow-sm'>
+								<div className='p-6 text-center'>
 									<div className='mx-auto mb-3 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-[#eef2ff]'>
 										{profile?.profileImg ? (
 											<img src={profile.profileImg} alt='프로필 이미지' className='h-full w-full object-cover' />
@@ -399,7 +432,7 @@ const TutorMyPage = () => {
 									{languageFields.length > 0 && (
 										<div className='mb-3 flex flex-wrap justify-center gap-2'>
 											{languageFields.map((field) => (
-												<span key={field.id || field.name} className='rounded-full bg-[#4f46e5] px-2.5 py-1 text-xs font-semibold text-white'>
+												<span key={field.id || field.name} className='inline-flex items-center rounded-full bg-[#4f46e5] px-2.5 py-1 text-xs font-semibold text-white'>
 													{field.name}
 												</span>
 											))}
@@ -418,9 +451,9 @@ const TutorMyPage = () => {
 								</div>
 							</div>
 
-							<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+							<div className='rounded-md border border-[#dee2e6] bg-white shadow-sm'>
 								{profileVideoUrl && (
-									<div className='overflow-hidden rounded-t-[18px] border-b border-slate-200'>
+									<div className='overflow-hidden rounded-t-md border-b border-slate-200'>
 										<div className='relative w-full overflow-hidden pb-[56.25%]'>
 											<iframe
 												title='튜터 소개 영상'
@@ -432,7 +465,7 @@ const TutorMyPage = () => {
 										</div>
 									</div>
 								)}
-								<div className='space-y-4 p-7'>
+								<div className='space-y-4 p-6'>
 									<div>
 										<h4 className='mb-2 text-sm font-bold text-slate-900'>한 줄 소개</h4>
 										<p className='mb-0 text-sm text-slate-500'>{profileHeadline}</p>
@@ -452,13 +485,13 @@ const TutorMyPage = () => {
 								<StatCard icon={studentIcon} alt='활성 학생' value={stats.activeStudents} label='활성 학생' valueClassName='text-sky-600' />
 							</div>
 
-							<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+							<div className='rounded-md border border-[#dee2e6] bg-white shadow-sm'>
 								<div className='flex flex-wrap items-center justify-between gap-2 p-5'>
 									<div>
 										<h3 className='mb-1 text-sm font-bold text-slate-900'>AI 수업 도우미</h3>
 										<p className='mb-0 text-sm text-slate-500'>수업 요약과 과제 초안을 빠르게 작성할 수 있습니다.</p>
 									</div>
-									<div className='flex gap-2'>
+									<div className='flex flex-wrap gap-2'>
 										<button type='button' onClick={() => openAiAssistant('lesson-summary')} className='inline-flex h-[31px] items-center rounded-md border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50'>
 											AI 수업 요약
 										</button>
@@ -470,13 +503,13 @@ const TutorMyPage = () => {
 							</div>
 
 							<div>
-								<div className='mb-3 flex flex-wrap border-b border-slate-200'>
+								<div className='mypage-tabs mb-3'>
 									{tabItems.map((tab) => (
 										<button
 											key={tab.key}
 											type='button'
 											onClick={() => setActiveTab(tab.key)}
-											className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold transition ${activeTab === tab.key ? 'border-[#4f46e5] text-[#4f46e5]' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+											className={`mypage-tab ${activeTab === tab.key ? 'active' : ''}`}
 										>
 											{tab.label}
 										</button>
@@ -484,9 +517,9 @@ const TutorMyPage = () => {
 								</div>
 
 								{activeTab === 'schedule' && (
-									<div className='space-y-3'>
-										<div className='rounded-[18px] border border-[#e5e7eb] bg-white p-5 shadow-sm'>
-											<div className='flex flex-wrap items-center justify-between gap-2'>
+									<div className='space-y-4'>
+										<div className='rounded-md border border-[#dee2e6] bg-[#f8f9fa] p-4'>
+											<div className='flex flex-wrap items-center justify-between gap-3'>
 												<div>
 													<strong className='text-sm text-slate-900'>스케줄 관리 방식 선택</strong>
 													<p className='mb-0 mt-1 text-sm text-slate-500'>이번 주만 수정하거나 전체 스케줄을 수정할 수 있습니다.</p>
@@ -497,7 +530,7 @@ const TutorMyPage = () => {
 											</div>
 										</div>
 
-										<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+										<div className='rounded-md border border-[#dee2e6] bg-white shadow-sm'>
 											<div className='p-6'>
 												<h4 className='mb-3 text-sm font-bold text-slate-900'>다가오는 수업</h4>
 												<div className='grid gap-2'>
@@ -509,7 +542,7 @@ const TutorMyPage = () => {
 											</div>
 										</div>
 
-										<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+										<div className='rounded-md border border-[#dee2e6] bg-white shadow-sm'>
 											<div className='p-6'>
 												<h4 className='mb-3 text-sm font-bold text-slate-900'>지난 수업</h4>
 												<div className='grid gap-2'>
@@ -524,14 +557,14 @@ const TutorMyPage = () => {
 								)}
 
 								{activeTab === 'reviews' && (
-									<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+									<div className='rounded-md border border-[#dee2e6] bg-white shadow-sm'>
 										<div className='p-6'>
 											<h4 className='mb-3 text-sm font-bold text-slate-900'>최근 리뷰</h4>
 											<div className='grid gap-3'>
 												{tutorReviews.length === 0 ? (
 													<EmptyPanel message='아직 받은 리뷰가 없습니다.' />
 												) : tutorReviews.map((review) => (
-													<div key={review.reviewId || `${review.studentId}-${review.createdAt}`} className='rounded-[14px] bg-[#f8f9fa] p-4'>
+													<div key={review.reviewId || `${review.studentId}-${review.createdAt}`} className='rounded-md bg-[#f8f9fa] p-4'>
 														<div className='mb-2 flex items-center justify-between gap-2'>
 															<div className='text-sm font-semibold text-slate-900'>{resolveReviewWriter(review)}</div>
 															<div className='text-sm text-amber-500'>{renderStars(review.rating)}</div>
@@ -547,42 +580,8 @@ const TutorMyPage = () => {
 									</div>
 								)}
 
-								{activeTab === 'earnings' && (
-									<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
-										<div className='p-6'>
-											<h4 className='mb-3 text-sm font-bold text-slate-900'>월별 수익</h4>
-											{monthlyEarnings.length === 0 ? (
-												<EmptyPanel message='수익 데이터가 없습니다.' />
-											) : (
-												<div className='overflow-x-auto'>
-													<table className='min-w-full text-sm'>
-														<thead>
-															<tr className='border-b border-slate-200 text-left text-slate-500'>
-																<th className='pb-2 pr-3 font-semibold'>월</th>
-																<th className='pb-2 pr-3 font-semibold'>수업 수</th>
-																<th className='pb-2 pr-3 font-semibold'>총 시간</th>
-																<th className='pb-2 text-right font-semibold'>수익</th>
-															</tr>
-														</thead>
-														<tbody>
-															{monthlyEarnings.map((row) => (
-																<tr key={row.yearMonth} className='border-b border-slate-100 last:border-0'>
-																	<td className='py-2.5 pr-3 text-slate-800'>{formatYearMonth(row.yearMonth)}</td>
-																	<td className='py-2.5 pr-3 text-slate-700'>{row.lessonCount ?? 0}회</td>
-																	<td className='py-2.5 pr-3 text-slate-700'>{formatHours(row.totalHours)}</td>
-																	<td className='py-2.5 text-right font-semibold text-emerald-600'>{formatCurrency(row.totalEarnings)}</td>
-																</tr>
-															))}
-														</tbody>
-													</table>
-												</div>
-											)}
-										</div>
-									</div>
-								)}
-
 								{activeTab === 'weekly' && (
-									<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+									<div className='rounded-md border border-[#dee2e6] bg-white shadow-sm'>
 										<div className='p-6'>
 											<h4 className='mb-3 text-sm font-bold text-slate-900'>주간 스케줄</h4>
 
@@ -592,7 +591,7 @@ const TutorMyPage = () => {
 													id='weeklyStudentFilter'
 													value={selectedStudentKey}
 													onChange={(event) => setSelectedStudentKey(event.target.value)}
-													className='h-[31px] w-full max-w-[220px] rounded-md border border-slate-300 px-3 text-sm focus:border-[#4f46e5] focus:outline-none'
+													className='h-[31px] w-full max-w-[220px] rounded-md border border-[#ced4da] bg-white px-3 text-sm text-slate-700 focus:border-[#4f46e5] focus:outline-none'
 												>
 													<option value=''>전체 학생</option>
 													{studentOptions.map((student) => (
@@ -601,56 +600,113 @@ const TutorMyPage = () => {
 												</select>
 											</div>
 
-											<div className='mb-3 rounded-[12px] border border-slate-200 px-3 py-2 text-sm text-slate-500'>
-												예약된 시간에 마우스를 올리면 학생/수업 정보를 볼 수 있습니다.
+											<div className={`weekly-booking-info mb-3 ${hoveredWeeklyLesson ? 'is-active' : ''}`}>
+												{weeklyInfoText}
 											</div>
 
-											<div className='mb-3 flex items-center justify-center gap-2 rounded-[14px] border border-slate-200 bg-white px-3 py-2'>
-												<button
-													type='button'
-													onClick={() => setWeekOffset((prev) => prev - 1)}
-													className='flex h-[34px] w-[34px] items-center justify-center rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50'
-												>
-													&lt;
-												</button>
-												<div className='rounded-full bg-indigo-50 px-3 py-1 text-sm font-semibold text-[#4f46e5]'>
-													{weekRangeLabel}
+											<div className='mb-3'>
+												<div className='tc-toolbar mb-3'>
+													<button
+														type='button'
+														onClick={() => setWeekOffset((prev) => prev - 1)}
+														className='tc-iconbtn'
+														aria-label='이전 주'
+													>
+														<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M15.5 5.5 9 12l6.5 6.5' /></svg>
+													</button>
+													<div className='tc-range'>{weekRangeLabel}</div>
+													<button
+														type='button'
+														onClick={() => setWeekOffset((prev) => prev + 1)}
+														className='tc-iconbtn'
+														aria-label='다음 주'
+													>
+														<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M8.5 18.5 15 12 8.5 5.5' /></svg>
+													</button>
 												</div>
-												<button
-													type='button'
-													onClick={() => setWeekOffset((prev) => prev + 1)}
-													className='flex h-[34px] w-[34px] items-center justify-center rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50'
-												>
-													&gt;
-												</button>
-											</div>
 
-											<div className='grid gap-2 lg:grid-cols-7'>
-												{weeklyByDay.map(({ day, items }) => (
-													<div key={day.toISOString()} className='rounded-[14px] border border-slate-200 bg-slate-50 p-2.5'>
-														<div className='mb-2 border-b border-slate-200 pb-1.5 text-center'>
-															<div className='text-sm font-bold text-slate-900'>{formatDate(day, { weekday: 'short' })}</div>
-															<div className='text-xs text-slate-500'>{formatDate(day, { month: '2-digit', day: '2-digit' })}</div>
+												<div className='overflow-x-auto'>
+													<div className='weekly_calendar_wrap'>
+														<div className='weekly_head'>
+															<ul className='dayHead'>
+																{weeklyByDay.map(({ day }) => (
+																	<li key={`head-${day.toISOString()}`}>
+																		<div className='head_in'>
+																			<p className='dayTit'>{DAY_TITLES[day.getDay()]}</p>
+																			<p className='dayDate'>{formatMonthDayDot(day)}</p>
+																		</div>
+																	</li>
+																))}
+															</ul>
 														</div>
-														<div className='space-y-1.5'>
-															{items.length === 0 ? (
-																<div className='rounded-lg bg-white px-2 py-3 text-center text-xs text-slate-400'>-</div>
-															) : items.map((lesson) => (
-																<div key={lesson.bookingId || `${lesson.studentId}-${lesson.startAt}`} className='rounded-lg bg-white px-2 py-2 text-xs ring-1 ring-slate-200'>
-																	<div className='font-semibold text-slate-900'>{lesson.studentName || '-'}</div>
-																	<div className='text-slate-600'>{lesson.subject || '수업'}</div>
-																	<div className='mt-0.5 font-medium text-rose-500'>● {formatDate(lesson.startAt, { hour: '2-digit', minute: '2-digit', hour12: false })}</div>
-																</div>
-															))}
+
+														<div className='weekly_con'>
+															<ul className='dayCon'>
+																{weeklyByDay.map(({ day, items }) => (
+																	<li key={day.toISOString()}>
+																		<div className='con_in'>
+																			{items.map((lesson) => {
+																				const label = formatDate(lesson.startAt, { hour: '2-digit', minute: '2-digit', hour12: false })
+																				return (
+																					<div key={lesson.bookingId || `${lesson.studentId}-${lesson.startAt}`} className='sch_time booked'>
+																						<button
+																							type='button'
+																							onMouseEnter={() => setHoveredWeeklyLesson(lesson)}
+																							onMouseLeave={() => setHoveredWeeklyLesson(null)}
+																							title={`${lesson.studentName || lesson.studentNickname || '학생'} · ${lesson.subject || '수업'} · ${label}`}
+																						>
+																							{label}
+																						</button>
+																					</div>
+																				)
+																			})}
+																		</div>
+																	</li>
+																))}
+															</ul>
 														</div>
 													</div>
-												))}
-											</div>
+												</div>
 
-											<small className='mt-2 block text-sm text-slate-500'>
-												<span className='rounded-full bg-[#4f46e5] px-2 py-0.5 text-xs font-semibold text-white'>●</span> 수업 가능
-												<span className='ml-2 rounded-full bg-rose-500 px-2 py-0.5 text-xs font-semibold text-white'>●</span> 예약됨
-											</small>
+												<small className='mt-2 block text-sm text-slate-500'>
+													<span className='inline-flex items-center rounded-full bg-[#4f46e5] px-2 py-0.5 text-xs font-semibold text-white'>●</span> 수업 가능
+													<span className='ml-2 inline-flex items-center rounded-full bg-rose-500 px-2 py-0.5 text-xs font-semibold text-white'>●</span> 예약됨
+												</small>
+											</div>
+										</div>
+									</div>
+								)}
+
+								{activeTab === 'earnings' && (
+									<div className='rounded-md border border-[#dee2e6] bg-white shadow-sm'>
+										<div className='p-6'>
+											<h4 className='mb-3 text-sm font-bold text-slate-900'>월별 수익</h4>
+											{monthlyEarnings.length === 0 ? (
+												<EmptyPanel message='수익 데이터가 없습니다.' />
+											) : (
+												<div className='overflow-x-auto'>
+													<table className='min-w-full text-sm'>
+														<thead>
+															<tr className='border-b border-[#dee2e6] text-left text-slate-500'>
+																<th className='pb-2 pr-3 font-semibold'>월</th>
+																<th className='pb-2 pr-3 font-semibold'>수업 수</th>
+																<th className='pb-2 pr-3 font-semibold'>총 시간</th>
+																<th className='pb-2 text-right font-semibold'>수익</th>
+															</tr>
+														</thead>
+														<tbody>
+															{monthlyEarnings.map((row) => (
+																<tr key={row.yearMonth} className='border-b border-slate-100 last:border-0 hover:bg-slate-50'>
+																	<td className='py-3 pr-3 text-slate-800'>{formatYearMonth(row.yearMonth)}</td>
+																	<td className='py-3 pr-3 text-slate-700'>{row.lessonCount ?? 0}회</td>
+																	<td className='py-3 pr-3 text-slate-700'>{formatHours(row.totalHours)}</td>
+																	<td className='py-3 text-right font-semibold text-emerald-600'>{formatCurrency(row.totalEarnings)}</td>
+																</tr>
+															))}
+														</tbody>
+													</table>
+												</div>
+											)}
 										</div>
 									</div>
 								)}
@@ -670,4 +726,3 @@ const TutorMyPage = () => {
 }
 
 export default TutorMyPage
-

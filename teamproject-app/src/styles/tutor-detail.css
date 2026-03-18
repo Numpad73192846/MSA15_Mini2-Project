@@ -370,3 +370,158 @@
     border-radius: 0 0 12px 12px;
   }
 }
+
+/* tutor-detail polish */
+.tutor-detail-page {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 240px);
+}
+
+.tutor-detail-page .tutor-detail-backlink {
+  font-weight: 600;
+  box-shadow: 0 8px 16px rgba(79, 70, 229, 0.08);
+}
+
+.tutor-detail-page .tutor-detail-card,
+.tutor-detail-page .tutor-detail-booking-card {
+  overflow: hidden;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+.tutor-detail-page .tutor-detail-card > .p-4,
+.tutor-detail-page .tutor-detail-booking-card > .p-4 {
+  padding: 1.25rem;
+}
+
+.tutor-detail-page .tutor-detail-hero {
+  align-items: flex-start;
+}
+
+.tutor-detail-page .tutor-detail-hero > div:first-child {
+  box-shadow: 0 12px 24px rgba(79, 70, 229, 0.16);
+}
+
+.tutor-detail-page .tutor-detail-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.97rem;
+}
+
+.tutor-detail-page .tutor-detail-subjects {
+  gap: 0.4rem;
+}
+
+.tutor-detail-page .tutor-detail-subject-badge {
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 0.78rem;
+  padding: 0.42rem 0.75rem;
+}
+
+.tutor-detail-page .tutor-detail-certificate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.tutor-detail-page .tutor-detail-certificate-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 500;
+  padding: 0.75rem 0.9rem;
+}
+
+.tutor-detail-page .tutor-detail-review-card {
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.tutor-detail-page .tutor-detail-review-head {
+  gap: 0.8rem;
+}
+
+.tutor-detail-page .tutor-detail-review-stars {
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.tutor-detail-page .tutor-detail-review-actions {
+  align-items: center;
+}
+
+.tutor-detail-page .tutor-detail-review-actions > button {
+  min-width: 54px;
+}
+
+.tutor-detail-page .tutor-detail-booking-card {
+  top: 90px;
+}
+
+.tutor-detail-page .tutor-detail-booking-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.tutor-detail-page .tutor-detail-booking-legend-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.tutor-detail-page .tutor-detail-form-control {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tutor-detail-page .tutor-detail-form-control:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.2);
+}
+
+.tutor-detail-page .tutor-detail-form-control--readonly {
+  background: #fff;
+}
+
+.tutor-detail-page .tutor-detail-primary-button {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 992px) {
+  .tutor-detail-page {
+    padding-top: 2rem;
+    padding-bottom: 2.25rem;
+  }
+
+  .tutor-detail-page .tutor-detail-booking-card {
+    top: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .tutor-detail-page .tutor-detail-card > .p-4,
+  .tutor-detail-page .tutor-detail-booking-card > .p-4 {
+    padding: 1rem;
+  }
+
+  .tutor-detail-page .tutor-detail-review-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tutor-detail-page .tutor-detail-backlink {
+    width: 100%;
+    justify-content: center;
+  }
+}

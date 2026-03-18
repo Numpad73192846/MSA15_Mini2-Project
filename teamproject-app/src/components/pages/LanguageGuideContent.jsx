@@ -199,7 +199,7 @@ const LanguageGuide = () => {
 				<div className='relative'>
 					<h2 className='text-4xl font-black'>지금 바로 시작하세요!</h2>
 					<p className='mt-3 text-lg text-indigo-100'>전문 튜터와 함께 원하는 언어를 마스터하세요</p>
-					<Link to='/tutors' className='mt-8 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-bold text-[#6366f1] transition hover:-translate-y-0.5 hover:bg-slate-100'>
+					<Link to='/tutors' className='mt-8 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-bold !text-[#6366f1] transition hover:-translate-y-0.5 hover:bg-slate-100'>
 						<Search size={16} /> 튜터 찾기
 					</Link>
 				</div>

@@ -8,12 +8,14 @@ import useAuth from '../../utils/hooks/useAuth'
 import bookIcon from '../../assets/image/mypage/book.svg'
 import remainIcon from '../../assets/image/mypage/remain.svg'
 import doneIcon from '../../assets/image/mypage/done.svg'
+import '../../styles/member-mypage.css'
 
 const tabItems = [
 	{ key: 'bookings', label: '예약 내역' },
 	{ key: 'reviews', label: '내 리뷰' },
 	{ key: 'schedule', label: '주간 스케줄' },
 ]
+const DAY_TITLES = ['일', '월', '화', '수', '목', '금', '토']
 
 const EMPTY_LIST = []
 
@@ -27,6 +29,28 @@ const formatDate = (value, options) => {
 const formatCurrency = (value) => {
 	const amount = Number(value || 0)
 	return `${amount.toLocaleString('ko-KR')}원`
+}
+const formatMonthDayDot = (value) => {
+	const date = value instanceof Date ? value : new Date(value)
+	if (Number.isNaN(date.getTime())) return '-'
+	const month = String(date.getMonth() + 1).padStart(2, '0')
+	const day = String(date.getDate()).padStart(2, '0')
+	return `${month}.${day}`
+}
+
+const formatWeekRange = (days) => {
+	if (!days?.length) return '-'
+	const first = days[0]
+	const last = days[days.length - 1]
+	const year = first.getFullYear()
+	const month = String(first.getMonth() + 1).padStart(2, '0')
+	const day = String(first.getDate()).padStart(2, '0')
+	return `${year}.${month}.${day} ~ ${formatMonthDayDot(last)}`
+}
+
+const renderStars = (rating) => {
+	const rounded = Math.max(0, Math.min(5, Math.round(Number(rating || 0))))
+	return `${'★'.repeat(rounded)}${'☆'.repeat(5 - rounded)}`
 }
 
 const parseBookingStartAt = (booking) => {
@@ -147,6 +171,7 @@ const MemberMyPage = () => {
 	const [activeTab, setActiveTab] = useState('bookings')
 	const [weekOffset, setWeekOffset] = useState(0)
 	const [selectedTutorId, setSelectedTutorId] = useState('')
+	const [hoveredWeeklyBooking, setHoveredWeeklyBooking] = useState(null)
 	const [mypage, setMypage] = useState(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
@@ -341,10 +366,17 @@ const MemberMyPage = () => {
 	})), [weeklySourceBookings, weekDays])
 
 	const weeklyHasAnyBooking = weeklyBookings.some((item) => item.items.length > 0)
+	const weeklyRangeLabel = useMemo(() => formatWeekRange(weekDays), [weekDays])
+	const weeklyHoverInfo = useMemo(() => {
+		if (hoveredWeeklyBooking) {
+			return `${hoveredWeeklyBooking.tutorName || '튜터'} 튜터 · ${hoveredWeeklyBooking.subject || '수업'} · ${formatLessonDateText(hoveredWeeklyBooking)} ${formatLessonTimeText(hoveredWeeklyBooking)}`
+		}
+		return weeklyHasAnyBooking ? '예약된 시간에 마우스를 올리면 튜터 정보를 볼 수 있습니다.' : '이번 주에는 예약된 수업이 없습니다.'
+	}, [hoveredWeeklyBooking, weeklyHasAnyBooking])
 
 	return (
 		<Layout>
-			<section className='bg-[#f8fafc] py-12'>
+			<section className='member-mypage-page bg-[#f8fafc] py-12'>
 				<div className='mx-auto w-full max-w-[1140px] px-3'>
 					<div className='mb-6'>
 						<h2 className='mb-1 flex items-center text-3xl font-bold text-slate-900'>
@@ -431,28 +463,32 @@ const MemberMyPage = () => {
 									<div className='border-b-0 bg-white px-4 pb-0 pt-4'>
 										<h3 className='text-sm font-bold text-slate-900'>튜터 메시지</h3>
 									</div>
-									<div className='grid gap-2 p-3'>
-										{tutorMessages.length === 0 ? (
-											<div className='py-3 text-center text-sm text-slate-500'>메시지가 없습니다.</div>
-										) : tutorMessages.slice(0, 5).map((message) => (
-											<button
-												key={message.id || `${message.tutorId}-${message.createdAt}`}
-												type='button'
-												onClick={() => openMessageThread(message)}
-												disabled={!message?.bookingId || !message?.tutorId}
-												className='w-full rounded-[14px] border border-[#e9edf5] bg-white px-3 py-3 text-left shadow-[0_4px_14px_rgba(15,23,42,0.04)] transition hover:-translate-y-[1px] hover:border-[#cdd9ff] hover:shadow-[0_8px_20px_rgba(37,99,235,0.12)] disabled:cursor-default disabled:hover:translate-y-0 disabled:hover:border-[#e9edf5] disabled:hover:shadow-[0_4px_14px_rgba(15,23,42,0.04)]'
-											>
-												<div className='flex items-start justify-between gap-2'>
-													<div>
-														<div className='font-semibold text-slate-900'>{message.tutorName || '튜터'} 튜터</div>
-														<div className='text-sm text-[#4f46e5]'>{message.subject || '과목 정보 없음'}</div>
+									<div className='p-3'>
+										<div className='member-message-list'>
+											{tutorMessages.length === 0 ? (
+												<div className='py-3 text-center text-sm text-slate-500'>메시지가 없습니다.</div>
+											) : tutorMessages.slice(0, 5).map((message) => (
+												<button
+													key={message.id || `${message.tutorId}-${message.createdAt}`}
+													type='button'
+													onClick={() => openMessageThread(message)}
+													disabled={!message?.bookingId || !message?.tutorId}
+													className='member-message-card w-full text-left disabled:cursor-default'
+												>
+													<div className='member-message-header'>
+														<div className='member-message-left'>
+															<div className='member-message-avatar'>{(message.tutorName || 'T').charAt(0)}</div>
+															<div className='member-message-main'>
+																<div className='font-semibold text-slate-900'>{message.tutorName || '튜터'} 튜터</div>
+																<div className='member-message-subject text-sm text-[#4f46e5]'>{message.subject || '과목 정보 없음'}</div>
+															</div>
+														</div>
+														<div className='member-message-date'>{formatDate(message.createdAt, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
 													</div>
-													<div className='text-xs text-slate-400'>{formatDate(message.createdAt, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
-												</div>
-												<div className='mt-2 line-clamp-2 text-sm text-slate-500'>{message.content || '내용이 없습니다.'}</div>
-												{message?.bookingId && message?.tutorId && <div className='mt-2 text-xs font-semibold text-[#4f46e5]'>대화 열기</div>}
-											</button>
-										))}
+													<div className='member-message-preview mt-2 text-sm text-slate-500'>{message.content || '내용이 없습니다.'}</div>
+												</button>
+											))}
+										</div>
 									</div>
 								</div>
 
@@ -467,13 +503,13 @@ const MemberMyPage = () => {
 								</div>
 
 								<div>
-									<div className='mb-3 flex border-b border-slate-200'>
+									<div className='member-mypage-tabs mb-3'>
 										{tabItems.map((tab) => (
 											<button
 												key={tab.key}
 												type='button'
 												onClick={() => setActiveTab(tab.key)}
-												className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold transition ${activeTab === tab.key ? 'border-[#4f46e5] text-[#4f46e5]' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+												className={`member-mypage-tab ${activeTab === tab.key ? 'active' : ''}`}
 											>
 												{tab.label}
 											</button>
@@ -590,13 +626,14 @@ const MemberMyPage = () => {
 														className='w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left transition hover:bg-slate-100'
 													>
 														<div className='mb-2 flex items-center justify-between gap-2'>
-															<div className='font-semibold text-slate-900'>
-																{review.tutorName || '튜터'} 튜터 <span className='ml-1 text-xs text-[#4f46e5] opacity-80'>자세히 보기</span>
-															</div>
-															<div className='text-sm text-amber-500'>{'★'.repeat(review.rating || 0)}{'☆'.repeat(5 - (review.rating || 0))}</div>
+															<div className='font-semibold text-slate-900'>{review.tutorName || '튜터'} 튜터</div>
+															<div className='text-sm text-amber-500'>{renderStars(review.rating)}</div>
 														</div>
 														<p className='mb-1 text-sm text-slate-600'>{review.content || '-'}</p>
-														<div className='text-xs text-slate-500'>{formatDate(review.createdAt, { year: 'numeric', month: '2-digit', day: '2-digit' })}</div>
+														<div className='flex items-center justify-between gap-2 text-xs text-slate-500'>
+															<span>{formatDate(review.createdAt, { year: 'numeric', month: '2-digit', day: '2-digit' })}</span>
+															<span className='font-semibold text-[#4f46e5]'>자세히 보기</span>
+														</div>
 													</button>
 												))}
 											</div>
@@ -620,44 +657,56 @@ const MemberMyPage = () => {
 													))}
 												</select>
 											</div>
-
-											<div className='mb-3 flex items-center justify-between gap-2'>
-												<button type='button' onClick={() => setWeekOffset((prev) => prev - 1)} className='flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 text-slate-600 transition hover:bg-slate-100'>
-													&lt;
+											<div className='tc-toolbar mb-3'>
+												<button type='button' onClick={() => setWeekOffset((prev) => prev - 1)} className='tc-iconbtn' aria-label='이전 주'>
+													<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M15.5 5.5 9 12l6.5 6.5' /></svg>
 												</button>
-												<div className='rounded-full bg-slate-100 px-4 py-1.5 text-sm font-semibold text-slate-700'>
-													{formatDate(weekDays[0], { year: 'numeric', month: '2-digit', day: '2-digit' })} ~ {formatDate(weekDays[6], { month: '2-digit', day: '2-digit' })}
-												</div>
-												<button type='button' onClick={() => setWeekOffset((prev) => prev + 1)} className='flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 text-slate-600 transition hover:bg-slate-100'>
-													&gt;
+												<div className='tc-range'>{weeklyRangeLabel}</div>
+												<button type='button' onClick={() => setWeekOffset((prev) => prev + 1)} className='tc-iconbtn' aria-label='다음 주'>
+													<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M8.5 18.5 15 12 8.5 5.5' /></svg>
 												</button>
 											</div>
-
-											<div className='grid gap-2 lg:grid-cols-7'>
-												{weeklyBookings.map(({ day, items }) => (
-													<div key={day.toISOString()} className='rounded-xl border border-slate-200 bg-slate-50 p-2.5'>
-														<div className='mb-2 border-b border-slate-200 pb-1.5'>
-															<div className='text-sm font-bold text-slate-900'>{formatDate(day, { weekday: 'short' })}</div>
-															<div className='text-xs text-slate-500'>{formatDate(day, { month: '2-digit', day: '2-digit' })}</div>
-														</div>
-														<div className='space-y-1.5'>
-															{items.length === 0 ? (
-																<div className='rounded-lg bg-white px-2 py-3 text-center text-xs text-slate-400'>예약 없음</div>
-															) : items.map((booking) => (
-																<div key={booking.bookingId} className='rounded-lg bg-white px-2 py-2 text-xs shadow-sm ring-1 ring-slate-200'>
-																	<div className='font-bold text-slate-900'>{booking.tutorName || '튜터'}</div>
-																	<div className='mt-0.5 text-slate-600'>{booking.subject || '수업'}</div>
-																	<div className='mt-1 font-medium text-red-500'>● {formatLessonTimeText(booking)}</div>
-																</div>
+											<div className='overflow-x-auto'>
+												<div className='weekly_calendar_wrap' id='memberWeeklySchedule'>
+													<div className='weekly_head'>
+														<ul className='dayHead'>
+															{weeklyBookings.map(({ day }) => (
+																<li key={`member-head-${day.toISOString()}`}>
+																	<div className='head_in'>
+																		<p className='dayTit'>{DAY_TITLES[day.getDay()]}</p>
+																		<p className='dayDate'>{formatMonthDayDot(day)}</p>
+																	</div>
+																</li>
 															))}
-														</div>
+														</ul>
 													</div>
-												))}
+													<div className='weekly_con'>
+														<ul className='dayCon'>
+															{weeklyBookings.map(({ day, items }) => (
+																<li key={day.toISOString()}>
+																	<div className='con_in'>
+																		{items.map((booking) => (
+																			<div key={booking.bookingId} className='sch_time booked'>
+																				<button
+																					type='button'
+																					onMouseEnter={() => setHoveredWeeklyBooking(booking)}
+																					onMouseLeave={() => setHoveredWeeklyBooking(null)}
+																					title={`${booking.tutorName || '튜터'} 튜터 · ${booking.subject || '수업'} · ${formatLessonTimeText(booking)}`}
+																				>
+																					{formatLessonTimeText(booking)}
+																				</button>
+																			</div>
+																		))}
+																	</div>
+																</li>
+															))}
+														</ul>
+													</div>
+												</div>
 											</div>
-
 											<small className='mt-2 block text-sm text-slate-500'><span className='rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white'>●</span> 예약된 내 수업</small>
-											<div className='mt-2 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-500'>
-												{weeklyHasAnyBooking ? '예약된 시간에 마우스를 올리면 튜터 정보를 볼 수 있습니다.' : '이번 주에는 예약된 수업이 없습니다.'}
+											<div className={`member-weekly-hover-info mt-2 ${hoveredWeeklyBooking ? 'is-active' : ''}`}>
+												{weeklyHoverInfo}
 											</div>
 										</div>
 									)}

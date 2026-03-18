@@ -484,7 +484,7 @@ const TutorDetailContent = () => {
 		<Layout>
 			<section className='tutor-detail-page px-3 py-12'>
 				<div className='mx-auto w-full max-w-[1320px]'>
-					<Link to='/tutors' className='mb-3 inline-flex items-center rounded-full border border-[#4f46e5] px-4 py-2 text-base text-[#4f46e5] transition hover:bg-[#4f46e5] hover:text-white'>
+					<Link to='/tutors' className='tutor-detail-backlink mb-3 inline-flex items-center rounded-full border border-[#4f46e5] px-4 py-2 text-base text-[#4f46e5] transition hover:bg-[#4f46e5] hover:text-white'>
 						<span className='mr-2'>←</span>목록으로
 					</Link>
 
@@ -495,9 +495,9 @@ const TutorDetailContent = () => {
 					) : (
 						<div className='grid grid-cols-1 gap-6 lg:grid-cols-12'>
 							<div className='space-y-4 lg:col-span-8'>
-								<div className='rounded-md border border-black/15 bg-white shadow-[0_.125rem_.25rem_rgba(0,0,0,0.075)]'>
+								<div className='tutor-detail-card rounded-md border border-black/15 bg-white shadow-[0_.125rem_.25rem_rgba(0,0,0,0.075)]'>
 									<div className='p-4'>
-										<div className='flex items-start gap-3'>
+										<div className='tutor-detail-hero flex items-start gap-3'>
 											<div className={`flex h-24 w-24 flex-none items-center justify-center overflow-hidden rounded-full text-[32px] text-white ${tutor.profileImg ? '' : 'bg-[#4f46e5]'}`}>
 												{tutor.profileImg ? (
 													<img src={getProfileImageUrl(tutor.profileImg)} alt='프로필 이미지' className='h-full w-full object-cover' />
@@ -508,20 +508,20 @@ const TutorDetailContent = () => {
 											<div className='flex-1'>
 												<h1 className='mb-1 text-[1.75rem] font-bold text-[#212529]'>{tutor.nickname || '튜터명'}</h1>
 												{reviews.length > 0 ? (
-													<div className='mb-2 text-[#6c757d]'>
+													<div className='tutor-detail-rating mb-2 text-[#6c757d]'>
 														<span className='mr-1'>⭐</span>
 														<span className='font-semibold'>{(reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length).toFixed(1)}</span>
 														<span className='text-[#6c757d]'>({reviews.length}개의리뷰)</span>
 													</div>
 												) : (
-													<div className='mb-2 text-[#6c757d]'>
+													<div className='tutor-detail-rating mb-2 text-[#6c757d]'>
 														<span className='mr-1'>⭐</span>
 														<span className='font-semibold'>아직 리뷰가 없습니다</span>
 													</div>
 												)}
-												<div className='mb-3 flex flex-wrap gap-1'>
+												<div className='tutor-detail-subjects mb-3 flex flex-wrap gap-1'>
 													{subjects.map((subject) => (
-														<span key={subject} className='inline-flex rounded-md bg-[#f8f9fa] px-[0.65em] py-[0.35em] text-[0.75em] font-bold text-black'>{subject}</span>
+														<span key={subject} className='tutor-detail-subject-badge inline-flex rounded-md bg-[#f8f9fa] px-[0.65em] py-[0.35em] text-[0.75em] font-bold text-black'>{subject}</span>
 													))}
 												</div>
 												<div className='text-sm text-[#6c757d]'>⏱️ 경력 <span>{tutor.experience || '정보 없음'}</span></div>
@@ -530,7 +530,7 @@ const TutorDetailContent = () => {
 									</div>
 								</div>
 
-								<div className='rounded-md border border-black/15 bg-white shadow-[0_.125rem_.25rem_rgba(0,0,0,0.075)]'>
+								<div className='tutor-detail-card rounded-md border border-black/15 bg-white shadow-[0_.125rem_.25rem_rgba(0,0,0,0.075)]'>
 									<div className='p-4'>
 										<h3 className='mb-3 text-[1.25rem] font-bold text-[#212529]'>튜터 정보</h3>
 										<ul className='tutor-info-tabs mb-2'>
@@ -574,21 +574,21 @@ const TutorDetailContent = () => {
 											)}
 											{activeTab === 'certificate' && (
 												certificateItems.length > 0
-													? <div>{certificateItems.map((item) => <div key={item}>{item}</div>)}</div>
+													? <div className='tutor-detail-certificate-list'>{certificateItems.map((item) => <div key={item} className='tutor-detail-certificate-item'>{item}</div>)}</div>
 													: <div className='text-[#6c757d]'>등록된 자격증 정보가 없습니다.</div>
 											)}
 										</div>
 									</div>
 								</div>
 
-								<div className='rounded-md border border-black/15 bg-white shadow-[0_.125rem_.25rem_rgba(0,0,0,0.075)]'>
+								<div className='tutor-detail-card rounded-md border border-black/15 bg-white shadow-[0_.125rem_.25rem_rgba(0,0,0,0.075)]'>
 									<div className='p-4'>
 										<div className='mb-4 flex items-center justify-between gap-3'>
 											<h3 className='text-[1.25rem] font-bold text-[#212529]'>수강 후기 ({reviews.length})</h3>
 											{canWriteReview && (
 												<button
 													type='button'
-													className='inline-flex items-center rounded-md border border-[#4f46e5] bg-[#4f46e5] px-3 py-[0.375rem] text-sm text-white transition-colors hover:border-[#4338ca] hover:bg-[#4338ca]'
+													className='tutor-detail-primary-button inline-flex items-center rounded-md border border-[#4f46e5] bg-[#4f46e5] px-3 py-[0.375rem] text-sm text-white transition-colors hover:border-[#4338ca] hover:bg-[#4338ca]'
 													onClick={openReviewCreateModal}
 												>
 													리뷰 작성
@@ -602,19 +602,19 @@ const TutorDetailContent = () => {
 												{reviews.map((review) => {
 													const canManageReview = Boolean(currentUserId) && review.studentId === currentUserId
 													return (
-													<div key={review.id} className='review-item rounded-md border border-black/15 bg-white'>
+													<div key={review.id} className='tutor-detail-review-card review-item rounded-md border border-black/15 bg-white'>
 														<div className='p-4'>
-															<div className='mb-2 flex items-start justify-between'>
+															<div className='tutor-detail-review-head mb-2 flex items-start justify-between'>
 																<div className='font-bold'>
 																	<span>{review.studentName || '익명'}</span>
 																	<span className='ml-1 text-[#4f46e5]'>님의 후기</span>
 																</div>
-																<div className='text-[#ffc107]'>{Array.from({ length: 5 }, (_, index) => (index < review.rating ? '★' : '☆')).join('')}</div>
+																<div className='tutor-detail-review-stars text-[#ffc107]'>{Array.from({ length: 5 }, (_, index) => (index < review.rating ? '★' : '☆')).join('')}</div>
 															</div>
 															<p className='mb-2 text-[#212529]'>{review.content}</p>
 															<div className='text-sm text-[#6c757d]'>{review.createdAt?.slice(0, 10)}</div>
 															{canManageReview && (
-																<div className='mt-2 flex gap-2'>
+																<div className='tutor-detail-review-actions mt-2 flex gap-2'>
 																	<button
 																		type='button'
 																		className='inline-flex items-center rounded-md border border-[#4f46e5] bg-white px-2.5 py-1 text-xs text-[#4f46e5] transition-colors hover:bg-[#eef2ff]'
@@ -641,7 +641,7 @@ const TutorDetailContent = () => {
 							</div>
 
 							<div className='lg:col-span-4'>
-								<div className='sticky top-[90px] rounded-md border border-black/15 bg-white shadow-[0_.125rem_.25rem_rgba(0,0,0,0.075)]'>
+								<div className='tutor-detail-booking-card sticky top-[90px] rounded-md border border-black/15 bg-white shadow-[0_.125rem_.25rem_rgba(0,0,0,0.075)]'>
 									{tutor.videoUrl && (
 										<div className='tutorVideo-wrap border-b border-black/10' id='videoWrap'>
 											<div className='resize'>
@@ -727,9 +727,9 @@ const TutorDetailContent = () => {
 													</ul>
 												</div>
 											</div>
-											<small className='mt-2 block text-sm text-[#6c757d]'>
-												<span className='rounded bg-[#4f46e5] px-2 py-0.5 text-white'>●</span> 수업 가능
-												<span className='ml-2 rounded bg-[#dc3545] px-2 py-0.5 text-white'>●</span> 예약됨
+											<small className='tutor-detail-booking-legend mt-2 block text-sm text-[#6c757d]'>
+												<span className='tutor-detail-booking-legend-badge rounded bg-[#4f46e5] px-2 py-0.5 text-white'>●</span> 수업 가능
+												<span className='tutor-detail-booking-legend-badge ml-2 rounded bg-[#dc3545] px-2 py-0.5 text-white'>●</span> 예약됨
 											</small>
 										</div>
 
@@ -737,26 +737,26 @@ const TutorDetailContent = () => {
 											<div>
 												<div className='mb-3'>
 													<label className='mb-2 block text-base text-[#212529]'>선택된 시간</label>
-													<textarea className='block w-full rounded-md border border-[#ced4da] bg-white px-3 py-[0.375rem] text-base text-[#212529] outline-none' rows={3} value={selectedTimeText} placeholder='캘린더에서 시간을 선택해주세요' readOnly />
+													<textarea className='tutor-detail-form-control tutor-detail-form-control--readonly block w-full rounded-md border border-[#ced4da] bg-white px-3 py-[0.375rem] text-base text-[#212529] outline-none' rows={3} value={selectedTimeText} placeholder='캘린더에서 시간을 선택해주세요' readOnly />
 													<div className='mt-1 text-xs text-[#6c757d]'>같은 날짜도 여러 시간을 선택할 수 있으며, 연속 시간은 한 수업으로 묶여 표시됩니다.</div>
 												</div>
 												<div className='mb-3'>
 													<label className='mb-2 block text-base text-[#212529]'>과목 *</label>
-													<select value={bookingSubject} onChange={(e) => setBookingSubject(e.target.value)} className='block w-full rounded-md border border-[#ced4da] bg-white px-3 py-[0.375rem] text-base text-[#212529] outline-none focus:border-[#4f46e5] focus:shadow-[0_0_0_0.25rem_rgba(79,70,229,0.25)]'>
+													<select value={bookingSubject} onChange={(e) => setBookingSubject(e.target.value)} className='tutor-detail-form-control block w-full rounded-md border border-[#ced4da] bg-white px-3 py-[0.375rem] text-base text-[#212529] outline-none focus:border-[#4f46e5] focus:shadow-[0_0_0_0.25rem_rgba(79,70,229,0.25)]'>
 														<option value=''>선택</option>
 														{subjects.map((s) => <option key={s} value={s}>{s}</option>)}
 													</select>
 												</div>
 												<div className='mb-3'>
 													<label className='mb-2 block text-base text-[#212529]'>요청사항</label>
-													<textarea value={bookingMessage} onChange={(e) => setBookingMessage(e.target.value)} rows={3} className='block w-full rounded-md border border-[#ced4da] bg-white px-3 py-[0.375rem] text-base text-[#212529] outline-none' placeholder='추가로 전달할 내용을 입력하세요' />
+													<textarea value={bookingMessage} onChange={(e) => setBookingMessage(e.target.value)} rows={3} className='tutor-detail-form-control block w-full rounded-md border border-[#ced4da] bg-white px-3 py-[0.375rem] text-base text-[#212529] outline-none' placeholder='추가로 전달할 내용을 입력하세요' />
 												</div>
 											</div>
 										)}
 
 										{bookingError && <p className='mb-3 text-sm text-[#dc3545]'>{bookingError}</p>}
 										{canBook && (
-											<button type='button' onClick={handleBook} disabled={mergedSelectedBlocks.length === 0 || bookingLoading} className='inline-flex w-full items-center justify-center rounded-md border border-[#4f46e5] bg-[#4f46e5] px-3 py-[0.375rem] text-base text-white transition-colors hover:border-[#4338ca] hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60'>
+											<button type='button' onClick={handleBook} disabled={mergedSelectedBlocks.length === 0 || bookingLoading} className='tutor-detail-primary-button inline-flex w-full items-center justify-center rounded-md border border-[#4f46e5] bg-[#4f46e5] px-3 py-[0.375rem] text-base text-white transition-colors hover:border-[#4338ca] hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60'>
 												{bookingLoading ? '예약 처리 중...' : '예약하기'}
 											</button>
 										)}
@@ -851,7 +851,7 @@ const TutorDetailContent = () => {
 								</button>
 								<button
 									type='button'
-									className='inline-flex items-center rounded-md border border-[#4f46e5] bg-[#4f46e5] px-3 py-2 text-sm text-white transition-colors hover:border-[#4338ca] hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60'
+									className='tutor-detail-primary-button inline-flex items-center rounded-md border border-[#4f46e5] bg-[#4f46e5] px-3 py-2 text-sm text-white transition-colors hover:border-[#4338ca] hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60'
 									onClick={handleReviewSave}
 									disabled={reviewSubmitting || (!isEditReview && reviewSelectOptions.length === 0)}
 								>

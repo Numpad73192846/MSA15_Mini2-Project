@@ -1,0 +1,110 @@
+﻿.tutor-dashboard-page .dashboard-panel {
+  border-color: #dee2e6;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  overflow: hidden;
+}
+
+.tutor-dashboard-page .dashboard-panel-body {
+  padding: 1.25rem;
+}
+
+@media (min-width: 992px) {
+  .tutor-dashboard-page .dashboard-panel-body {
+    padding: 1.5rem;
+  }
+}
+
+.tutor-dashboard-page .dashboard-booking-grid,
+.tutor-dashboard-page .dashboard-student-grid {
+  align-items: stretch;
+}
+
+.tutor-dashboard-page .dashboard-card-surface {
+  height: 100%;
+  border-color: #dee2e6;
+  border-radius: 0.5rem;
+  box-shadow: none;
+}
+
+.tutor-dashboard-page .dashboard-booking-card {
+  background: #f8f9fa;
+}
+
+.tutor-dashboard-page .dashboard-student-card {
+  background: #ffffff;
+}
+
+.tutor-dashboard-page .dashboard-booking-card,
+.tutor-dashboard-page .dashboard-student-card {
+  padding: 1rem;
+}
+
+.tutor-dashboard-page .dashboard-student-card h4 {
+  margin: 0;
+  line-height: 1.25;
+}
+
+.tutor-dashboard-page .dashboard-student-avatar {
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
+}
+
+.tutor-dashboard-page .dashboard-subject-chip {
+  border: 1px solid #dee2e6;
+  background: #f8f9fa;
+  color: #495057;
+}
+
+.tutor-dashboard-page .dashboard-secondary-action {
+  border-color: #ced4da;
+  color: #495057;
+}
+
+.tutor-dashboard-page .dashboard-secondary-action:hover {
+  border-color: #adb5bd;
+  background: #f8f9fa;
+  color: #212529;
+}
+
+.tutor-dashboard-page .dashboard-booking-card button,
+.tutor-dashboard-page .dashboard-student-card button {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.tutor-dashboard-modal .dashboard-dialog {
+  border: 0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+}
+
+.tutor-dashboard-modal .dashboard-action-dialog,
+.tutor-dashboard-modal .dashboard-student-dialog {
+  overflow: hidden;
+}
+
+.tutor-dashboard-modal .dashboard-summary-box,
+.tutor-dashboard-modal .dashboard-student-stat,
+.tutor-dashboard-modal .dashboard-detail-box {
+  border: 1px solid #dee2e6;
+  background: #f8f9fa;
+}
+
+.tutor-dashboard-modal .dashboard-student-body {
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+
+.tutor-dashboard-modal .dashboard-student-stat {
+  min-height: 82px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.tutor-dashboard-modal .dashboard-detail-box {
+  line-height: 1.6;
+}
+
+.tutor-dashboard-modal .dashboard-dialog textarea {
+  resize: vertical;
+}

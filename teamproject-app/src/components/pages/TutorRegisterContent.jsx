@@ -1,8 +1,9 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Layout from '../common/Layout'
 import api from '../../services/api'
 import useAuth from '../../utils/hooks/useAuth'
+import '../../styles/tutor-register.css'
 
 const STEP_PATHS = ['/tutor/register', '/tutor/register1', '/tutor/register2', '/tutor/register3']
 const STORAGE_KEYS = {
@@ -68,7 +69,7 @@ const initialLessonForm = {
 	price: '',
 }
 
-const makeEmptyTimeRange = () => ({ dayOfWeek: 'MON', startTime: '09:00', endTime: '18:00' })
+const makeEmptyTimeRange = (dayOfWeek = 'MON') => ({ dayOfWeek, startTime: '08:00', endTime: '09:30' })
 const makeEmptyAvailability = () => ({ date: '', startTime: '09:00', endTime: '09:30' })
 
 const readStored = (key, fallback) => {
@@ -162,6 +163,76 @@ const getAvailabilityWindow = () => {
 	}
 }
 
+const DAY_INDEX_TO_ENUM = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+const DAY_ORDER = Object.fromEntries(DAY_OPTIONS.map((item, index) => [item.value, index]))
+const KOR_DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토']
+
+const pad2 = (value) => String(value).padStart(2, '0')
+
+const formatDateOnly = (date) => {
+	const year = date.getFullYear()
+	const month = pad2(date.getMonth() + 1)
+	const day = pad2(date.getDate())
+	return `${year}-${month}-${day}`
+}
+
+const addDays = (date, days) => {
+	const next = new Date(date)
+	next.setDate(next.getDate() + days)
+	return next
+}
+
+const getWeekStart = (baseDate = new Date()) => {
+	const date = new Date(baseDate)
+	date.setHours(0, 0, 0, 0)
+	date.setDate(date.getDate() - date.getDay())
+	return date
+}
+
+const formatCalendarRange = (startDate) => {
+	const endDate = addDays(startDate, 6)
+	return `${startDate.getFullYear()}.${pad2(startDate.getMonth() + 1)}.${pad2(startDate.getDate())} ~ ${endDate.getFullYear()}.${pad2(endDate.getMonth() + 1)}.${pad2(endDate.getDate())}`
+}
+
+const formatCalendarDay = (date) => `${pad2(date.getMonth() + 1)}.${pad2(date.getDate())}`
+
+const addMinutesToTime = (time, minutes) => {
+	const [rawHour = '0', rawMinute = '0'] = String(time || '00:00').split(':')
+	const totalMinutes = (Number(rawHour) * 60) + Number(rawMinute) + minutes
+	const hour = Math.floor(totalMinutes / 60)
+	const minute = totalMinutes % 60
+	return `${pad2(hour)}:${pad2(minute)}`
+}
+
+const buildHalfHourSlots = (startTime, endTime) => {
+	const slots = []
+	let cursor = startTime
+	while (cursor < endTime) {
+		const next = addMinutesToTime(cursor, 30)
+		if (next <= endTime) {
+			slots.push(cursor)
+		}
+		cursor = next
+	}
+	return slots
+}
+
+const buildAvailabilityKey = (date, startTime, endTime) => `${date}_${startTime}_${endTime}`
+
+const sortAvailabilitySlots = (left, right) => {
+	const leftKey = `${left.date}_${left.startTime}_${left.endTime}`
+	const rightKey = `${right.date}_${right.startTime}_${right.endTime}`
+	return leftKey.localeCompare(rightKey)
+}
+
+const sortTimeRanges = (left, right) => {
+	const dayDiff = (DAY_ORDER[left.dayOfWeek] ?? 99) - (DAY_ORDER[right.dayOfWeek] ?? 99)
+	if (dayDiff !== 0) return dayDiff
+	const leftKey = `${left.startTime}_${left.endTime}`
+	const rightKey = `${right.startTime}_${right.endTime}`
+	return leftKey.localeCompare(rightKey)
+}
+
 const TutorRegisterContent = () => {
 	const navigate = useNavigate()
 	const location = useLocation()
@@ -214,6 +285,8 @@ const TutorRegisterContent = () => {
 	})
 	const [availabilityForm, setAvailabilityForm] = useState(makeEmptyAvailability)
 	const [availabilitySlots, setAvailabilitySlots] = useState(() => readStoredArray(STORAGE_KEYS.step4, 'availabilitySlots'))
+	const profileInputRef = useRef(null)
+	const [calendarWeekStart, setCalendarWeekStart] = useState(() => getWeekStart())
 
 	const [loadingMeta, setLoadingMeta] = useState(false)
 	const [submitting, setSubmitting] = useState(false)
@@ -270,11 +343,50 @@ const TutorRegisterContent = () => {
 		setBasicForm((prev) => prev)
 	}, [userInfo])
 
-	const subjectMap = useMemo(() => new Map(subjects.map((item) => [item.id, item.name])), [subjects])
-	const fieldMap = useMemo(() => new Map(fields.map((item) => [item.id, item.name])), [fields])
+	const subjectMap = useMemo(() => new Map(subjects.map((item) => [String(item.id), item.name])), [subjects])
+	const fieldMap = useMemo(() => new Map(fields.map((item) => [String(item.id), item.name])), [fields])
+	const generalFields = useMemo(() => fields.filter((item) => item.category !== 'DOMAIN'), [fields])
+	const domainFields = useMemo(() => fields.filter((item) => item.category === 'DOMAIN'), [fields])
 	const nextPath = STEP_PATHS[currentStep + 1]
 	const prevPath = STEP_PATHS[currentStep - 1] || '/'
 	const displayName = userInfo?.name || '회원'
+	const calendarDays = useMemo(() => Array.from({ length: 7 }, (_, index) => addDays(calendarWeekStart, index)), [calendarWeekStart])
+	const weekRangeLabel = useMemo(() => formatCalendarRange(calendarWeekStart), [calendarWeekStart])
+	const baseRangesByDay = useMemo(() => {
+		return timeRanges.reduce((acc, item) => {
+			if (!item.dayOfWeek || !item.startTime || !item.endTime || item.startTime >= item.endTime) return acc
+			if (!acc[item.dayOfWeek]) acc[item.dayOfWeek] = []
+			acc[item.dayOfWeek].push(item)
+			return acc
+		}, {})
+	}, [timeRanges])
+	const groupedTimeRanges = useMemo(
+		() => DAY_OPTIONS.map((day) => ({
+			...day,
+			ranges: [...(baseRangesByDay[day.value] || [])].sort(sortTimeRanges),
+		})),
+		[baseRangesByDay],
+	)
+	const calendarSlotsByDay = useMemo(() => {
+		return calendarDays.map((day) => {
+			const dayEnum = DAY_INDEX_TO_ENUM[day.getDay()]
+			const ranges = baseRangesByDay[dayEnum] || []
+			const slotSet = new Set()
+			ranges.forEach((range) => {
+				buildHalfHourSlots(range.startTime, range.endTime).forEach((slot) => slotSet.add(slot))
+			})
+			return Array.from(slotSet).sort()
+		})
+	}, [baseRangesByDay, calendarDays])
+	const availabilityKeySet = useMemo(
+		() => new Set(availabilitySlots.map((item) => buildAvailabilityKey(item.date, item.startTime, item.endTime))),
+		[availabilitySlots],
+	)
+	const currentWeekDateSet = useMemo(() => new Set(calendarDays.map((day) => formatDateOnly(day))), [calendarDays])
+	const currentWeekAvailability = useMemo(
+		() => availabilitySlots.filter((item) => currentWeekDateSet.has(item.date)).sort(sortAvailabilitySlots),
+		[availabilitySlots, currentWeekDateSet],
+	)
 
 	const handleBasicChange = (event) => {
 		const { name, value } = event.target
@@ -295,6 +407,15 @@ const TutorRegisterContent = () => {
 		} catch {
 			setError('프로필 이미지를 처리하지 못했습니다.')
 		}
+	}
+
+	const clearProfileImage = () => {
+		setProfileImage(null)
+		setError('')
+	}
+
+	const openProfilePicker = () => {
+		profileInputRef.current?.click()
 	}
 
 	const appendStoredFiles = (setter) => async (event) => {
@@ -351,8 +472,8 @@ const TutorRegisterContent = () => {
 	}
 
 	const addLessonCard = () => {
-		const subjectId = lessonForm.subjectId
-		const fieldId = lessonForm.fieldId
+		const subjectId = String(lessonForm.subjectId || '')
+		const fieldId = String(lessonForm.fieldId || '')
 		const price = Number(lessonForm.price)
 		if (!subjectId || !fieldId) {
 			setError('과목과 분야를 선택해 주세요.')
@@ -370,6 +491,46 @@ const TutorRegisterContent = () => {
 		setError('')
 	}
 
+	const removeLessonCard = (indexToRemove) => {
+		const nextItems = lessonCards.filter((_, index) => index !== indexToRemove)
+		setLessonCards(nextItems)
+		setSelectedFieldIds(Array.from(new Set(nextItems.map((item) => item.fieldId).filter(Boolean))))
+		setError('')
+	}
+
+	const addTimeRangeForDay = (dayOfWeek) => {
+		setTimeRanges((prev) => [...prev, makeEmptyTimeRange(dayOfWeek)].sort(sortTimeRanges))
+		setError('')
+		setSuccess('')
+	}
+
+	const updateTimeRangeForDay = (dayOfWeek, rangeIndex, key, value) => {
+		let matchedIndex = -1
+		setTimeRanges((prev) => prev
+			.map((item) => {
+				if (item.dayOfWeek !== dayOfWeek) return item
+				matchedIndex += 1
+				if (matchedIndex !== rangeIndex) return item
+				return { ...item, [key]: value }
+			})
+			.sort(sortTimeRanges))
+		setError('')
+		setSuccess('')
+	}
+
+	const removeTimeRangeForDay = (dayOfWeek, rangeIndex) => {
+		let matchedIndex = -1
+		setTimeRanges((prev) => prev
+			.filter((item) => {
+				if (item.dayOfWeek !== dayOfWeek) return true
+				matchedIndex += 1
+				return matchedIndex !== rangeIndex
+			})
+			.sort(sortTimeRanges))
+		setError('')
+		setSuccess('')
+	}
+
 	const addAvailabilitySlot = () => {
 		if (!availabilityForm.date || !availabilityForm.startTime || !availabilityForm.endTime) {
 			setError('날짜와 시간을 모두 입력해 주세요.')
@@ -383,6 +544,60 @@ const TutorRegisterContent = () => {
 		setAvailabilityForm(makeEmptyAvailability())
 		setError('')
 	}
+	const goToPreviousWeek = () => {
+		setCalendarWeekStart((prev) => addDays(prev, -7))
+	}
+
+	const goToNextWeek = () => {
+		setCalendarWeekStart((prev) => addDays(prev, 7))
+	}
+
+	const toggleAvailabilitySlot = (date, startTime) => {
+		const dateText = formatDateOnly(date)
+		const endTime = addMinutesToTime(startTime, 30)
+		const targetKey = buildAvailabilityKey(dateText, startTime, endTime)
+
+		setAvailabilitySlots((prev) => {
+			const exists = prev.some((item) => buildAvailabilityKey(item.date, item.startTime, item.endTime) === targetKey)
+			const nextItems = exists
+				? prev.filter((item) => buildAvailabilityKey(item.date, item.startTime, item.endTime) !== targetKey)
+				: [...prev, { date: dateText, startTime, endTime }]
+			return nextItems.sort(sortAvailabilitySlots)
+		})
+		setError('')
+		setSuccess('')
+	}
+
+	const applyCurrentWeekPattern = () => {
+		if (!currentWeekAvailability.length) {
+			setError('이번 주에 선택된 가능한 시간이 없습니다.')
+			setSuccess('')
+			return
+		}
+
+		setAvailabilitySlots((prev) => {
+			const nextItems = [...prev]
+			const keySet = new Set(nextItems.map((item) => buildAvailabilityKey(item.date, item.startTime, item.endTime)))
+
+			currentWeekAvailability.forEach((item) => {
+				const baseDate = new Date(`${item.date}T00:00:00`)
+				for (let week = 1; week <= 9; week += 1) {
+					const nextDate = formatDateOnly(addDays(baseDate, week * 7))
+					const key = buildAvailabilityKey(nextDate, item.startTime, item.endTime)
+					if (!keySet.has(key)) {
+						nextItems.push({ ...item, date: nextDate })
+						keySet.add(key)
+					}
+				}
+			})
+
+			return nextItems.sort(sortAvailabilitySlots)
+		})
+
+		setError('')
+		setSuccess('이번 주 설정을 앞으로 9주까지 반영했습니다.')
+	}
+
 	const validateCurrentStep = () => {
 		if (currentStep === 0) {
 			if (!basicForm.basicPhone.trim() || !basicForm.basicBankName.trim() || !basicForm.basicAccountNumber.trim() || !basicForm.basicAccountHolder.trim() || !basicForm.headline.trim() || !basicForm.bio.trim() || !basicForm.selfIntro.trim()) {
@@ -559,182 +774,320 @@ const TutorRegisterContent = () => {
 
 	return (
 		<Layout>
-			<section className='bg-[#f8fafc] px-4 py-10'>
-				<div className='mx-auto max-w-5xl'>
-					<div className='mb-6'>
-						<h1 className='text-3xl font-extrabold text-slate-900'>{stepMeta.title}</h1>
-						<p className='mt-2 text-sm text-slate-500'>{stepMeta.desc}</p>
-						<div className='mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-200'>
-							<div className='h-full rounded-full bg-[#4f46e5] transition-all' style={{ width: `${stepMeta.progress}%` }} />
-						</div>
-						<p className='mt-2 text-xs font-semibold text-slate-500'>STEP {stepMeta.step} / {stepMeta.total}</p>
-					</div>
+			<section className='register-page px-4 py-10'>
+				<div className='register-shell mx-auto max-w-[720px]'>
+					<div className='register-header mb-4 text-center'>
+                        <h1 className='register-step-title'>{stepMeta.title}</h1>
+                        <p className='register-step-desc'>{stepMeta.desc}</p>
+                        <div className='register-progress mt-4'>
+                            <div className='register-progress-bar transition-all' style={{ width: `${stepMeta.progress}%` }} />
+                        </div>
+                    </div>
 
-					<form onSubmit={handleSubmit} className='space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm'>
+                    <form onSubmit={handleSubmit} className='register-form-card'>
 						{currentStep === 0 && (
 							<>
-								<SectionCard title='기본 정보' description='회원 이름은 현재 계정 정보를 그대로 사용합니다.'>
+								<SectionCard title='1. 기본 정보' description='연락처를 입력해 주세요. 이름은 자동으로 입력됩니다.'>
 									<div className='grid gap-4 md:grid-cols-2'>
 										<Input label='이름' value={displayName} disabled />
-										<Input label='연락처' name='basicPhone' value={basicForm.basicPhone} onChange={handleBasicChange} required />
+										<Input label='연락처' name='basicPhone' value={basicForm.basicPhone} onChange={handleBasicChange} placeholder='010-0000-0000' required />
 									</div>
 								</SectionCard>
 
-								<SectionCard title='계좌 정보' description='정산을 위한 기본 계좌 정보를 입력합니다.'>
+								<SectionCard title='2. 계좌 정보' description='정산을 위한 계좌 정보를 입력해 주세요.'>
 									<div className='grid gap-4 md:grid-cols-3'>
-										<Select label='은행명' name='basicBankName' value={basicForm.basicBankName} onChange={handleBasicChange} options={BANK_OPTIONS.map((item) => ({ value: item, label: item }))} placeholder='은행 선택' />
-										<Input label='계좌번호' name='basicAccountNumber' value={basicForm.basicAccountNumber} onChange={handleBasicChange} required />
-										<Input label='예금주' name='basicAccountHolder' value={basicForm.basicAccountHolder} onChange={handleBasicChange} required />
+										<Select label='은행명' name='basicBankName' value={basicForm.basicBankName} onChange={handleBasicChange} options={BANK_OPTIONS.map((item) => ({ value: item, label: item }))} placeholder='은행을 선택하세요' />
+										<Input label='계좌번호' name='basicAccountNumber' value={basicForm.basicAccountNumber} onChange={handleBasicChange} placeholder='계좌번호 입력' required />
+										<Input label='예금주' name='basicAccountHolder' value={basicForm.basicAccountHolder} onChange={handleBasicChange} placeholder='예금주명 입력' required />
 									</div>
 								</SectionCard>
 
-								<SectionCard title='프로필/소개' description='프로필 사진과 소개 정보를 저장합니다.'>
-									<div className='grid gap-4 md:grid-cols-2'>
-										<div>
-											<label className='mb-1 block text-sm font-semibold text-slate-700'>프로필 이미지</label>
-											<input type='file' accept='image/*' onChange={handleProfileImageChange} className='block w-full text-sm text-slate-500 file:mr-2 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-slate-700' />
-											{profileImage?.data && <img src={profileImage.data} alt='프로필 미리보기' className='mt-3 h-44 w-full rounded-xl border border-slate-200 object-cover' />}
-										</div>
-										<div className='grid gap-4'>
-											<Input label='한 줄 소개' name='headline' value={basicForm.headline} onChange={handleBasicChange} required />
-											<Input label='소개 영상 URL' name='videoUrl' value={basicForm.videoUrl} onChange={handleBasicChange} />
-										</div>
-									</div>
-									<div className='grid gap-4 md:grid-cols-2'>
-										<TextArea label='소개' name='bio' value={basicForm.bio} onChange={handleBasicChange} rows={5} />
-										<TextArea label='강의 스타일' name='selfIntro' value={basicForm.selfIntro} onChange={handleBasicChange} rows={5} />
-									</div>
-								</SectionCard>
+                                <SectionCard title='3. 프로필 사진 및 소개' description='학생에게 보여질 프로필 사진과 소개 정보를 입력해 주세요.'>
+                                    <div className='register-profile-panel'>
+                                        <div className='register-upload-head'>
+                                            <div>
+                                                <p className='register-upload-title'>프로필 사진</p>
+                                                <p className='register-upload-sub'>학생에게 노출될 대표 이미지를 업로드해 주세요. JPG, PNG 최대 5MB</p>
+                                            </div>
+                                            <div className='flex flex-wrap gap-2'>
+                                                <button type='button' onClick={openProfilePicker} className='register-outline-button'>파일 선택</button>
+                                                {profileImage?.data && (
+                                                    <button type='button' onClick={clearProfileImage} className='register-profile-delete'>삭제</button>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <input ref={profileInputRef} type='file' accept='image/*' onChange={handleProfileImageChange} className='hidden' />
+                                        {profileImage?.data ? (
+                                            <div className='register-profile-preview-card'>
+                                                <div className='register-profile-preview-media'>
+                                                    <img src={profileImage.data} alt='프로필 미리보기' className='register-profile-preview-image' />
+                                                </div>
+                                                <div className='register-profile-preview-body'>
+                                                    <div>
+                                                        <p className='register-profile-preview-title'>업로드된 프로필 이미지</p>
+                                                        <p className='register-profile-preview-sub'>현재 등록 단계에서 임시 저장되며 마지막 단계에서 함께 업로드됩니다.</p>
+                                                    </div>
+                                                    <div className='flex flex-wrap gap-2'>
+                                                        <button type='button' onClick={openProfilePicker} className='register-outline-button'>수정</button>
+                                                        <button type='button' onClick={clearProfileImage} className='register-profile-delete'>삭제</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className='register-profile-empty'>아직 선택된 프로필 이미지가 없습니다.</div>
+                                        )}
+                                    </div>
+                                    <div className='grid gap-4 md:grid-cols-2'>
+                                        <div className='grid gap-4'>
+                                            <Input label='한 줄 소개' name='headline' value={basicForm.headline} onChange={handleBasicChange} placeholder='예) 영어 회화 전문 10년 경력, TOEIC 만점 강사' required />
+                                            <Input label='소개 영상 URL' name='videoUrl' value={basicForm.videoUrl} onChange={handleBasicChange} placeholder='https://youtube.com/watch?v=...' />
+                                        </div>
+                                        <div className='grid gap-4'>
+                                            <TextArea label='소개' name='bio' value={basicForm.bio} onChange={handleBasicChange} rows={5} placeholder={'예)\n안녕하세요! 영어 회화 전문 튜터 김튜터입니다.\n미국에서 10년간 거주하며 현지 경험을 쌓았고, 귀국 후 영어 강의를 시작했습니다.\n학생 개개인의 수준과 목표에 맞춰 맞춤형 수업을 제공합니다.'} />
+                                            <TextArea label='강의 스타일' name='selfIntro' value={basicForm.selfIntro} onChange={handleBasicChange} rows={5} placeholder={'예)\n✔ 교육 철학: 학생 중심의 맞춤형 교육\n✔ 강점: 실생활 회화 중심, 즉각적인 피드백\n✔ 제공 가치: 자신감 있는 영어 구사 능력 향상'} />
+                                        </div>
+                                    </div>
+                                </SectionCard>
 							</>
 						)}
-						{currentStep === 1 && (
-							<>
-								<SectionCard title='학력' description='학력 정보와 학력 증빙 파일을 저장합니다.'>
-									<div className='grid gap-3 md:grid-cols-3'>
-										<Input label='학교명' name='schoolName' value={educationForm.schoolName} onChange={handleObjectChange(setEducationForm)} />
-										<Input label='입학연도' name='startYear' type='number' value={educationForm.startYear} onChange={handleObjectChange(setEducationForm)} />
-										<Input label='졸업연도' name='graduatedYear' type='number' value={educationForm.graduatedYear} onChange={handleObjectChange(setEducationForm)} />
-									</div>
-									<div className='flex justify-end'>
-										<button type='button' onClick={addEducation} className='rounded-xl border border-[#4f46e5] px-4 py-2 text-sm font-semibold text-[#4f46e5] hover:bg-indigo-50'>학력 추가</button>
-									</div>
-									<ListRows items={educations} render={(item) => `${item.schoolName} · ${item.startYear || '-'}${item.graduatedYear ? ` ~ ${item.graduatedYear}` : ''}`} onRemove={(index) => setEducations((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} emptyText='등록된 학력 정보가 없습니다.' />
-									<FileUploader label='학력 증빙 파일' files={academicCertificates} onChange={appendStoredFiles(setAcademicCertificates)} onRemove={(index) => setAcademicCertificates((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} />
-								</SectionCard>
+						                        {currentStep === 1 && (
+                            <>
+                                <SectionCard title='1. 학력' description='학교와 재학/졸업 연도를 입력해 주세요.' badge='학력 등록'>
+                                    <div className='grid gap-3 md:grid-cols-3'>
+                                        <Input label='학교명' name='schoolName' value={educationForm.schoolName} onChange={handleObjectChange(setEducationForm)} placeholder='학교명 입력' />
+                                        <Input label='입학년도' name='startYear' type='number' value={educationForm.startYear} onChange={handleObjectChange(setEducationForm)} placeholder='예) 2019' />
+                                        <Input label='졸업년도' name='graduatedYear' type='number' value={educationForm.graduatedYear} onChange={handleObjectChange(setEducationForm)} placeholder='예) 2023' />
+                                    </div>
+                                    <div className='flex justify-end'>
+                                        <button type='button' onClick={addEducation} className='register-outline-button'>학력 추가</button>
+                                    </div>
+                                    <DetailEntryList items={educations} tone='education' getTitle={(item) => item.schoolName} getSubtitle={(item) => (item.startYear || item.graduatedYear ? `${item.startYear || '-'} ~ ${item.graduatedYear || '현재'}` : '학력 정보 미입력')} onRemove={(index) => setEducations((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} emptyText='등록된 학력 정보가 없습니다.' />
+                                    <FileUploader label='학력 증빙 서류' files={academicCertificates} onChange={appendStoredFiles(setAcademicCertificates)} onRemove={(index) => setAcademicCertificates((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} />
+                                </SectionCard>
 
-								<SectionCard title='학위' description='학위명과 전공, 학위 증빙 파일을 저장합니다.'>
-									<div className='grid gap-3 md:grid-cols-2'>
-										<Input label='학위명' name='degreeName' value={degreeForm.degreeName} onChange={handleObjectChange(setDegreeForm)} />
-										<Input label='전공' name='major' value={degreeForm.major} onChange={handleObjectChange(setDegreeForm)} />
-									</div>
-									<div className='flex justify-end'>
-										<button type='button' onClick={addDegree} className='rounded-xl border border-[#4f46e5] px-4 py-2 text-sm font-semibold text-[#4f46e5] hover:bg-indigo-50'>학위 추가</button>
-									</div>
-									<ListRows items={degrees} render={(item) => `${item.degreeName}${item.major ? ` (${item.major})` : ''}`} onRemove={(index) => setDegrees((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} emptyText='등록된 학위 정보가 없습니다.' />
-									<FileUploader label='학위 증빙 파일' files={degreeCertificates} onChange={appendStoredFiles(setDegreeCertificates)} onRemove={(index) => setDegreeCertificates((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} />
-								</SectionCard>
+                                <SectionCard title='2. 학위' description='취득한 학위와 전공을 입력해 주세요.' badge='학위 등록' variant='degree'>
+                                    <div className='grid gap-3 md:grid-cols-2'>
+                                        <Input label='학위명' name='degreeName' value={degreeForm.degreeName} onChange={handleObjectChange(setDegreeForm)} placeholder='예) 학사, 석사' />
+                                        <Input label='전공' name='major' value={degreeForm.major} onChange={handleObjectChange(setDegreeForm)} placeholder='전공명 입력' />
+                                    </div>
+                                    <div className='flex justify-end'>
+                                        <button type='button' onClick={addDegree} className='register-outline-button'>학위 추가</button>
+                                    </div>
+                                    <DetailEntryList items={degrees} tone='degree' getTitle={(item) => item.degreeName} getSubtitle={(item) => item.major || '전공 정보 없음'} onRemove={(index) => setDegrees((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} emptyText='등록된 학위 정보가 없습니다.' />
+                                    <FileUploader label='학위 증빙 서류' files={degreeCertificates} onChange={appendStoredFiles(setDegreeCertificates)} onRemove={(index) => setDegreeCertificates((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} />
+                                </SectionCard>
 
-								<SectionCard title='자격증 및 경력' description='자격증 텍스트, 자격증 파일, 경력 정보를 저장합니다.'>
-									<div className='grid gap-4 lg:grid-cols-2'>
-										<div className='space-y-4'>
-											<div className='grid gap-3 md:grid-cols-2'>
-												<Input label='자격증명' name='name' value={certificateTextForm.name} onChange={handleObjectChange(setCertificateTextForm)} />
-												<Input label='발급기관' name='issuer' value={certificateTextForm.issuer} onChange={handleObjectChange(setCertificateTextForm)} />
-											</div>
-											<div className='flex justify-end'>
-												<button type='button' onClick={addCertificateText} className='rounded-xl border border-[#4f46e5] px-4 py-2 text-sm font-semibold text-[#4f46e5] hover:bg-indigo-50'>자격증 추가</button>
-											</div>
-											<ListRows items={certificateTexts} render={(item) => `${item.name}${item.issuer ? ` · ${item.issuer}` : ''}`} onRemove={(index) => setCertificateTexts((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} emptyText='등록된 자격증 텍스트가 없습니다.' />
-											<FileUploader label='자격증 파일' files={certificateFiles} onChange={appendStoredFiles(setCertificateFiles)} onRemove={(index) => setCertificateFiles((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} />
-										</div>
-										<div className='space-y-4'>
-											<div className='grid gap-3 md:grid-cols-2'>
-												<Input label='회사명' name='companyName' value={careerForm.companyName} onChange={handleObjectChange(setCareerForm)} />
-												<Input label='직무 카테고리' name='jobCategory' value={careerForm.jobCategory} onChange={handleObjectChange(setCareerForm)} />
-												<Input label='직무명' name='jobRole' value={careerForm.jobRole} onChange={handleObjectChange(setCareerForm)} />
-												<div className='grid grid-cols-2 gap-3'>
-													<Input label='시작연도' name='startYear' type='number' value={careerForm.startYear} onChange={handleObjectChange(setCareerForm)} />
-													<Input label='종료연도' name='endYear' type='number' value={careerForm.endYear} onChange={handleObjectChange(setCareerForm)} />
-												</div>
-											</div>
-											<div className='flex justify-end'>
-												<button type='button' onClick={addCareer} className='rounded-xl border border-[#4f46e5] px-4 py-2 text-sm font-semibold text-[#4f46e5] hover:bg-indigo-50'>경력 추가</button>
-											</div>
-											<ListRows items={careers} render={(item) => `${item.companyName}${item.jobRole ? ` · ${item.jobRole}` : ''}${item.startYear ? ` (${item.startYear}` : ''}${item.endYear ? ` ~ ${item.endYear})` : item.startYear ? ')' : ''}`} onRemove={(index) => setCareers((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} emptyText='등록된 경력이 없습니다.' />
-										</div>
-									</div>
-								</SectionCard>
-							</>
+                                <SectionCard title='3. 자격증 정보' description='자격증명과 발급기관, 증빙 파일을 함께 저장합니다.' badge='자격 등록' variant='cert'>
+                                    <div className='grid gap-3 md:grid-cols-2'>
+                                        <Input label='자격증명' name='name' value={certificateTextForm.name} onChange={handleObjectChange(setCertificateTextForm)} placeholder='자격증명 입력' />
+                                        <Input label='발급기관' name='issuer' value={certificateTextForm.issuer} onChange={handleObjectChange(setCertificateTextForm)} placeholder='발급기관 입력' />
+                                    </div>
+                                    <div className='flex justify-end'>
+                                        <button type='button' onClick={addCertificateText} className='register-outline-button'>자격증 추가</button>
+                                    </div>
+                                    <DetailEntryList items={certificateTexts} tone='cert' getTitle={(item) => item.name} getSubtitle={(item) => item.issuer || '발급기관 정보 없음'} onRemove={(index) => setCertificateTexts((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} emptyText='등록된 자격증 정보가 없습니다.' />
+                                    <FileUploader label='자격증 파일' files={certificateFiles} onChange={appendStoredFiles(setCertificateFiles)} onRemove={(index) => setCertificateFiles((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} />
+                                </SectionCard>
+
+                                <SectionCard title='4. 근무 경력' description='회사와 직무 정보를 입력해 주세요. 경력이 많다면 여러 건을 추가할 수 있습니다.' badge='경력 등록'>
+                                    <div className='grid gap-3 md:grid-cols-2'>
+                                        <Input label='회사명' name='companyName' value={careerForm.companyName} onChange={handleObjectChange(setCareerForm)} placeholder='회사명 입력' />
+                                        <Input label='직무 분야' name='jobCategory' value={careerForm.jobCategory} onChange={handleObjectChange(setCareerForm)} placeholder='예) 영어 교육, 회화' />
+                                        <Input label='직무명' name='jobRole' value={careerForm.jobRole} onChange={handleObjectChange(setCareerForm)} placeholder='예) 강사, 연구원' />
+                                        <div className='grid grid-cols-2 gap-3'>
+                                            <Input label='시작년도' name='startYear' type='number' value={careerForm.startYear} onChange={handleObjectChange(setCareerForm)} placeholder='예) 2021' />
+                                            <Input label='종료년도' name='endYear' type='number' value={careerForm.endYear} onChange={handleObjectChange(setCareerForm)} placeholder='예) 2024' />
+                                        </div>
+                                    </div>
+                                    <div className='flex justify-end'>
+                                        <button type='button' onClick={addCareer} className='register-outline-button'>경력 추가</button>
+                                    </div>
+                                    <CareerEntryList items={careers} onRemove={(index) => setCareers((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} emptyText='등록된 경력 정보가 없습니다.' />
+                                </SectionCard>
+                            </>
+                        )}
+{currentStep === 2 && (
+							<SectionCard title='수업 구성 (과목 + 분야 + 수업당 가격)' description='과목과 분야를 선택하고 수업당 가격을 입력해 주세요.'>
+								<ChoiceGroup label='과목'>
+									{subjects.map((item) => (
+										<PillButton key={item.id} active={String(lessonForm.subjectId) === String(item.id)} onClick={() => setLessonForm((prev) => ({ ...prev, subjectId: String(item.id) }))}>
+											{item.name}
+										</PillButton>
+									))}
+								</ChoiceGroup>
+
+								<ChoiceGroup label='일반 분야'>
+									{generalFields.map((item) => (
+										<PillButton key={item.id} active={String(lessonForm.fieldId) === String(item.id)} onClick={() => setLessonForm((prev) => ({ ...prev, fieldId: String(item.id) }))}>
+											{item.name}
+										</PillButton>
+									))}
+								</ChoiceGroup>
+
+								<ChoiceGroup label='분야별'>
+									{domainFields.map((item) => (
+										<PillButton key={item.id} active={String(lessonForm.fieldId) === String(item.id)} onClick={() => setLessonForm((prev) => ({ ...prev, fieldId: String(item.id) }))}>
+											{item.name}
+										</PillButton>
+									))}
+									<p className='register-choice-note'>일반 분야/분야별 중 하나만 선택됩니다.</p>
+								</ChoiceGroup>
+
+								<div className='grid gap-3 md:grid-cols-[1fr_auto] md:items-end'>
+									<Input label='수업당 가격(원)' name='price' type='number' value={lessonForm.price} onChange={handleObjectChange(setLessonForm)} placeholder='예) 30000' min='0' step='1000' />
+									<button type='button' onClick={addLessonCard} className='register-outline-button register-outline-button--wide'>수업 추가</button>
+								</div>
+
+								<LessonChipList items={lessonCards} onRemove={removeLessonCard} emptyText='등록된 수업 카드가 없습니다.' />
+								<p className='register-choice-note'>추가된 수업이 실제 노출 및 결제 단가로 사용됩니다.</p>
+							</SectionCard>
 						)}
+                        {currentStep === 3 && (
+                            <div className='register-schedule-main'>
+                                <div className='register-schedule-heading'>
+                                    <div className='register-schedule-title register-schedule-title--main'>수업 가능 시간대</div>
+                                    <p className='register-schedule-sub register-schedule-sub--main'>요일별 기본 시간대를 설정하고, 캘린더에서 실제 수업 가능한 시간을 선택해 주세요.</p>
+                                </div>
 
-						{currentStep === 2 && (
-							<>
-								<SectionCard title='활동 분야' description='최소 1개 이상의 활동 분야를 선택해 주세요.'>
-									<div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
-										{fields.map((field) => (
-											<label key={field.id} className='flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm'>
-												<input type='checkbox' checked={selectedFieldIds.includes(field.id)} onChange={() => setSelectedFieldIds((prev) => prev.includes(field.id) ? prev.filter((id) => id !== field.id) : [...prev, field.id])} />
-												<span>{field.name}</span>
-											</label>
-										))}
-									</div>
-								</SectionCard>
+                                <div className='register-schedule-block'>
+                                    <div className='register-schedule-title'>기본 수업 가능 시간대</div>
+                                    <p className='register-schedule-sub'>요일별로 여러 구간을 추가할 수 있습니다. 예: 08:00~09:30, 20:00~23:30</p>
+                                    <div className='register-day-range-grid'>
+                                        {groupedTimeRanges.map((day) => (
+                                            <div key={day.value} className='register-day-range-card'>
+                                                <div className='register-day-range-head'>
+                                                    <div className='register-day-range-name'>{day.label}</div>
+                                                    <button type='button' onClick={() => addTimeRangeForDay(day.value)} className='register-base-range-add'>시간대 추가</button>
+                                                </div>
+                                                {day.ranges.length ? (
+                                                    <div className='register-day-range-list'>
+                                                        {day.ranges.map((range, rangeIndex) => (
+                                                            <div key={`${day.value}-${rangeIndex}`} className='register-day-range-item'>
+                                                                <input
+                                                                    type='time'
+                                                                    value={range.startTime}
+                                                                    onChange={(event) => updateTimeRangeForDay(day.value, rangeIndex, 'startTime', event.target.value)}
+                                                                    className='register-time-input'
+                                                                />
+                                                                <span className='register-time-sep'>~</span>
+                                                                <input
+                                                                    type='time'
+                                                                    value={range.endTime}
+                                                                    onChange={(event) => updateTimeRangeForDay(day.value, rangeIndex, 'endTime', event.target.value)}
+                                                                    className='register-time-input'
+                                                                />
+                                                                <button type='button' onClick={() => removeTimeRangeForDay(day.value, rangeIndex)} className='register-base-range-remove'>삭제</button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className='register-day-range-empty'>설정된 시간대 없음</div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className='register-schedule-footnote'>설정된 시간대만 캘린더에 표시됩니다.</p>
+                                </div>
 
-								<SectionCard title='수업 카드' description='과목, 분야, 가격을 조합해 여러 개의 수업 카드를 추가할 수 있습니다.'>
-									<div className='grid gap-3 md:grid-cols-3'>
-										<Select label='과목' name='subjectId' value={lessonForm.subjectId} onChange={handleObjectChange(setLessonForm)} options={subjects.map((item) => ({ value: item.id, label: item.name }))} placeholder='과목 선택' />
-										<Select label='분야' name='fieldId' value={lessonForm.fieldId} onChange={handleObjectChange(setLessonForm)} options={fields.map((item) => ({ value: item.id, label: item.name }))} placeholder='분야 선택' />
-										<Input label='가격(원)' name='price' type='number' value={lessonForm.price} onChange={handleObjectChange(setLessonForm)} />
-									</div>
-									<div className='flex justify-end'>
-										<button type='button' onClick={addLessonCard} className='rounded-xl border border-[#4f46e5] px-4 py-2 text-sm font-semibold text-[#4f46e5] hover:bg-indigo-50'>수업 카드 추가</button>
-									</div>
-									<ListRows items={lessonCards} render={(item) => `${item.subjectName} · ${item.fieldName} · ${Number(item.price).toLocaleString('ko-KR')}원`} onRemove={(index) => setLessonCards((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} emptyText='등록된 수업 카드가 없습니다.' />
-								</SectionCard>
-							</>
-						)}
+                                <div className='register-schedule-block register-schedule-block--white'>
+                                    <div className='register-schedule-title'>주간 캘린더</div>
+                                    <p className='register-schedule-sub'>가능한 시간을 클릭해 선택 또는 해제해 주세요.</p>
+                                    <div className='mb-3 flex flex-wrap items-center gap-2'>
+                                        <div className='tc-toolbar'>
+                                            <button type='button' className='tc-iconbtn' onClick={goToPreviousWeek} aria-label='이전 주'>‹</button>
+                                            <div className='tc-range'>{weekRangeLabel}</div>
+                                            <button type='button' className='tc-iconbtn' onClick={goToNextWeek} aria-label='다음 주'>›</button>
+                                        </div>
+                                    </div>
 
-						{currentStep === 3 && (
-							<>
-								<SectionCard title='기본 수업 가능 시간' description='요일별 기본 시간대를 저장합니다.'>
-									<div className='space-y-3'>
-										{timeRanges.map((item, index) => (
-											<div key={`${item.dayOfWeek}-${index}`} className='grid gap-2 rounded-xl border border-slate-200 p-3 md:grid-cols-[1fr_1fr_1fr_auto]'>
-												<Select label='요일' name='dayOfWeek' value={item.dayOfWeek} onChange={(event) => setTimeRanges((prev) => prev.map((range, currentIndex) => currentIndex === index ? { ...range, dayOfWeek: event.target.value } : range))} options={DAY_OPTIONS.map((day) => ({ value: day.value, label: day.label }))} placeholder='요일 선택' />
-												<Input label='시작' type='time' value={item.startTime} onChange={(event) => setTimeRanges((prev) => prev.map((range, currentIndex) => currentIndex === index ? { ...range, startTime: event.target.value } : range))} />
-												<Input label='종료' type='time' value={item.endTime} onChange={(event) => setTimeRanges((prev) => prev.map((range, currentIndex) => currentIndex === index ? { ...range, endTime: event.target.value } : range))} />
-												<button type='button' onClick={() => setTimeRanges((prev) => prev.length === 1 ? prev : prev.filter((_, currentIndex) => currentIndex !== index))} className='mt-6 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50'>삭제</button>
-											</div>
-										))}
-										<button type='button' onClick={() => setTimeRanges((prev) => [...prev, makeEmptyTimeRange()])} className='rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50'>시간대 추가</button>
-									</div>
-								</SectionCard>
+                                    <div className='weekly_calendar_wrap'>
+                                        <div className='weekly_head'>
+                                            <ul className='dayHead'>
+                                                {calendarDays.map((day) => (
+                                                    <li key={formatDateOnly(day)}>
+                                                        <div className='head_in'>
+                                                            <p className='dayTit fw-bold'>{KOR_DAY_LABELS[day.getDay()]}</p>
+                                                            <p className='dayDate en'>{formatCalendarDay(day)}</p>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div className='weekly_con'>
+                                            <ul className='dayCon'>
+                                                {calendarDays.map((day, index) => (
+                                                    <li key={formatDateOnly(day)}>
+                                                        <div className='con_in'>
+                                                            {calendarSlotsByDay[index].length ? calendarSlotsByDay[index].map((slot) => {
+                                                                const endTime = addMinutesToTime(slot, 30)
+                                                                const slotKey = buildAvailabilityKey(formatDateOnly(day), slot, endTime)
+                                                                const isSelected = availabilityKeySet.has(slotKey)
+                                                                return (
+                                                                    <div key={slotKey} className={`sch_time ${isSelected ? 'selected' : ''}`.trim()}>
+                                                                        <button type='button' onClick={() => toggleAvailabilitySlot(day, slot)}>{slot}</button>
+                                                                    </div>
+                                                                )
+                                                            }) : (
+                                                                <div className='register-calendar-empty-col'>시간 없음</div>
+                                                            )}
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
 
-								<SectionCard title='실제 수업 가능 슬롯' description='날짜별 실제 예약 가능 시간을 추가합니다.'>
-									<div className='grid gap-3 md:grid-cols-3'>
-										<Input label='날짜' type='date' name='date' value={availabilityForm.date} onChange={handleObjectChange(setAvailabilityForm)} />
-										<Input label='시작' type='time' name='startTime' value={availabilityForm.startTime} onChange={handleObjectChange(setAvailabilityForm)} />
-										<Input label='종료' type='time' name='endTime' value={availabilityForm.endTime} onChange={handleObjectChange(setAvailabilityForm)} />
-									</div>
-									<div className='flex justify-end'>
-										<button type='button' onClick={addAvailabilitySlot} className='rounded-xl border border-[#4f46e5] px-4 py-2 text-sm font-semibold text-[#4f46e5] hover:bg-indigo-50'>슬롯 추가</button>
-									</div>
-									<ListRows items={availabilitySlots} render={(item) => `${item.date} · ${item.startTime} ~ ${item.endTime}`} onRemove={(index) => setAvailabilitySlots((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} emptyText='등록된 가능 슬롯이 없습니다.' />
-								</SectionCard>
-							</>
-						)}
+                                    <div className='mt-4 flex flex-wrap items-center gap-2'>
+                                        <button type='button' className='register-outline-button' onClick={applyCurrentWeekPattern}>
+                                            <span className='text-base leading-none'>↻</span>
+                                            <span>이번 주 설정을 9주까지 적용</span>
+                                        </button>
+                                        <small className='text-sm text-slate-500'>현재 주의 패턴을 앞으로 9주간 반복합니다.</small>
+                                    </div>
 
+                                    <div className='register-slot-summary'>
+                                        <div className='register-slot-summary-head'>
+                                            <p className='register-slot-summary-title'>이번 주 선택 슬롯</p>
+                                            <span className='register-slot-summary-count'>{currentWeekAvailability.length}개 선택</span>
+                                        </div>
+                                        {currentWeekAvailability.length ? (
+                                            <div className='register-slot-summary-list'>
+                                                {currentWeekAvailability.map((item) => (
+                                                    <span key={buildAvailabilityKey(item.date, item.startTime, item.endTime)} className='register-slot-badge'>
+                                                        {formatCalendarDay(new Date(`${item.date}T00:00:00`))} · {item.startTime} ~ {item.endTime}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className='register-empty'>이번 주에 선택된 슬롯이 없습니다.</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className='register-tip-box'>
+                                    <div className='register-tip-icon'>i</div>
+                                    <div>
+                                        <div className='register-tip-title'>팁: 예약률을 높이려면</div>
+                                        <p className='register-tip-text'>가능한 시간대를 다양하게 설정하면 학생들의 예약 확률이 높아집니다.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 						{error && <p className='text-sm font-semibold text-red-500'>{error}</p>}
 						{success && <p className='text-sm font-semibold text-emerald-600'>{success}</p>}
-
-						<div className='flex flex-wrap justify-between gap-2'>
-							<Link to={prevPath} className='rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50'>이전</Link>
-							<div className='flex gap-2'>
-								{currentStep === 0 && <button type='button' onClick={clearRegisterStorage} className='rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50'>임시저장 초기화</button>}
-								<button type='submit' disabled={submitting} className='rounded-xl bg-[#4f46e5] px-5 py-2 text-sm font-semibold text-white hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60'>
-									{submitting ? '처리 중...' : currentStep === 3 ? '튜터 등록 완료' : '다음 단계'}
-								</button>
-							</div>
+						<div className={`register-step-nav ${currentStep === 0 ? 'is-single' : ''}`}>
+							{currentStep > 0 && (
+								<Link to={prevPath} className={`register-prev-button ${currentStep === 3 ? 'is-outline' : ''}`}>
+									이전
+								</Link>
+							)}
+							<button
+								type='submit'
+								disabled={submitting}
+								className={`register-submit-button ${currentStep === 0 ? 'is-full' : ''} ${currentStep === 3 ? 'is-complete' : ''}`.trim()}
+							>
+								{submitting ? '처리 중...' : currentStep === 3 ? '회원가입 완료' : '다음 단계로'}
+							</button>
 						</div>
 					</form>
 				</div>
@@ -743,69 +1096,137 @@ const TutorRegisterContent = () => {
 	)
 }
 
-const SectionCard = ({ title, description, children }) => (
-	<div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
-		<div className='mb-3'>
-			<h3 className='text-base font-bold text-slate-900'>{title}</h3>
-			<p className='mt-1 text-sm text-slate-500'>{description}</p>
-		</div>
-		<div className='space-y-4'>{children}</div>
-	</div>
+const SectionCard = ({ title, description, children, badge = null, variant = 'default' }) => (
+  <div className={`register-section-card ${variant !== 'default' ? `register-section-card--${variant}` : ''}`}>
+    <div className='register-section-head'>
+      <div>
+        <h3 className='register-section-title'>{title}</h3>
+        <p className='register-section-desc'>{description}</p>
+      </div>
+      {badge ? <span className='register-section-badge'>{badge}</span> : null}
+    </div>
+    <div className='register-section-body'>{children}</div>
+  </div>
 )
 
-const Input = ({ label, name, value, onChange, type = 'text', required = false, disabled = false }) => (
-	<label className='block'>
-		{label && <span className='mb-1 block text-sm font-semibold text-slate-700'>{label}</span>}
-		<input type={type} name={name} value={value} onChange={onChange} required={required} disabled={disabled} className='w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-[#4f46e5] focus:outline-none disabled:bg-slate-100' />
-	</label>
+const ChoiceGroup = ({ label, children }) => (
+  <div className='register-choice-group'>
+    <label className='register-choice-label'>{label}</label>
+    <div className='register-pill-wrap'>{children}</div>
+  </div>
 )
 
-const TextArea = ({ label, name, value, onChange, rows = 3 }) => (
-	<label className='block'>
-		<span className='mb-1 block text-sm font-semibold text-slate-700'>{label}</span>
-		<textarea name={name} value={value} onChange={onChange} rows={rows} className='w-full resize-y rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-[#4f46e5] focus:outline-none' />
-	</label>
+const PillButton = ({ active, children, onClick }) => (
+  <button type='button' onClick={onClick} className={`register-pill ${active ? 'is-active' : ''}`}>
+    {children}
+  </button>
+)
+
+const Input = ({ label, name, value, onChange, type = 'text', required = false, disabled = false, placeholder = '', min, step }) => (
+  <label className='block'>
+    {label && <span className='mb-1 block text-sm font-semibold text-slate-700'>{label}</span>}
+    <input type={type} name={name} value={value} onChange={onChange} required={required} disabled={disabled} placeholder={placeholder} min={min} step={step} className='w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-[#2563eb] focus:outline-none focus:ring-4 focus:ring-[rgba(37,99,235,0.15)] disabled:bg-slate-100' />
+  </label>
+)
+
+const TextArea = ({ label, name, value, onChange, rows = 3, placeholder = '' }) => (
+  <label className='block'>
+    <span className='mb-1 block text-sm font-semibold text-slate-700'>{label}</span>
+    <textarea name={name} value={value} onChange={onChange} rows={rows} placeholder={placeholder} className='w-full resize-y rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-[#2563eb] focus:outline-none focus:ring-4 focus:ring-[rgba(37,99,235,0.15)]' />
+  </label>
 )
 
 const Select = ({ label, name, value, onChange, options, placeholder }) => (
-	<label className='block'>
-		{label && <span className='mb-1 block text-sm font-semibold text-slate-700'>{label}</span>}
-		<select name={name} value={value} onChange={onChange} className='w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-[#4f46e5] focus:outline-none'>
-			<option value=''>{placeholder}</option>
-			{options.map((option) => (
-				<option key={option.value} value={option.value}>{option.label}</option>
-			))}
-		</select>
-	</label>
+  <label className='block'>
+    {label && <span className='mb-1 block text-sm font-semibold text-slate-700'>{label}</span>}
+    <select name={name} value={value} onChange={onChange} className='w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-[#4f46e5] focus:outline-none focus:ring-4 focus:ring-[rgba(79,70,229,0.15)]'>
+      <option value=''>{placeholder}</option>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>{option.label}</option>
+      ))}
+    </select>
+  </label>
 )
 
-const ListRows = ({ items, render, onRemove, emptyText }) => (
-	items.length ? (
-		<div className='space-y-2'>
-			{items.map((item, index) => (
-				<div key={`${render(item)}-${index}`} className='flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2'>
-					<p className='text-sm text-slate-700'>{render(item)}</p>
-					<button type='button' onClick={() => onRemove(index)} className='text-xs font-semibold text-red-500'>삭제</button>
-				</div>
-			))}
-		</div>
-	) : <p className='rounded-xl border border-dashed border-slate-300 px-3 py-4 text-sm text-slate-500'>{emptyText}</p>
+const DetailEntryList = ({ items, tone = 'education', getTitle, getSubtitle, onRemove, emptyText }) => (
+  items.length ? (
+    <div className='register-detail-list'>
+      {items.map((item, index) => (
+        <div key={`${getTitle(item)}-${index}`} className={`register-detail-card register-detail-card--${tone}`}>
+          <div className={`register-detail-icon register-detail-icon--${tone}`}>{tone === 'education' ? '학' : tone === 'degree' ? '위' : '증'}</div>
+          <div className='register-detail-main'>
+            <p className='register-detail-title'>{getTitle(item)}</p>
+            <p className='register-detail-sub'>{getSubtitle(item)}</p>
+          </div>
+          <button type='button' onClick={() => onRemove(index)} className='register-detail-remove'>삭제</button>
+        </div>
+      ))}
+    </div>
+  ) : <p className='register-empty'>{emptyText}</p>
+)
+
+const CareerEntryList = ({ items, onRemove, emptyText }) => (
+  items.length ? (
+    <div className='register-career-list'>
+      {items.map((item, index) => (
+        <div key={`${item.companyName}-${item.jobRole}-${index}`} className='register-career-card'>
+          <div className='register-career-year-col'>
+            <div className='register-career-year-title'>기간</div>
+            <div className='register-career-year-value'>{item.startYear || '-'} ~ {item.endYear || '현재'}</div>
+          </div>
+          <div className='register-career-main-col'>
+            <div className='register-career-company'>{item.companyName || '회사명 없음'}</div>
+            <div className='register-career-role'>{[item.jobCategory, item.jobRole].filter(Boolean).join(' · ') || '직무 정보 없음'}</div>
+          </div>
+          <button type='button' onClick={() => onRemove(index)} className='register-career-remove'>삭제</button>
+        </div>
+      ))}
+    </div>
+  ) : <p className='register-empty'>{emptyText}</p>
+)
+const LessonChipList = ({ items, onRemove, emptyText }) => (
+  items.length ? (
+    <div className='register-chip-list'>
+      {items.map((item, index) => (
+        <div key={`${item.subjectName}-${item.fieldName}-${index}`} className='register-chip'>
+          <div className='register-chip-content'>
+            <span className='register-chip-label'>{item.subjectName} / {item.fieldName}</span>
+            <span className='register-chip-sub'>{Number(item.price).toLocaleString('ko-KR')}원</span>
+          </div>
+          <button type='button' onClick={() => onRemove(index)} className='register-chip-remove' aria-label='삭제'>×</button>
+        </div>
+      ))}
+    </div>
+  ) : <p className='register-empty'>{emptyText}</p>
 )
 
 const FileUploader = ({ label, files, onChange, onRemove }) => (
-	<div className='rounded-xl border border-dashed border-slate-300 bg-white p-4'>
-		<div className='flex flex-wrap items-center justify-between gap-3'>
-			<div>
-				<p className='text-sm font-semibold text-slate-900'>{label}</p>
-				<p className='text-xs text-slate-500'>PDF, JPG, PNG 파일을 임시 저장한 뒤 최종 단계에서 업로드합니다.</p>
-			</div>
-			<label className='cursor-pointer rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50'>
-				파일 선택
-				<input type='file' multiple accept='.pdf,.jpg,.jpeg,.png' className='hidden' onChange={onChange} />
-			</label>
-		</div>
-		<ListRows items={files} render={(item) => `${item.name} · ${Math.round((item.size || 0) / 1024)}KB`} onRemove={onRemove} emptyText='선택된 파일이 없습니다.' />
-	</div>
+  <div className='register-upload-panel'>
+    <div className='register-upload-head'>
+      <div>
+        <p className='register-upload-title'>{label}</p>
+        <p className='register-upload-sub'>PDF, JPG, PNG 파일을 여러 개 업로드할 수 있습니다.</p>
+      </div>
+      <label className='register-outline-button'>
+        파일 선택
+        <input type='file' multiple accept='.pdf,.jpg,.jpeg,.png' className='hidden' onChange={onChange} />
+      </label>
+    </div>
+    {files.length ? (
+      <div className='register-file-list-card'>
+        {files.map((item, index) => (
+          <div key={`${item.name}-${index}`} className='register-file-row'>
+            <div className='register-file-main'>
+              <span className='register-file-name'>{item.name}</span>
+              <span className='register-file-meta'>{Math.max(1, Math.round((item.size || 0) / 1024))}KB</span>
+            </div>
+            <div className='register-file-actions'>
+              <button type='button' onClick={() => onRemove(index)} className='register-file-remove'>삭제</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : <p className='register-empty'>업로드된 파일이 없습니다.</p>}
+  </div>
 )
-
 export default TutorRegisterContent

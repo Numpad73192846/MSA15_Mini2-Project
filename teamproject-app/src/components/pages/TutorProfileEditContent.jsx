@@ -1,19 +1,21 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ArrowLeft, Banknote, BookOpen, Briefcase, Calendar, FileText, FileUp, Info, Shield, User, Video } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Layout from '../common/Layout'
 import api from '../../services/api'
 import useAuth from '../../utils/hooks/useAuth'
+import '../../styles/tutor-profile-edit.css'
 
 const SECTION_ITEMS = [
-	{ key: 'basic', label: '기본 정보' },
-	{ key: 'profile', label: '프로필' },
-	{ key: 'employment', label: '근무경력' },
-	{ key: 'account', label: '계좌 정보' },
-	{ key: 'documents', label: '서류 업로드' },
-	{ key: 'lessons', label: '수업관리' },
-	{ key: 'schedule', label: '스케줄 관리' },
-	{ key: 'zoom', label: 'Zoom 연동' },
-	{ key: 'security', label: '보안' },
+  { key: 'basic', label: '기본 정보', icon: User },
+  { key: 'profile', label: '프로필', icon: FileText },
+  { key: 'employment', label: '근무경력', icon: Briefcase },
+  { key: 'account', label: '계좌 정보', icon: Banknote },
+  { key: 'documents', label: '서류 업로드', icon: FileUp },
+  { key: 'lessons', label: '수업관리', icon: BookOpen },
+  { key: 'schedule', label: '스케줄 관리', icon: Calendar },
+  { key: 'zoom', label: 'Zoom 연동', icon: Video },
+  { key: 'security', label: '보안', icon: Shield },
 ]
 
 const FORM_SAVE_SECTIONS = new Set(['basic', 'profile', 'employment', 'account', 'documents', 'zoom', 'security'])
@@ -134,13 +136,12 @@ const parseCertificateText = (value) => {
 
 const normalizeLessonItem = (item = {}) => ({
 	id: item.id || '',
-	subjectId: item.subjectId || '',
-	fieldId: item.fieldId || '',
+	subjectId: item.subjectId === null || item.subjectId === undefined ? '' : String(item.subjectId),
+	fieldId: item.fieldId === null || item.fieldId === undefined ? '' : String(item.fieldId),
 	price: item.price === null || item.price === undefined ? '' : String(item.price),
 	description: item.description || '',
 	title: item.title || '',
 })
-
 const formatBytes = (value) => {
 	const size = Number(value || 0)
 	if (!size) return '0 B'
@@ -155,6 +156,15 @@ const getDocumentStatus = (doc) => {
 	return '검토 대기'
 }
 
+const normalizeZoomUrl = (value) => {
+	const trimmed = String(value || '').trim()
+	if (!trimmed) return ''
+	if (/^https?:\/\//i.test(trimmed)) return trimmed
+	if (trimmed.startsWith('zoom.us/') || trimmed.startsWith('www.zoom.us/')) {
+		return `https://${trimmed}`
+	}
+	return trimmed
+}
 const TutorProfileEdit = () => {
 	const navigate = useNavigate()
 	const location = useLocation()
@@ -370,15 +380,11 @@ const TutorProfileEdit = () => {
 		}
 	}, [activeSection])
 
-	const subjectMap = useMemo(() => new Map(subjectOptions.map((item) => [item.id, item.name])), [subjectOptions])
-	const fieldMap = useMemo(() => new Map(fieldOptions.map((item) => [item.id, item.name])), [fieldOptions])
-	const fieldSelectOptions = useMemo(
-		() => fieldOptions.map((item) => ({
-			value: item.id,
-			label: item.category === 'DOMAIN' ? `${item.name} (분야별)` : `${item.name} (일반)`,
-		})),
-		[fieldOptions]
-	)
+	const subjectMap = useMemo(() => new Map(subjectOptions.map((item) => [String(item.id), item.name])), [subjectOptions])
+	const fieldMap = useMemo(() => new Map(fieldOptions.map((item) => [String(item.id), item.name])), [fieldOptions])
+	const generalFieldOptions = useMemo(() => fieldOptions.filter((item) => item.category !== 'DOMAIN'), [fieldOptions])
+	const domainFieldOptions = useMemo(() => fieldOptions.filter((item) => item.category === 'DOMAIN'), [fieldOptions])
+	const normalizedZoomUrl = useMemo(() => normalizeZoomUrl(form.defaultZoomUrl), [form.defaultZoomUrl])
 
 	const handleSectionChange = (sectionKey) => {
 		setActiveSection(sectionKey)
@@ -695,7 +701,7 @@ const TutorProfileEdit = () => {
 
 	return (
 		<Layout>
-			<section className='bg-[#f8fafc] py-6'>
+			<section className='profile-edit-page bg-[#f8fafc] py-6'>
 				<div className='mx-auto w-full max-w-[1140px] px-3'>
 					<div className='mb-4 flex items-end justify-between'>
 						<div>
@@ -703,13 +709,14 @@ const TutorProfileEdit = () => {
 							<div className='text-sm text-slate-500'>튜터 정보를 수정하세요</div>
 						</div>
 						<Link to='/tutor/mypage' className='inline-flex h-[31px] items-center rounded-full border border-slate-300 px-4 text-xs font-semibold text-slate-700 hover:bg-slate-50'>
-							마이페이지로
-						</Link>
+            <ArrowLeft className='mr-1 h-3.5 w-3.5' />
+            마이페이지로
+          </Link>
 					</div>
 
-					<div className='grid gap-6 lg:grid-cols-[280px_1fr]'>
-						<aside className='lg:sticky lg:top-[90px] lg:h-fit'>
-							<div className='rounded-[16px] border border-[#e5e7eb] bg-white p-4 shadow-sm'>
+					<div className='profile-edit-shell grid gap-6 lg:grid-cols-[280px_1fr]'>
+						<aside className='profile-edit-sidebar lg:sticky lg:top-[90px] lg:h-fit'>
+							<div className='profile-edit-card rounded-[16px] border border-[#e5e7eb] bg-white p-4 shadow-sm'>
 								<div className='mb-3 flex items-center gap-3'>
 									<div className='flex h-[60px] w-[60px] items-center justify-center overflow-hidden rounded-full bg-[#4f46e5] text-xl font-bold text-white'>
 										{previewImg ? <img src={previewImg} alt='프로필' className='h-full w-full object-cover' /> : profileInitial}
@@ -722,31 +729,38 @@ const TutorProfileEdit = () => {
 
 								<div className='my-3 h-px bg-slate-200' />
 
-								<div className='grid gap-1.5'>
-									{SECTION_ITEMS.map((item) => (
-										<button
-											key={item.key}
-											type='button'
-											onClick={() => handleSectionChange(item.key)}
-											className={`rounded-xl px-3 py-3 text-left text-sm font-semibold transition ${activeSection === item.key ? 'bg-[#4f46e5] text-white' : 'text-slate-700 hover:bg-slate-100'}`}
-										>
-											{item.label}
-										</button>
-									))}
-								</div>
-							</div>
+								<div className='profile-edit-menu grid gap-1.5'>
+              {SECTION_ITEMS.map((item) => {
+                const Icon = item.icon
+                return (
+                  <button
+                    key={item.key}
+                    type='button'
+                    onClick={() => handleSectionChange(item.key)}
+                    className={activeSection === item.key ? 'profile-edit-menu-item is-active' : 'profile-edit-menu-item'}
+                  >
+                    <Icon className='h-[18px] w-[18px] shrink-0' />
+                    <span>{item.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
-							<div className='mt-3 rounded-[16px] border border-[#e5e7eb] bg-white p-3 text-xs text-slate-500 shadow-sm'>
-								기능 연결이 완료된 섹션부터 순서대로 저장할 수 있습니다.
-							</div>
-						</aside>
+          <div className='profile-edit-card mt-3 rounded-[16px] border border-[#e5e7eb] bg-white p-3 text-xs text-slate-500 shadow-sm'>
+            <div className='flex items-start gap-2'>
+              <Info className='mt-0.5 h-4 w-4 shrink-0 text-slate-400' />
+              <span>정보 수정 후 각 섹션의 저장 버튼을 눌러주세요.</span>
+            </div>
+          </div>
+        </aside>
 
 						<main>
-							<form onSubmit={handleSubmit} className='space-y-4 rounded-[16px] border border-[#e5e7eb] bg-white p-6 shadow-sm'>
-								<div>
-									<h3 className='text-lg font-extrabold text-slate-900'>{sectionMeta.title}</h3>
-									<p className='mt-1 text-sm text-slate-500'>{sectionMeta.desc}</p>
-								</div>
+							<form onSubmit={handleSubmit} className='profile-edit-card profile-edit-main-card space-y-4 rounded-[16px] border border-[#e5e7eb] bg-white p-6 shadow-sm'>
+            <div className='profile-edit-panel-header'>
+              <h3 className='text-lg font-extrabold text-slate-900'>{sectionMeta.title}</h3>
+              <p className='mt-1 text-sm text-slate-500'>{sectionMeta.desc}</p>
+            </div>
 
 								{activeSection === 'basic' && (
 									<div className='grid gap-4'>
@@ -793,14 +807,71 @@ const TutorProfileEdit = () => {
 									</div>
 								)}
 
-								{activeSection === 'zoom' && (
-									<div className='grid gap-3'>
-										<Input label='기본 Zoom URL' name='defaultZoomUrl' value={form.defaultZoomUrl} onChange={handleChange} />
+																{activeSection === 'zoom' && (
+									<div className='space-y-4'>
+										<div className='profile-edit-soft-card rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
+											<div className='profile-edit-info-box'>
+												<Info className='mt-0.5 h-4 w-4 shrink-0 text-[#4f46e5]' />
+												<div>
+													<div className='text-sm font-bold text-slate-900'>기본 Zoom 참여 링크</div>
+													<p className='mt-1 text-sm text-slate-600'>새 예약 생성 시 기본 참여 링크로 사용됩니다. 개인 회의실 링크나 고정 회의 링크를 입력하는 방식이 원본과 가장 가깝습니다.</p>
+												</div>
+											</div>
+											<div className='mt-4'>
+												<Input
+													label='기본 Zoom 참여 링크'
+													name='defaultZoomUrl'
+													type='url'
+													value={form.defaultZoomUrl}
+													onChange={handleChange}
+													placeholder='https://zoom.us/j/1234567890'
+												/>
+												<p className='mt-2 text-xs text-slate-500'>비밀번호, 대기실 설정 같은 보안 옵션은 Zoom 관리자 페이지에서 별도로 관리합니다.</p>
+											</div>
+											<div className='mt-4 flex flex-wrap gap-2'>
+												<button
+													type='button'
+													onClick={() => setForm((prev) => ({ ...prev, defaultZoomUrl: 'https://zoom.us/j/1234567890' }))}
+													className='inline-flex h-[34px] items-center rounded-md border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50'
+												>
+													예시 링크 채우기
+												</button>
+												<button
+													type='button'
+													onClick={() => setForm((prev) => ({ ...prev, defaultZoomUrl: '' }))}
+													className='inline-flex h-[34px] items-center rounded-md border border-slate-300 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-100'
+												>
+													입력 초기화
+												</button>
+											</div>
+											<div className='profile-edit-zoom-preview mt-4 rounded-[12px] border border-slate-200 bg-white p-4'>
+												<div className='text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500'>링크 미리보기</div>
+												{normalizedZoomUrl ? (
+													<a href={normalizedZoomUrl} target='_blank' rel='noreferrer' className='mt-2 block break-all text-sm font-semibold text-[#4f46e5] hover:underline'>
+														{normalizedZoomUrl}
+													</a>
+												) : (
+													<p className='mt-2 text-sm text-slate-500'>링크를 입력하면 여기에 표시됩니다.</p>
+												)}
+											</div>
+										</div>
+
+										<div className='profile-edit-soft-card rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
+											<div className='flex items-center gap-2 text-sm font-bold text-slate-900'>
+												<Shield className='h-4 w-4 text-emerald-600' />
+												<span>운영 가이드</span>
+											</div>
+											<ul className='profile-edit-guide-list mt-3 space-y-2 text-sm text-slate-600'>
+												<li>Zoom 링크를 바꿔도 이미 생성된 예약에는 즉시 반영되지 않을 수 있습니다.</li>
+												<li>실제 수업 전에 링크가 정상 접속되는지 한 번 확인하는 흐름이 원본 동작과 가장 비슷합니다.</li>
+												<li>보안 설정은 Zoom 서비스 측에서 별도로 관리해야 합니다.</li>
+											</ul>
+										</div>
 									</div>
 								)}
 
 								{activeSection === 'security' && (
-									<div className='rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
+									<div className='profile-edit-soft-card rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
 										<p className='mb-3 text-sm font-semibold text-slate-700'>새 비밀번호를 입력하면 변경됩니다.</p>
 										<div className='grid gap-3 md:grid-cols-2'>
 											<Input label='새 비밀번호' name='password' type='password' value={form.password} onChange={handleChange} />
@@ -811,7 +882,7 @@ const TutorProfileEdit = () => {
 
 								{activeSection === 'employment' && (
 									<div className='space-y-4'>
-										<div className='rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
+										<div className='profile-edit-soft-card rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
 											<div className='grid gap-3 md:grid-cols-2'>
 												<Input label='회사명' name='companyName' value={careerDraft.companyName} onChange={handleDraftChange(setCareerDraft)} />
 												<Input label='직무 카테고리' name='jobCategory' value={careerDraft.jobCategory} onChange={handleDraftChange(setCareerDraft)} />
@@ -833,16 +904,25 @@ const TutorProfileEdit = () => {
 										) : careers.length ? (
 											<div className='space-y-2'>
 												{careers.map((item, index) => (
-													<div key={`${item.companyName}-${index}`} className='flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-slate-200 bg-white px-4 py-3'>
-														<div>
-															<div className='font-semibold text-slate-900'>{item.companyName}</div>
-															<div className='mt-1 text-sm text-slate-500'>
-																{[item.jobCategory, item.jobRole].filter(Boolean).join(' · ') || '직무 정보 없음'}
-																{item.startYear ? ` · ${item.startYear}` : ''}
+													<div key={`${item.companyName}-${index}`} className='profile-edit-career-card'>
+														<div className='profile-edit-career-period'>
+															<div className='profile-edit-career-period-label'>기간</div>
+															<div className='profile-edit-career-period-value'>
+																{item.startYear || '-'}
 																{item.endYear ? ` - ${item.endYear}` : item.startYear ? ' - 재직 중' : ''}
 															</div>
 														</div>
-														<button type='button' onClick={() => setCareers((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} className='text-sm font-semibold text-red-500'>
+														<div className='profile-edit-career-main'>
+															<div className='profile-edit-career-company'>{item.companyName}</div>
+															<div className='profile-edit-career-role'>
+																{[item.jobCategory, item.jobRole].filter(Boolean).join(' / ') || '직무 정보 없음'}
+															</div>
+														</div>
+														<button
+															type='button'
+															onClick={() => setCareers((prev) => prev.filter((_, currentIndex) => currentIndex !== index))}
+															className='profile-edit-remove-btn'
+														>
 															삭제
 														</button>
 													</div>
@@ -853,13 +933,14 @@ const TutorProfileEdit = () => {
 										)}
 									</div>
 								)}
+
 								{activeSection === 'documents' && (
 									<div className='space-y-4'>
 										{documentsLoading ? (
 											<SectionLoading text='서류 정보를 불러오는 중입니다.' />
 										) : (
 											<>
-												<div className='rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
+												<div className='profile-edit-soft-card rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
 													<div className='mb-3'>
 														<h4 className='text-sm font-bold text-slate-900'>학력</h4>
 														<p className='mt-1 text-xs text-slate-500'>학교명과 기간을 저장한 뒤, 학력 증빙 파일을 업로드할 수 있습니다.</p>
@@ -876,21 +957,26 @@ const TutorProfileEdit = () => {
 													</div>
 													<div className='mt-4 space-y-2'>
 														{educations.length ? educations.map((item, index) => (
-															<div key={`${item.schoolName}-${index}`} className='flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-slate-200 bg-white px-4 py-3'>
-																<div>
-																	<div className='font-semibold text-slate-900'>{item.schoolName}</div>
-																	<div className='mt-1 text-sm text-slate-500'>
-																		{item.startYear || '-'}
-																		{item.graduatedYear ? ` - ${item.graduatedYear}` : ' - 재학/미입력'}
-																	</div>
-																</div>
-																<button type='button' onClick={() => setEducations((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} className='text-sm font-semibold text-red-500'>
-																	삭제
-																</button>
-															</div>
-														)) : <EmptyState text='등록된 학력 정보가 없습니다.' />}
+                                    <div key={`${item.schoolName}-${index}`} className='profile-edit-text-card profile-edit-text-card--education'>
+                                      <div className='profile-edit-text-icon'>학</div>
+                                      <div className='profile-edit-text-main'>
+                                        <div className='profile-edit-text-title'>{item.schoolName}</div>
+                                        <div className='profile-edit-text-sub'>
+                                          {item.startYear || '-'}
+                                          {item.graduatedYear ? ` - ${item.graduatedYear}` : ' - 재학/미입력'}
+                                        </div>
+                                      </div>
+                                      <button
+                                        type='button'
+                                        onClick={() => setEducations((prev) => prev.filter((_, currentIndex) => currentIndex !== index))}
+                                        className='profile-edit-remove-btn text-sm font-semibold text-red-500'
+                                      >
+                                        {'삭제'}
+                                      </button>
+                                    </div>
+                                  )) : <EmptyState text='등록된 학력 정보가 없습니다.' />}
 													</div>
-													<div className='mt-4 rounded-[12px] border border-dashed border-slate-300 bg-white p-4'>
+													<div className='profile-edit-upload-card mt-4 rounded-[12px] border border-dashed border-slate-300 bg-white p-4'>
 														<div className='flex flex-wrap items-center justify-between gap-3'>
 															<div>
 																<div className='text-sm font-semibold text-slate-900'>학력 증빙 파일</div>
@@ -906,7 +992,7 @@ const TutorProfileEdit = () => {
 													</div>
 												</div>
 
-												<div className='rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
+												<div className='profile-edit-soft-card rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
 													<div className='mb-3'>
 														<h4 className='text-sm font-bold text-slate-900'>학위</h4>
 														<p className='mt-1 text-xs text-slate-500'>학위명과 전공을 저장한 뒤, 학위 증빙 파일을 업로드할 수 있습니다.</p>
@@ -922,18 +1008,23 @@ const TutorProfileEdit = () => {
 													</div>
 													<div className='mt-4 space-y-2'>
 														{degrees.length ? degrees.map((item, index) => (
-															<div key={`${item.degreeName}-${index}`} className='flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-slate-200 bg-white px-4 py-3'>
-																<div>
-																	<div className='font-semibold text-slate-900'>{item.degreeName}</div>
-																	<div className='mt-1 text-sm text-slate-500'>{item.major || '전공 미입력'}</div>
-																</div>
-																<button type='button' onClick={() => setDegrees((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} className='text-sm font-semibold text-red-500'>
-																	삭제
-																</button>
-															</div>
-														)) : <EmptyState text='등록된 학위 정보가 없습니다.' />}
+                                    <div key={`${item.degreeName}-${index}`} className='profile-edit-text-card profile-edit-text-card--degree'>
+                                      <div className='profile-edit-text-icon'>위</div>
+                                      <div className='profile-edit-text-main'>
+                                        <div className='profile-edit-text-title'>{item.degreeName}</div>
+                                        <div className='profile-edit-text-sub'>{item.major || '전공 미입력'}</div>
+                                      </div>
+                                      <button
+                                        type='button'
+                                        onClick={() => setDegrees((prev) => prev.filter((_, currentIndex) => currentIndex !== index))}
+                                        className='profile-edit-remove-btn text-sm font-semibold text-red-500'
+                                      >
+                                        {'삭제'}
+                                      </button>
+                                    </div>
+                                  )) : <EmptyState text='등록된 학위 정보가 없습니다.' />}
 													</div>
-													<div className='mt-4 rounded-[12px] border border-dashed border-slate-300 bg-white p-4'>
+													<div className='profile-edit-upload-card mt-4 rounded-[12px] border border-dashed border-slate-300 bg-white p-4'>
 														<div className='flex flex-wrap items-center justify-between gap-3'>
 															<div>
 																<div className='text-sm font-semibold text-slate-900'>학위 증빙 파일</div>
@@ -949,7 +1040,7 @@ const TutorProfileEdit = () => {
 													</div>
 												</div>
 
-												<div className='rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
+												<div className='profile-edit-soft-card rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
 													<div className='mb-3'>
 														<h4 className='text-sm font-bold text-slate-900'>자격증</h4>
 														<p className='mt-1 text-xs text-slate-500'>자격증명 텍스트와 증빙 파일을 각각 관리할 수 있습니다.</p>
@@ -965,18 +1056,23 @@ const TutorProfileEdit = () => {
 													</div>
 													<div className='mt-4 space-y-2'>
 														{certificateTexts.length ? certificateTexts.map((item, index) => (
-															<div key={item.id || `${item.name}-${index}`} className='flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-slate-200 bg-white px-4 py-3'>
-																<div>
-																	<div className='font-semibold text-slate-900'>{item.name}</div>
-																	<div className='mt-1 text-sm text-slate-500'>{item.issuer || '발급기관 미입력'}</div>
-																</div>
-																<button type='button' onClick={() => setCertificateTexts((prev) => prev.filter((_, currentIndex) => currentIndex !== index))} className='text-sm font-semibold text-red-500'>
-																	삭제
-																</button>
-															</div>
-														)) : <EmptyState text='등록된 자격증 텍스트가 없습니다.' />}
+                                    <div key={item.id || `${item.name}-${index}`} className='profile-edit-text-card profile-edit-text-card--cert'>
+                                      <div className='profile-edit-text-icon'>증</div>
+                                      <div className='profile-edit-text-main'>
+                                        <div className='profile-edit-text-title'>{item.name}</div>
+                                        <div className='profile-edit-text-sub'>{item.issuer || '발급기관 미입력'}</div>
+                                      </div>
+                                      <button
+                                        type='button'
+                                        onClick={() => setCertificateTexts((prev) => prev.filter((_, currentIndex) => currentIndex !== index))}
+                                        className='profile-edit-remove-btn text-sm font-semibold text-red-500'
+                                      >
+                                        {'삭제'}
+                                      </button>
+                                    </div>
+                                  )) : <EmptyState text='등록된 자격증 텍스트가 없습니다.' />}
 													</div>
-													<div className='mt-4 rounded-[12px] border border-dashed border-slate-300 bg-white p-4'>
+													<div className='profile-edit-upload-card mt-4 rounded-[12px] border border-dashed border-slate-300 bg-white p-4'>
 														<div className='flex flex-wrap items-center justify-between gap-3'>
 															<div>
 																<div className='text-sm font-semibold text-slate-900'>자격증 증빙 파일</div>
@@ -996,59 +1092,128 @@ const TutorProfileEdit = () => {
 									</div>
 								)}
 
-								{activeSection === 'lessons' && (
+																{activeSection === 'lessons' && (
 									<div className='space-y-4'>
 										{lessonsLoading ? (
 											<SectionLoading text='수업 정보를 불러오는 중입니다.' />
 										) : (
 											<>
-												<div className='rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
-													<div className='grid gap-3 md:grid-cols-2'>
-														<Select
-															label='과목'
-															name='subjectId'
-															value={lessonDraft.subjectId}
-															onChange={handleDraftChange(setLessonDraft)}
-															options={subjectOptions.map((item) => ({ value: item.id, label: item.name }))}
-															placeholder='과목 선택'
-														/>
-														<Select
-															label='분야'
-															name='fieldId'
-															value={lessonDraft.fieldId}
-															onChange={handleDraftChange(setLessonDraft)}
-															options={fieldSelectOptions}
-															placeholder='분야 선택'
-														/>
-														<Input label='수업료(원)' name='price' type='number' value={lessonDraft.price} onChange={handleDraftChange(setLessonDraft)} />
-														<div className='md:col-span-2'>
-															<TextArea label='설명' name='description' value={lessonDraft.description} onChange={handleDraftChange(setLessonDraft)} rows={3} />
-														</div>
+												<div className='profile-edit-soft-card rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
+													<div className='mb-4'>
+														<h4 className='text-sm font-bold text-slate-900'>수업 카드 편집</h4>
+														<p className='mt-1 text-xs text-slate-500'>원본 화면처럼 과목과 분야를 먼저 고른 뒤 수업료와 설명을 입력합니다. 현재 React 화면에서는 저장 즉시 API에 반영됩니다.</p>
 													</div>
-													<div className='mt-3 flex justify-end gap-2'>
-														{lessonDraft.id && (
-															<button type='button' onClick={() => setLessonDraft(initialLessonForm)} className='inline-flex h-[38px] items-center rounded-md border border-slate-300 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50'>
-																수정 취소
-															</button>
-														)}
-														<button type='button' onClick={saveLesson} disabled={lessonSaving} className='inline-flex h-[38px] items-center rounded-md bg-[#4f46e5] px-5 text-sm font-semibold text-white hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-50'>
-															{lessonSaving ? '처리 중...' : lessonDraft.id ? '수업 수정' : '수업 추가'}
-														</button>
+
+													<div className='space-y-4'>
+														<div>
+															<div className='text-sm font-bold text-slate-900'>과목</div>
+															<div className='profile-edit-choice-group mt-3'>
+																{subjectOptions.map((item) => {
+																	const isActive = String(lessonDraft.subjectId) === String(item.id)
+																	return (
+																		<button
+																			key={item.id}
+																			type='button'
+																			onClick={() => setLessonDraft((prev) => ({ ...prev, subjectId: String(item.id) }))}
+																			className={isActive ? 'profile-edit-choice-button is-active' : 'profile-edit-choice-button'}
+																		>
+																			{item.name}
+																		</button>
+																	)
+																})}
+															</div>
+														</div>
+
+														<div>
+															<div className='text-sm font-bold text-slate-900'>일반 분야</div>
+															<div className='profile-edit-choice-group mt-3'>
+																{generalFieldOptions.map((item) => {
+																	const isActive = String(lessonDraft.fieldId) === String(item.id)
+																	return (
+																		<button
+																			key={item.id}
+																			type='button'
+																			onClick={() => setLessonDraft((prev) => ({ ...prev, fieldId: String(item.id) }))}
+																			className={isActive ? 'profile-edit-choice-button is-active' : 'profile-edit-choice-button'}
+																		>
+																			{item.name}
+																		</button>
+																	)
+																})}
+															</div>
+														</div>
+
+														<div>
+															<div className='text-sm font-bold text-slate-900'>분야별</div>
+															<div className='profile-edit-choice-group mt-3'>
+																{domainFieldOptions.map((item) => {
+																	const isActive = String(lessonDraft.fieldId) === String(item.id)
+																	return (
+																		<button
+																			key={item.id}
+																			type='button'
+																			onClick={() => setLessonDraft((prev) => ({ ...prev, fieldId: String(item.id) }))}
+																			className={isActive ? 'profile-edit-choice-button is-active' : 'profile-edit-choice-button'}
+																		>
+																			{item.name}
+																		</button>
+																	)
+																})}
+															</div>
+															<p className='profile-edit-helper-note mt-2 text-xs text-slate-500'>일반 분야와 분야별 중 하나만 선택하면 됩니다.</p>
+														</div>
+
+														<div className='grid gap-3 md:grid-cols-[minmax(0,220px)_1fr] md:items-end'>
+															<Input
+																label='수업료(원)'
+																name='price'
+																type='number'
+																value={lessonDraft.price}
+																onChange={handleDraftChange(setLessonDraft)}
+																placeholder='예: 30000'
+															/>
+															<div className='flex flex-wrap justify-end gap-2'>
+																{lessonDraft.id && (
+																	<button type='button' onClick={() => setLessonDraft(initialLessonForm)} className='inline-flex h-[38px] items-center rounded-md border border-slate-300 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50'>
+																		수정 취소
+																	</button>
+																)}
+																<button type='button' onClick={saveLesson} disabled={lessonSaving} className='inline-flex h-[38px] items-center rounded-md bg-[#4f46e5] px-5 text-sm font-semibold text-white hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-50'>
+																	{lessonSaving ? '처리 중...' : lessonDraft.id ? '수업 수정' : '수업 추가'}
+																</button>
+															</div>
+														</div>
+
+														<TextArea
+															label='설명 (선택)'
+															name='description'
+															value={lessonDraft.description}
+															onChange={handleDraftChange(setLessonDraft)}
+															rows={3}
+															placeholder='수업 설명을 입력하세요.'
+														/>
+
+														<div className='profile-edit-hint-box rounded-[12px] border border-dashed border-[#cbd5e1] bg-white px-4 py-3 text-sm text-slate-600'>
+															현재 선택: <span className='font-semibold text-slate-900'>{subjectMap.get(String(lessonDraft.subjectId)) || '과목 미선택'}</span>
+															{' / '}
+															<span className='font-semibold text-slate-900'>{fieldMap.get(String(lessonDraft.fieldId)) || '분야 미선택'}</span>
+															<span className='ml-2 text-xs text-slate-500'>저장 버튼을 누르면 즉시 반영됩니다.</span>
+														</div>
 													</div>
 												</div>
 
 												<div className='space-y-2'>
 													{lessons.length ? lessons.map((item) => (
-														<div key={item.id} className='flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-slate-200 bg-white px-4 py-3'>
-															<div>
-																<div className='font-semibold text-slate-900'>
-																	{subjectMap.get(item.subjectId) || item.title || '과목 미지정'}
-																	{fieldMap.get(item.fieldId) ? ` · ${fieldMap.get(item.fieldId)}` : ''}
+														<div key={item.id} className='profile-edit-list-card profile-edit-lesson-card'>
+															<div className='profile-edit-lesson-main'>
+																<div className='profile-edit-lesson-title'>
+																	{subjectMap.get(String(item.subjectId)) || item.title || '과목 미지정'}
+																	{fieldMap.get(String(item.fieldId)) ? ` · ${fieldMap.get(String(item.fieldId))}` : ''}
 																</div>
-																<div className='mt-1 text-sm text-slate-500'>{item.description || '설명 없음'}</div>
-																<div className='mt-1 text-sm font-semibold text-slate-700'>{Number(item.price || 0).toLocaleString('ko-KR')}원</div>
+																<div className='profile-edit-lesson-meta'>{item.description || '설명 없음'}</div>
+																<div className='profile-edit-lesson-price'>{Number(item.price || 0).toLocaleString('ko-KR')}원</div>
 															</div>
-															<div className='flex items-center gap-2'>
+															<div className='profile-edit-lesson-actions'>
 																<button type='button' onClick={() => setLessonDraft({ ...item })} className='inline-flex h-[36px] items-center rounded-md border border-slate-300 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50'>
 																	수정
 																</button>
@@ -1065,7 +1230,7 @@ const TutorProfileEdit = () => {
 								)}
 
 								{activeSection === 'schedule' && (
-									<div className='rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
+									<div className='profile-edit-soft-card rounded-[14px] border border-slate-200 bg-slate-50 p-4'>
 										<p className='mb-3 text-sm text-slate-600'>주간 스케줄 상세 편집은 별도 화면에서 관리합니다.</p>
 										<Link to='/tutor/schedule-edit' className='inline-flex h-[31px] items-center rounded-md bg-[#4f46e5] px-3 text-xs font-semibold text-white hover:bg-[#4338ca]'>
 											스케줄 편집으로 이동
@@ -1095,7 +1260,7 @@ const TutorProfileEdit = () => {
 	)
 }
 
-const Input = ({ label, name, value, onChange, type = 'text', required = false }) => (
+const Input = ({ label, name, value, onChange, type = 'text', required = false, placeholder = '' }) => (
 	<label className='block'>
 		<span className='mb-1 block text-sm font-semibold text-slate-700'>{label}</span>
 		<input
@@ -1104,12 +1269,12 @@ const Input = ({ label, name, value, onChange, type = 'text', required = false }
 			value={value}
 			onChange={onChange}
 			required={required}
+			placeholder={placeholder}
 			className='h-[38px] w-full rounded-md border border-[#ced4da] px-3 text-sm text-slate-800 focus:border-[#4f46e5] focus:outline-none focus:ring-4 focus:ring-[rgba(79,70,229,0.15)]'
 		/>
 	</label>
 )
-
-const TextArea = ({ label, name, value, onChange, rows = 3 }) => (
+const TextArea = ({ label, name, value, onChange, rows = 3, placeholder = '' }) => (
 	<label className='block'>
 		<span className='mb-1 block text-sm font-semibold text-slate-700'>{label}</span>
 		<textarea
@@ -1117,11 +1282,11 @@ const TextArea = ({ label, name, value, onChange, rows = 3 }) => (
 			value={value}
 			onChange={onChange}
 			rows={rows}
+			placeholder={placeholder}
 			className='w-full resize-y rounded-md border border-[#ced4da] px-3 py-2 text-sm text-slate-800 focus:border-[#4f46e5] focus:outline-none focus:ring-4 focus:ring-[rgba(79,70,229,0.15)]'
 		/>
 	</label>
 )
-
 const Select = ({ label, name, value, onChange, options, placeholder }) => (
 	<label className='block'>
 		<span className='mb-1 block text-sm font-semibold text-slate-700'>{label}</span>
@@ -1142,7 +1307,7 @@ const Select = ({ label, name, value, onChange, options, placeholder }) => (
 )
 
 const EmptyState = ({ text }) => (
-	<div className='rounded-[12px] border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-500'>
+	<div className='profile-edit-empty rounded-[12px] border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-500'>
 		{text}
 	</div>
 )
@@ -1155,44 +1320,46 @@ const SectionLoading = ({ text }) => (
 )
 
 const PendingFileList = ({ files, onRemove }) => {
-	if (!files.length) return null
+  if (!files.length) return null
 
-	return (
-		<div className='mt-4 space-y-2'>
-			{files.map((file, index) => (
-				<div key={`${file.name}-${index}`} className='flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-slate-200 bg-slate-50 px-4 py-3'>
-					<div>
-						<div className='font-semibold text-slate-900'>{file.name}</div>
-						<div className='mt-1 text-xs text-slate-500'>{formatBytes(file.size)}</div>
-					</div>
-					<button type='button' onClick={() => onRemove(index)} className='text-sm font-semibold text-red-500'>
-						제거
-					</button>
-				</div>
-			))}
-		</div>
-	)
+  return (
+    <div className='mt-4 space-y-2'>
+      {files.map((file, index) => (
+        <div key={`${file.name}-${index}`} className='profile-edit-file-card profile-edit-file-card--pending flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-slate-200 bg-slate-50 px-4 py-3'>
+          <div>
+            <div className='font-semibold text-slate-900'>{file.name}</div>
+            <div className='mt-1 text-xs text-slate-500'>{formatBytes(file.size)}</div>
+          </div>
+          <button type='button' onClick={() => onRemove(index)} className='profile-edit-remove-btn text-sm font-semibold text-red-500'>
+            {'제거'}
+          </button>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 const ExistingDocumentList = ({ items }) => {
-	if (!items.length) return null
+  if (!items.length) return null
 
-	return (
-		<div className='mt-4 space-y-2'>
-			{items.map((doc) => (
-				<div key={doc.id || doc.no} className='flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-slate-200 bg-slate-50 px-4 py-3'>
-					<div>
-						<a href={doc.filePath} target='_blank' rel='noreferrer' className='font-semibold text-[#4f46e5] hover:underline'>
-							{doc.originalName}
-						</a>
-						<div className='mt-1 text-xs text-slate-500'>
-							{getDocumentStatus(doc)} · {formatBytes(doc.fileSize)}
-						</div>
-					</div>
-				</div>
-			))}
-		</div>
-	)
+  return (
+    <div className='mt-4 space-y-2'>
+      {items.map((doc) => (
+        <div key={doc.id || doc.no} className='profile-edit-file-card flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-slate-200 bg-slate-50 px-4 py-3'>
+          <div>
+            <a href={doc.filePath} target='_blank' rel='noreferrer' className='font-semibold text-[#4f46e5] hover:underline'>
+              {doc.originalName}
+            </a>
+            <div className='mt-1 text-xs text-slate-500'>
+              {getDocumentStatus(doc)} {'·'} {formatBytes(doc.fileSize)}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export default TutorProfileEdit
+
+

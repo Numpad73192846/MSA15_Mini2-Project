@@ -1,0 +1,280 @@
+﻿.member-mypage-page .rounded-2xl,
+.member-mypage-page .rounded-xl,
+.member-mypage-page .rounded-lg {
+  border-radius: 0.375rem !important;
+}
+
+.member-mypage-page .member-mypage-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.member-mypage-page .member-mypage-tab {
+  margin-bottom: -1px;
+  border: 1px solid transparent;
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.5;
+  padding: 0.55rem 1rem;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.member-mypage-page .member-mypage-tab:hover {
+  color: #374151;
+}
+
+.member-mypage-page .member-mypage-tab.active {
+  border-color: #dee2e6 #dee2e6 #ffffff;
+  background: #ffffff;
+  color: #4f46e5;
+  font-weight: 700;
+}
+
+.member-mypage-page .member-message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.member-mypage-page .member-message-card {
+  border: 1px solid #e9edf5;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+  padding: 12px 14px;
+  transition: all 0.18s ease;
+}
+
+.member-mypage-page .member-message-card:hover {
+  transform: translateY(-1px);
+  border-color: #cdd9ff;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+}
+
+.member-mypage-page .member-message-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.member-mypage-page .member-message-left {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.member-mypage-page .member-message-avatar {
+  display: flex;
+  height: 42px;
+  width: 42px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  color: #1d4ed8;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.member-mypage-page .member-message-main {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.member-mypage-page .member-message-subject {
+  overflow: hidden;
+  max-width: 360px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-mypage-page .member-message-date {
+  white-space: nowrap;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.member-mypage-page .member-message-preview {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 2.6em;
+  word-break: break-word;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.member-mypage-page .tc-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+}
+
+.member-mypage-page .tc-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.member-mypage-page .tc-iconbtn svg {
+  width: 18px;
+  height: 18px;
+  stroke: #111827;
+  stroke-width: 2.2;
+  fill: none;
+}
+
+.member-mypage-page .tc-iconbtn:hover {
+  background: #f8fafc;
+  border-color: #dbe1ea;
+}
+
+.member-mypage-page .tc-range {
+  white-space: nowrap;
+  border-radius: 999px;
+  background: rgba(79, 70, 229, 0.1);
+  color: #4f46e5;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  padding: 6px 10px;
+}
+
+.member-mypage-page .weekly_calendar_wrap {
+  min-width: 700px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.member-mypage-page .weekly_head {
+  position: static;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.member-mypage-page .dayHead,
+.member-mypage-page .dayCon {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.member-mypage-page .dayHead > li,
+.member-mypage-page .dayCon > li {
+  min-width: 0;
+  border-right: 1px solid #eef1f6;
+}
+
+.member-mypage-page .dayHead > li:last-child,
+.member-mypage-page .dayCon > li:last-child {
+  border-right: none;
+}
+
+.member-mypage-page .dayHead > li {
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.member-mypage-page .head_in {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.member-mypage-page .dayTit {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.member-mypage-page .dayDate {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.7rem;
+}
+
+.member-mypage-page .dayCon {
+  max-height: none;
+  overflow-y: visible;
+  background: #fff;
+}
+
+.member-mypage-page .con_in {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 4px;
+}
+
+.member-mypage-page .sch_time button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  height: 24px;
+  padding: 0 4px;
+  transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+}
+
+.member-mypage-page .sch_time button:hover {
+  transform: scale(1.04);
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.member-mypage-page .member-weekly-hover-info {
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  background: #ffffff;
+  color: #6b7280;
+  font-size: 0.875rem;
+  padding: 0.6rem 0.9rem;
+}
+
+.member-mypage-page .member-weekly-hover-info.is-active {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+@media (max-width: 768px) {
+  .member-mypage-page .member-message-subject {
+    max-width: 200px;
+  }
+}
