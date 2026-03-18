@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.AdminInquiryMapper">
+
+    <insert id="insertInquiry">
+        INSERT INTO admin_inquiry (
+            id,
+            user_id,
+            category,
+            title,
+            contact_name,
+            contact_email,
+            contact_phone,
+            status
+        ) VALUES (
+            #{id},
+            #{userId},
+            #{category},
+            #{title},
+            #{contactName},
+            #{contactEmail},
+            #{contactPhone},
+            #{status}
+        )
+    </insert>
+
+    <insert id="insertInquiryMessage">
+        INSERT INTO admin_inquiry_message (
+            id,
+            inquiry_id,
+            sender_id,
+            sender_role,
+            content
+        ) VALUES (
+            #{id},
+            #{inquiryId},
+            #{senderId},
+            #{senderRole},
+            #{content}
+        )
+    </insert>
+
+    <select id="selectInquiryById" resultType="com.aloha.teamproject.dto.AdminInquiry">
+        SELECT ai.no,
+               ai.id,
+               ai.user_id AS userId,
+               u.name AS userName,
+               u.nickname AS userNickname,
+               ai.category,
+               ai.title,
+               ai.contact_name AS contactName,
+               ai.contact_email AS contactEmail,
+               ai.contact_phone AS contactPhone,
+               ai.status,
+               ai.created_at AS createdAt,
+               ai.updated_at AS updatedAt,
+               ai.closed_at AS closedAt
+        FROM admin_inquiry ai
+        JOIN users u ON u.id = ai.user_id
+        WHERE ai.id = #{inquiryId}
+        LIMIT 1
+    </select>
+
+    <select id="countInquiryOwner" resultType="int">
+        SELECT COUNT(*)
+        FROM admin_inquiry
+        WHERE id = #{inquiryId}
+          AND user_id = #{userId}
+    </select>
+
+    <select id="selectMyInquiries" resultType="com.aloha.teamproject.dto.AdminInquiry">
+        SELECT ai.no,
+               ai.id,
+               ai.user_id AS userId,
+               u.name AS userName,
+               u.nickname AS userNickname,
+               ai.category,
+               ai.title,
+               ai.contact_name AS contactName,
+               ai.contact_email AS contactEmail,
+               ai.contact_phone AS contactPhone,
+               ai.status,
+               ai.created_at AS createdAt,
+               ai.updated_at AS updatedAt,
+               ai.closed_at AS closedAt,
+               lm.content AS lastMessage,
+               lm.created_at AS lastMessageAt
+        FROM admin_inquiry ai
+        JOIN users u ON u.id = ai.user_id
+        LEFT JOIN (
+            SELECT m.inquiry_id,
+                   m.content,
+                   m.created_at
+            FROM admin_inquiry_message m
+            JOIN (
+                SELECT inquiry_id, MAX(no) AS max_no
+                FROM admin_inquiry_message
+                GROUP BY inquiry_id
+            ) mm ON mm.max_no = m.no
+        ) lm ON lm.inquiry_id = ai.id
+        WHERE ai.user_id = #{userId}
+        ORDER BY ai.created_at DESC
+        LIMIT 200
+    </select>
+
+    <select id="selectAdminInquiries" resultType="com.aloha.teamproject.dto.AdminInquiry">
+        SELECT ai.no,
+               ai.id,
+               ai.user_id AS userId,
+               u.name AS userName,
+               u.nickname AS userNickname,
+               ai.category,
+               ai.title,
+               ai.contact_name AS contactName,
+               ai.contact_email AS contactEmail,
+               ai.contact_phone AS contactPhone,
+               ai.status,
+               ai.created_at AS createdAt,
+               ai.updated_at AS updatedAt,
+               ai.closed_at AS closedAt,
+               lm.content AS lastMessage,
+               lm.created_at AS lastMessageAt
+        FROM admin_inquiry ai
+        JOIN users u ON u.id = ai.user_id
+        LEFT JOIN (
+            SELECT m.inquiry_id,
+                   m.content,
+                   m.created_at
+            FROM admin_inquiry_message m
+            JOIN (
+                SELECT inquiry_id, MAX(no) AS max_no
+                FROM admin_inquiry_message
+                GROUP BY inquiry_id
+            ) mm ON mm.max_no = m.no
+        ) lm ON lm.inquiry_id = ai.id
+        <where>
+            <if test="status != null and status != ''">
+                ai.status = #{status}
+            </if>
+            <if test="category != null and category != ''">
+                AND ai.category = #{category}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    ai.title LIKE CONCAT('%', #{keyword}, '%')
+                    OR u.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR u.nickname LIKE CONCAT('%', #{keyword}, '%')
+                    OR lm.content LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY ai.created_at DESC
+        LIMIT 200
+    </select>
+
+    <select id="selectInquiryMessages" resultType="com.aloha.teamproject.dto.AdminInquiryMessage">
+        SELECT m.no,
+               m.id,
+               m.inquiry_id AS inquiryId,
+               m.sender_id AS senderId,
+               m.sender_role AS senderRole,
+               u.name AS senderName,
+               m.content,
+               m.created_at AS createdAt
+        FROM admin_inquiry_message m
+        JOIN users u ON u.id = m.sender_id
+        WHERE m.inquiry_id = #{inquiryId}
+        ORDER BY m.created_at ASC, m.no ASC
+        LIMIT 500
+    </select>
+
+    <update id="updateInquiryStatus">
+        UPDATE admin_inquiry
+        SET status = #{status},
+            updated_at = NOW(),
+            closed_at = CASE WHEN #{status} = 'DONE' THEN NOW() ELSE NULL END
+        WHERE id = #{inquiryId}
+    </update>
+
+    <update id="touchInquiryOnUserMessage">
+        UPDATE admin_inquiry
+        SET status = CASE WHEN status = 'DONE' THEN 'IN_PROGRESS' ELSE status END,
+            updated_at = NOW(),
+            closed_at = NULL
+        WHERE id = #{inquiryId}
+    </update>
+
+    <update id="touchInquiryOnAdminMessage">
+        UPDATE admin_inquiry
+        SET status = CASE WHEN status = 'OPEN' THEN 'IN_PROGRESS' ELSE status END,
+            updated_at = NOW()
+        WHERE id = #{inquiryId}
+    </update>
+
+    <select id="selectAdminDashboardSummary" resultType="com.aloha.teamproject.dto.AdminInquiryDashboard">
+        SELECT
+            COALESCE((
+                SELECT SUM(p.amount)
+                FROM payment p
+                WHERE p.status = 'PAID'
+                  AND DATE_FORMAT(COALESCE(p.paid_at, p.created_at), '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')
+            ), 0) AS totalAmount,
+            COALESCE((
+                SELECT COUNT(*)
+                FROM (
+                    SELECT l.user_id AS tutor_id,
+                           COALESCE(SUM(CASE WHEN p.status = 'PAID' THEN p.amount ELSE 0 END), 0) AS paid_total
+                    FROM lesson l
+                    LEFT JOIN booking b ON b.lesson_id = l.id
+                    LEFT JOIN payment p ON p.booking_id = b.id
+                    GROUP BY l.user_id
+                ) t
+                JOIN user_auth ua ON ua.user_id = t.tutor_id
+                WHERE ua.auth = 'ROLE_TUTOR'
+                  AND t.paid_total > 0
+            ), 0) AS settleWaitCount,
+            COALESCE((
+                SELECT COUNT(*)
+                FROM tutor_document td
+                WHERE td.reviewed_at IS NULL
+            ), 0) AS docWaitCount,
+            COALESCE((
+                SELECT COUNT(*)
+                FROM users u
+                WHERE u.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            ), 0) AS newUsersCount,
+            COALESCE((
+                SELECT COUNT(*)
+                FROM admin_inquiry ai
+                WHERE ai.status = 'DONE'
+            ), 0) AS doneCount
+    </select>
+
+    <select id="selectRecentInquiries" resultType="com.aloha.teamproject.dto.AdminInquiry">
+        SELECT ai.no,
+               ai.id,
+               ai.user_id AS userId,
+               u.name AS userName,
+               u.nickname AS userNickname,
+               ai.category,
+               ai.title,
+               ai.status,
+               ai.created_at AS createdAt,
+               ai.updated_at AS updatedAt,
+               lm.content AS lastMessage,
+               lm.created_at AS lastMessageAt
+        FROM admin_inquiry ai
+        JOIN users u ON u.id = ai.user_id
+        LEFT JOIN (
+            SELECT m.inquiry_id,
+                   m.content,
+                   m.created_at
+            FROM admin_inquiry_message m
+            JOIN (
+                SELECT inquiry_id, MAX(no) AS max_no
+                FROM admin_inquiry_message
+                GROUP BY inquiry_id
+            ) mm ON mm.max_no = m.no
+        ) lm ON lm.inquiry_id = ai.id
+        ORDER BY ai.created_at DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

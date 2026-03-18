@@ -1,0 +1,3716 @@
+﻿﻿<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+
+    layout:decorate="~{layouts/main_layout}">
+
+
+
+    <th:block layout:fragment="extra-css">
+
+        <link rel="stylesheet" href="/css/tutor-calendar.css">
+
+        <link rel="stylesheet" href="/css/tutor-register-admin.css">       
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    </th:block>
+
+
+
+    <div layout:fragment="content">
+
+        <div class="container py-5">
+
+            <!-- Header -->
+
+            <div class="mb-4 p-4 rounded" style="background-color: #f8f9fa; border-left: 4px solid #0d6efd;">
+
+                <h2 class="h3 fw-bold mb-1">튜터 마이페이지</h2>
+
+                <p class="text-muted mb-0">프로필과 활동 내역을 관리하세요</p>
+
+            </div>
+
+
+
+            <div class="row g-4">
+
+                <!-- Left Column: Profile -->
+
+                <div class="col-lg-4">
+
+                    <div class="card shadow-sm">
+
+                        <div class="card-body text-center">
+
+                            <div class="profile-avatar mb-3">
+
+                                <!-- 프로필 이미지 -->
+
+                                <div id="profileImg" class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto"></div>
+
+                            </div>
+
+                            <h3 class="h5 fw-bold mb-1" id="tutorName"></h3>
+
+                            <p class="text-muted small mb-3" id="tutorEmail"></p>
+
+
+
+                            <div id="fieldContainer" class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+
+                                <span class="badge bg-primary">영어</span>
+
+                                <span class="badge bg-primary">수학</span>
+
+                                <span class="badge bg-primary">과학</span>
+
+                            </div>
+
+
+
+                            <div class="rating mb-3">
+
+                                <span class="text-warning">★★★★★</span>
+
+                                <span class="ms-1 fw-semibold">4.9</span>
+
+                                <span class="text-muted small">(127 리뷰)</span>
+
+                            </div>
+
+
+
+                            <a href="/tutor/profile-edit" class="btn btn-primary w-100">
+
+                                <i class="bi bi-pencil-square me-1"></i> 튜터 정보 수정
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Bio Section -->
+
+                    <div class="card shadow-sm mt-3">
+
+                        <div class="tutorVideo-wrap" id="videoWrap" style="display: none;">
+
+                            <div class="resize">
+
+                                <iframe id="tutorVideo" class="re" width="100%" height="100%" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+                            </div>
+
+                        </div>                     
+
+                        <div class="card-body gap-4">
+
+                            <div>
+
+                                <h4 class="h6 fw-bold mb-2">한 줄 소개</h4>
+
+                                <p class="small text-muted mb-0" id="tutorHeadline"></p>
+
+                            </div>
+
+                            <div>
+
+                                <h4 class="h6 fw-bold mb-2">소개</h4>
+
+                                <p class="small text-muted mb-0" id="tutorBio"></p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- Right Column: Stats & Activity -->
+
+                <div class="col-lg-8">
+
+                    <!-- Statistics Cards -->
+
+                    <div class="d-flex justify-content-between gap-3 mb-4">
+
+                        <div class="stat-card card shadow-sm flex-fill">
+
+                            <div class="card-body text-center py-3">
+
+                                <div class="stat-icon mb-2">
+
+                                    <img src="/img/tutors/class.svg" alt="총 수업" style="width:36px;height:36px;">
+
+                                </div>
+
+                                <div class="stat-value fw-bold text-primary fs-5" id="statTotalLessons">0</div>
+
+                                <div class="stat-label small text-muted">총 수업</div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="stat-card card shadow-sm flex-fill">
+
+                            <div class="card-body text-center py-3">
+
+                                <div class="stat-icon mb-2">
+
+                                    <img src="/img/tutors/money.svg" alt="총 수익" style="width:36px;height:36px;">
+
+                                </div>
+
+                                <div class="stat-value fw-bold text-success fs-5" id="statTotalEarnings">0</div>
+
+                                <div class="stat-label small text-muted">총 수익 (원)</div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="stat-card card shadow-sm flex-fill">
+
+                            <div class="card-body text-center py-3">
+
+                                <div class="stat-icon mb-2">
+
+                                    <img src="/img/tutors/student.svg" alt="활성 학생" style="width:36px;height:36px;">
+
+                                </div>
+
+                                <div class="stat-value fw-bold text-info fs-5" id="statActiveStudents">0</div>
+
+                                <div class="stat-label small text-muted">활성 학생</div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                                <div>
+                                    <h3 class="h6 fw-bold mb-1">AI 수업 도우미</h3>
+                                    <p class="text-muted small mb-0">수업 요약과 과제 초안을 빠르게 작성할 수 있습니다.</p>
+                                </div>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenTutorAiSummary">
+                                        AI 수업 요약
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="btnOpenTutorAiHomework">
+                                        AI 과제 초안
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Tabs -->
+
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+
+
+
+                        <li class="nav-item" role="presentation">
+
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#scheduleTab" type="button" aria-selected="true">
+
+                                일정
+
+                            </button>
+
+                        </li>
+
+                        <li class="nav-item" role="presentation">
+
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviewsTab" type="button">
+
+                                리뷰
+
+                            </button>
+
+                        </li>
+
+                        <li class="nav-item" role="presentation">
+
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#earningsTab" type="button">
+
+                                수익
+
+                            </button>
+
+                        </li>
+
+                        <li class="nav-item" role="presentation">
+
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#weeklyScheduleTab" type="button">
+
+                                주간 스케줄
+
+                            </button>
+
+                        </li>
+
+                    </ul>
+
+
+
+                    <!-- Tab Content -->
+
+                    <div class="tab-content">
+
+                        <!-- Student Management Tab -->
+
+                        <!-- Removed -->
+
+
+
+                        <!-- Schedule Tab -->
+
+                        <div class="tab-pane fade show active" id="scheduleTab">
+
+                            <!-- 방식 선택 안내 -->
+
+                            <div class="alert alert-light border mb-4">
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <div>
+
+                                        <strong>스케줄 관리 방식 선택</strong>
+
+                                        <p class="mb-0 small text-muted mt-1">이번 주만 수정하거나 전체 스케줄을 수정할 수 있습니다.</p>
+
+                                    </div>
+
+                                    <div>
+
+                                        <button class="btn btn-sm btn-outline-primary me-2" onclick="toggleScheduleEditor()">
+
+                                            이번 주 편집
+
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- 인라인 스케줄 편집기 (방식 A) - 기본 숨김 -->
+
+                            <div class="card shadow-sm mb-4" id="scheduleEditorCard" style="display: none;">
+
+                                <div class="card-body">
+
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                        <h4 class="h6 fw-bold mb-0">스케줄 편집</h4>
+
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleScheduleEditor()">
+
+                                            <i class="bi bi-x-lg"></i> 닫기
+
+                                        </button>
+
+                                    </div>
+
+
+
+                                    <!-- 캘린더 컨테이너 -->
+
+                                    <div class="weekly_calendar_wrap" id="mypageScheduleEditor">
+
+                                        <div class="weekly_head">
+
+                                            <ul class="dayHead flex" id="calendarDayHead">
+
+                                                <li class="flex"><div class="head_in"><p class="dayTit">일</p><p class="dayDate en">02.02</p></div></li>
+
+                                                <li class="flex"><div class="head_in"><p class="dayTit">월</p><p class="dayDate en">02.03</p></div></li>
+
+                                                <li class="flex"><div class="head_in"><p class="dayTit">화</p><p class="dayDate en">02.04</p></div></li>
+
+                                                <li class="flex"><div class="head_in"><p class="dayTit">수</p><p class="dayDate en">02.05</p></div></li>
+
+                                                <li class="flex"><div class="head_in"><p class="dayTit">목</p><p class="dayDate en">02.06</p></div></li>
+
+                                                <li class="flex"><div class="head_in"><p class="dayTit">금</p><p class="dayDate en">02.07</p></div></li>
+
+                                                <li class="flex"><div class="head_in"><p class="dayTit">토</p><p class="dayDate en">02.08</p></div></li>
+
+                                            </ul>
+
+                                        </div>
+
+                                        <div class="weekly_con">
+
+                                            <ul class="dayCon flex" id="calendarDayBody">
+
+                                                <li class="flex"><div class="con_in"></div></li>
+
+                                                <li class="flex"><div class="con_in"></div></li>
+
+                                                <li class="flex"><div class="con_in"></div></li>
+
+                                                <li class="flex"><div class="con_in"></div></li>
+
+                                                <li class="flex"><div class="con_in"></div></li>
+
+                                                <li class="flex"><div class="con_in"></div></li>
+
+                                                <li class="flex"><div class="con_in"></div></li>
+
+                                            </ul>
+
+                                        </div>
+
+                                    </div>
+
+
+
+                                    <div class="d-flex gap-2 mt-4 pt-3 border-top">
+
+                                        <button type="button" class="btn btn-primary" id="btnSaveSchedule">
+
+                                            <i class="bi bi-check-lg"></i> 저장
+
+                                        </button>
+
+                                        <button type="button" class="btn btn-outline-danger" id="btnResetScheduleAllMypage">
+
+                                            <i class="bi bi-arrow-counterclockwise"></i> 전체 초기화
+
+                                        </button>
+
+                                        <button type="button" class="btn btn-outline-secondary" onclick="toggleScheduleEditor()">
+
+                                            <i class="bi bi-x-lg"></i> 취소
+
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- 다가오는 수업 목록 -->
+
+                            <div class="card shadow-sm">
+
+                                <div class="card-body">
+
+                                    <h4 class="h6 fw-bold mb-3">다가오는 수업</h4>
+
+                                    <div class="d-grid gap-2" id="upcomingLessonsContainer">
+
+                                        <div class="text-muted text-center py-3">
+
+                                            다가오는 수업이 없습니다.
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- 지난 수업 목록 -->
+
+                            <div class="card shadow-sm">
+
+                                <div class="card-body">
+
+                                    <h4 class="h6 fw-bold mb-3">지난 수업</h4>
+
+                                    <div class="d-grid gap-2" id="pastLessonsContainer">
+
+                                        <div class="text-muted text-center py-3">
+
+                                            지난 수업 내역이 없습니다.
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- Reviews Tab -->
+
+                        <div class="tab-pane fade" id="reviewsTab">
+
+                            <div class="card shadow-sm">
+
+                                <div class="card-body">
+
+                                    <h4 class="h6 fw-bold mb-3">최근 리뷰</h4>
+
+                                    <div class="d-grid gap-3">
+
+                                        <div class="review-item p-3 bg-light rounded">
+
+                                            <div class="d-flex justify-content-between mb-2">
+
+                                                <div class="fw-semibold">박지훈</div>
+
+                                                <div class="text-warning">★★★★★</div>
+
+                                            </div>
+
+                                            <p class="small mb-1">
+
+                                                정말 친절하고 이해하기 쉽게 설명해주셔서 영어 실력이 많이 늘었습니다. 강력 추천합니다!
+
+                                            </p>
+
+                                            <div class="small text-muted">2026-01-25</div>
+
+                                        </div>
+
+                                        <div class="review-item p-3 bg-light rounded">
+
+                                            <div class="d-flex justify-content-between mb-2">
+
+                                                <div class="fw-semibold">이서연</div>
+
+                                                <div class="text-warning">★★★★★</div>
+
+                                            </div>
+
+                                            <p class="small mb-1">
+
+                                                수학 개념을 체계적으로 잘 가르쳐주셔서 성적이 많이 올랐어요. 감사합니다!
+
+                                            </p>
+
+                                            <div class="small text-muted">2026-01-22</div>
+
+                                        </div>
+
+                                        <div class="review-item p-3 bg-light rounded">
+
+                                            <div class="d-flex justify-content-between mb-2">
+
+                                                <div class="fw-semibold">김하늘</div>
+
+                                                <div class="text-warning">★★★★☆</div>
+
+                                            </div>
+
+                                            <p class="small mb-1">
+
+                                                열정적으로 가르쳐주시고 학습 자료도 풍부해서 좋았습니다.
+
+                                            </p>
+
+                                            <div class="small text-muted">2026-01-20</div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- Weekly Schedule Tab -->
+
+                        <div class="tab-pane fade" id="weeklyScheduleTab">
+
+                            <div class="card shadow-sm">
+
+                                <div class="card-body">
+
+                                    <h4 class="h6 fw-bold mb-3">주간 스케줄</h4>
+
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                                        <label class="small text-muted mb-0" for="weeklyStudentFilter">학생 필터</label>
+                                        <select id="weeklyStudentFilter" class="form-select form-select-sm" style="max-width: 220px;">
+                                            <option value="">전체 학생</option>
+                                        </select>
+                                    </div>
+
+                                    <div id="weeklyBookingHoverInfo" class="small text-muted border rounded-12 px-3 py-2 mt-2 mb-3">
+                                        예약된 시간에 마우스를 올리면 학생/수업 정보를 볼 수 있습니다.
+                                    </div>
+
+
+                                    <div class="mb-3">
+
+                                        <div class="tc-toolbar mb-3">
+
+                                            <button type="button" class="tc-iconbtn" id="btnPrevWeekView" aria-label="이전 주">
+
+                                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 5.5 9 12l6.5 6.5"/></svg>
+
+                                            </button>
+
+                                            <div class="tc-range" id="weekRangeLabelView">2026.02.02 ~ 02.08</div>
+
+                                            <button type="button" class="tc-iconbtn" id="btnNextWeekView" aria-label="다음 주">
+
+                                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 18.5 15 12 8.5 5.5"/></svg>
+
+                                            </button>
+
+                                        </div>
+
+
+
+                                        <div class="weekly_calendar_wrap" id="mypageWeeklySchedule">
+
+                                            <div class="weekly_head">
+
+                                                <ul class="dayHead" id="weeklyViewDayHead">
+
+                                                    <li>
+
+                                                        <div class="head_in">
+
+                                                            <p class="dayTit">일</p>
+
+                                                            <p class="dayDate">02.02</p>
+
+                                                        </div>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <div class="head_in">
+
+                                                            <p class="dayTit">월</p>
+
+                                                            <p class="dayDate">02.03</p>
+
+                                                        </div>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <div class="head_in">
+
+                                                            <p class="dayTit">화</p>
+
+                                                            <p class="dayDate">02.04</p>
+
+                                                        </div>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <div class="head_in">
+
+                                                            <p class="dayTit">수</p>
+
+                                                            <p class="dayDate">02.05</p>
+
+                                                        </div>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <div class="head_in">
+
+                                                            <p class="dayTit">목</p>
+
+                                                            <p class="dayDate">02.06</p>
+
+                                                        </div>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <div class="head_in">
+
+                                                            <p class="dayTit">금</p>
+
+                                                            <p class="dayDate">02.07</p>
+
+                                                        </div>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <div class="head_in">
+
+                                                            <p class="dayTit">토</p>
+
+                                                            <p class="dayDate">02.08</p>
+
+                                                        </div>
+
+                                                    </li>
+
+                                                </ul>
+
+                                            </div>
+
+
+
+                                            <div class="weekly_con">
+
+                                                <ul class="dayCon" id="weeklyViewDayBody">
+
+                                                    <li>
+
+                                                        <div class="con_in"></div>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <div class="con_in"></div>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <div class="con_in"></div>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <div class="con_in"></div>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <div class="con_in"></div>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <div class="con_in"></div>
+
+                                                    </li>
+
+                                                    <li>
+
+                                                        <div class="con_in"></div>
+
+                                                    </li>
+
+                                                </ul>
+
+                                            </div>
+
+                                        </div>
+
+
+
+                                        <small class="text-muted d-block mt-2">
+
+                                            <span class="badge bg-primary">●</span> 수업 가능 
+
+                                            <span class="badge bg-danger ms-2">●</span> 예약됨
+
+                                        </small>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- Earnings Tab -->
+
+                        <div class="tab-pane fade" id="earningsTab">
+
+                            <div class="card shadow-sm">
+
+                                <div class="card-body">
+
+                                    <h4 class="h6 fw-bold mb-3">월별 수익</h4>
+
+                                    <div class="table-responsive">
+
+                                        <table class="table table-hover">
+
+                                            <thead>
+
+                                                <tr>
+
+                                                    <th>월</th>
+
+                                                    <th>수업 수</th>
+
+                                                    <th>총 시간</th>
+
+                                                    <th class="text-end">수익</th>
+
+                                                </tr>
+
+                                            </thead>
+
+                                            <tbody>
+
+                                                <tr>
+
+                                                    <td>2026년 1월</td>
+
+                                                    <td>18회</td>
+
+                                                    <td>32시간</td>
+
+                                                    <td class="text-end fw-semibold text-success">1,120,000원</td>
+
+                                                </tr>
+
+                                                <tr>
+
+                                                    <td>2025년 12월</td>
+
+                                                    <td>22회</td>
+
+                                                    <td>40시간</td>
+
+                                                    <td class="text-end fw-semibold text-success">1,400,000원</td>
+
+                                                </tr>
+
+                                                <tr>
+
+                                                    <td>2025년 11월</td>
+
+                                                    <td>20회</td>
+
+                                                    <td>36시간</td>
+
+                                                    <td class="text-end fw-semibold text-success">1,260,000원</td>
+
+                                                </tr>
+
+                                            </tbody>
+
+                                        </table>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+        <div class="modal fade" id="tutorAiModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content rounded-4 border-0 shadow-lg">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold" id="tutorAiTitle">AI 수업 요약</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-2">
+                        <p class="small text-muted mb-3" id="tutorAiHint">수업 내용을 입력하면 요약 포맷으로 정리해드립니다.</p>
+                        <div id="tutorAiFlash" class="alert alert-danger py-2 small d-none mb-3"></div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold mb-1" for="tutorAiTutorName">튜터명</label>
+                                <input type="text" class="form-control form-control-sm" id="tutorAiTutorName" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold mb-1" for="tutorAiStudentName">학생명</label>
+                                <input type="text" class="form-control form-control-sm" id="tutorAiStudentName" placeholder="예: 박학생">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold mb-1" for="tutorAiSubject">수업 주제</label>
+                            <input type="text" class="form-control form-control-sm" id="tutorAiSubject" placeholder="예: 중등 영어 문법 / 토익 RC">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold mb-1" for="tutorAiLessonContext">수업 내용</label>
+                            <textarea class="form-control" id="tutorAiLessonContext" rows="7" placeholder="오늘 수업 진행 내용, 학생 반응, 다음 수업 계획 등을 입력해 주세요."></textarea>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label small fw-semibold mb-0" for="tutorAiResult">생성 결과</label>
+
+                            <div class="btn-group btn-group-sm" role="group" aria-label="AI result view toggle">
+                                <button type="button" class="btn btn-outline-secondary active" id="btnTutorAiViewPreview">미리보기</button>
+                                <button type="button" class="btn btn-outline-secondary" id="btnTutorAiViewRaw">원문(MD)</button>
+                            </div>
+                        </div>
+
+                        <!-- 미리보기(마크다운 렌더링 결과) -->
+                        <div id="tutorAiResultPreview"
+                            class="border rounded-3 bg-light p-3"
+                            style="min-height: 220px; overflow:auto;">
+                        <span class="text-muted small">여기에 AI 생성 결과가 표시됩니다.</span>
+                        </div>
+
+                        <!-- 원문(md) -->
+                        <textarea class="form-control bg-light d-none" id="tutorAiResult" rows="9" readonly
+                                placeholder="여기에 AI 생성 결과가 표시됩니다."></textarea>
+
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">닫기</button>
+                        <button type="button" class="btn btn-primary px-4" id="btnRunTutorAi">요약 생성</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CSS/JS for Schedule Editor -->
+
+        <link rel="stylesheet" href="/css/tutor-calendar.css">
+
+        <script src="/js/tutor-calendar.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+        <script>
+            let tutorAiTyped = null;
+
+            function setTutorAiView(mode) {
+            const btnPreview = document.getElementById('btnTutorAiViewPreview');
+            const btnRaw = document.getElementById('btnTutorAiViewRaw');
+            const preview = document.getElementById('tutorAiResultPreview');
+            const raw = document.getElementById('tutorAiResult');
+
+            if (!btnPreview || !btnRaw || !preview || !raw) return;
+
+            const isPreview = mode === 'preview';
+            btnPreview.classList.toggle('active', isPreview);
+            btnRaw.classList.toggle('active', !isPreview);
+
+            preview.classList.toggle('d-none', !isPreview);
+            raw.classList.toggle('d-none', isPreview);
+            }
+
+            function renderMarkdownToPreview(mdText) {
+            const preview = document.getElementById('tutorAiResultPreview');
+            if (!preview) return;
+
+            // marked로 HTML 변환
+            const html = (typeof marked !== 'undefined')
+                ? marked.parse(mdText || '')
+                : (mdText || '').replaceAll('\n', '<br>');
+
+            // DOMPurify로 sanitize (권장)
+            const safeHtml = (typeof DOMPurify !== 'undefined')
+                ? DOMPurify.sanitize(html)
+                : html;
+
+            preview.innerHTML = safeHtml || '<span class="text-muted small">결과가 비어 있습니다.</span>';
+            }
+
+            function typeToPreview(mdText, onDone) {
+            const preview = document.getElementById('tutorAiResultPreview');
+            if (!preview) return;
+
+            // 기존 typed 제거
+            if (tutorAiTyped) {
+                tutorAiTyped.destroy();
+                tutorAiTyped = null;
+            }
+
+            // typed는 "문자열"을 타이핑 → 타이핑 중엔 그냥 텍스트로 보여주고,
+            // 끝나면 마크다운 렌더링으로 교체하는 방식이 가장 깔끔함.
+            preview.innerHTML = `<pre class="m-0" style="white-space:pre-wrap;"></pre>`;
+            const pre = preview.querySelector('pre');
+
+            tutorAiTyped = new Typed(pre, {
+                strings: [mdText || ''],
+                typeSpeed: 10,
+                showCursor: true,
+                cursorChar: '▍',
+                onComplete: () => {
+                tutorAiTyped?.destroy();
+                tutorAiTyped = null;
+                renderMarkdownToPreview(mdText);
+                if (typeof onDone === 'function') onDone();
+                }
+            });
+            }
+
+
+
+            const getFallbackToken = () => localStorage.getItem('accessToken');
+
+            const getAuthHeaders = () => {
+
+                if (typeof buildAuthHeaders === 'function') {
+
+                    return buildAuthHeaders();
+
+                }
+
+                const token = getFallbackToken();
+
+                return token ? { 'Authorization': `Bearer ${token}` } : {};
+
+            };
+
+
+
+            async function ensureAuth() {
+
+                const token = (typeof getAccessToken === 'function') ? getAccessToken() : getFallbackToken();
+
+                if (token) return true;
+
+                if (typeof refreshAccessToken === 'function') {
+
+                    return await refreshAccessToken();
+
+                }
+
+                return false;
+
+            }
+
+
+
+            async function fetchWithAuth(url, options = {}) {
+
+                const headers = { ...(options.headers || {}), ...getAuthHeaders() };
+
+                const response = await fetch(url, {
+
+                    ...options,
+
+                    headers,
+
+                    credentials: 'include'
+
+                });
+
+
+
+                if (response.status === 401 && typeof refreshAccessToken === 'function') {
+
+                    const refreshed = await refreshAccessToken();
+
+                    if (refreshed) {
+
+                        const retryHeaders = { ...(options.headers || {}), ...getAuthHeaders() };
+
+                        return fetch(url, {
+
+                            ...options,
+
+                            headers: retryHeaders,
+
+                            credentials: 'include'
+
+                        });
+
+                    }
+
+                }
+
+
+
+                return response;
+
+            }
+
+            const TUTOR_AI_MODES = Object.freeze({
+                SUMMARY: 'lesson-summary',
+                HOMEWORK: 'homework'
+            });
+            let tutorAiMode = TUTOR_AI_MODES.SUMMARY;
+
+            function setTutorAiFlash(message, type = 'danger') {
+                const flash = document.getElementById('tutorAiFlash');
+                if (!flash) return;
+                if (!message) {
+                    flash.textContent = '';
+                    flash.classList.add('d-none');
+                    flash.classList.remove('alert-danger', 'alert-success', 'alert-warning', 'alert-info');
+                    return;
+                }
+                flash.textContent = message;
+                flash.classList.remove('d-none');
+                flash.classList.remove('alert-danger', 'alert-success', 'alert-warning', 'alert-info');
+                flash.classList.add(`alert-${type}`);
+            }
+
+            function getTutorAiName() {
+                const fromInput = String(document.getElementById('tutorAiTutorName')?.value || '').trim();
+                if (fromInput) return fromInput;
+                const fromProfile = String(tutorMypageData?.tutorProfile?.name || '').trim();
+                if (fromProfile) return fromProfile;
+                const fromTitle = String(document.getElementById('tutorName')?.textContent || '').replace(/\s*튜터$/, '').trim();
+                return fromTitle || '튜터';
+            }
+
+            function setTutorAiMode(mode) {
+                tutorAiMode = mode === TUTOR_AI_MODES.HOMEWORK ? TUTOR_AI_MODES.HOMEWORK : TUTOR_AI_MODES.SUMMARY;
+                const titleEl = document.getElementById('tutorAiTitle');
+                const hintEl = document.getElementById('tutorAiHint');
+                const runBtn = document.getElementById('btnRunTutorAi');
+
+                if (tutorAiMode === TUTOR_AI_MODES.HOMEWORK) {
+                    if (titleEl) titleEl.textContent = 'AI 과제 초안';
+                    if (hintEl) hintEl.textContent = '수업 내용을 입력하면 학생에게 줄 과제 초안을 생성합니다.';
+                    if (runBtn) runBtn.textContent = '과제 초안 생성';
+                } else {
+                    if (titleEl) titleEl.textContent = 'AI 수업 요약';
+                    if (hintEl) hintEl.textContent = '수업 내용을 입력하면 요약 포맷으로 정리해드립니다.';
+                    if (runBtn) runBtn.textContent = '요약 생성';
+                }
+            }
+
+            function openTutorAiModal(mode) {
+                const modalEl = document.getElementById('tutorAiModal');
+                if (!modalEl || !window.bootstrap) return;
+
+                setTutorAiMode(mode);
+                setTutorAiFlash('');
+
+                const tutorInput = document.getElementById('tutorAiTutorName');
+                const studentInput = document.getElementById('tutorAiStudentName');
+                const subjectInput = document.getElementById('tutorAiSubject');
+                const contextInput = document.getElementById('tutorAiLessonContext');
+                const resultInput = document.getElementById('tutorAiResult');
+
+                const upcomingLessons = Array.isArray(tutorMypageData?.upcomingLessons) ? tutorMypageData.upcomingLessons : [];
+                const latestLesson = upcomingLessons[0] || {};
+
+                if (tutorInput) tutorInput.value = getTutorAiName();
+                if (studentInput) studentInput.value = String(latestLesson.studentName || '').trim();
+                if (subjectInput) subjectInput.value = String(latestLesson.subject || '').trim();
+                if (contextInput) contextInput.value = '';
+                if (resultInput) resultInput.value = '';
+
+                setTutorAiView('preview');
+                const preview = document.getElementById('tutorAiResultPreview');
+                if (preview) preview.innerHTML = `<span class="text-muted small">여기에 AI 생성 결과가 표시됩니다.</span>`;
+
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }
+
+            async function runTutorAiGeneration(triggerBtn) {
+                const authed = await ensureAuth();
+                if (!authed) {
+                    setTutorAiFlash('로그인이 필요합니다.', 'warning');
+                    location.href = '/login';
+                    return;
+                }
+
+                const tutorName = getTutorAiName();
+                const studentName = String(document.getElementById('tutorAiStudentName')?.value || '').trim();
+                const subject = String(document.getElementById('tutorAiSubject')?.value || '').trim();
+                const lessonContext = String(document.getElementById('tutorAiLessonContext')?.value || '').trim();
+                const resultInput = document.getElementById('tutorAiResult');
+
+                if (!studentName) {
+                    setTutorAiFlash('학생명을 입력해 주세요.', 'warning');
+                    return;
+                }
+                if (!subject) {
+                    setTutorAiFlash('수업 주제를 입력해 주세요.', 'warning');
+                    return;
+                }
+                if (!lessonContext) {
+                    setTutorAiFlash('수업 내용을 입력해 주세요.', 'warning');
+                    return;
+                }
+
+                const endpoint = tutorAiMode === TUTOR_AI_MODES.HOMEWORK ? '/api/ai/homework' : '/api/ai/lesson-summary';
+                const originalText = triggerBtn?.textContent || '';
+                const progressText = tutorAiMode === TUTOR_AI_MODES.HOMEWORK ? '과제 생성중' : '요약 생성중';
+
+                if (triggerBtn) {
+                    triggerBtn.disabled = true;
+                    triggerBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>${progressText}`;
+                }
+                setTutorAiFlash('');
+
+                try {
+                    const response = await fetchWithAuth(endpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                            tutorName,
+                            studentName,
+                            subject,
+                            lessonContext
+                        })
+                    });
+                    const result = await response.json();
+                    if (!response.ok || !result?.success || !result?.data?.text) {
+                        setTutorAiFlash(result?.message || 'AI 생성에 실패했습니다.');
+                        return;
+                    }
+
+                    const text = String(result.data.text || '').trim();
+                    if (!text) {
+                    setTutorAiFlash('생성된 결과가 비어 있습니다.');
+                    return;
+                    }
+
+                    // 1) 원문(md) 저장
+                    if (resultInput) {
+                    resultInput.value = text;
+                    resultInput.scrollTop = 0;
+                    }
+
+                    // 2) 미리보기 모드로 보여주기
+                    setTutorAiView('preview');
+
+                    // 3) typed로 출력 후, 완료되면 markdown 렌더링
+                    if (typeof Typed !== 'undefined') {
+                    typeToPreview(text);
+                    } else {
+                    renderMarkdownToPreview(text);
+                    }
+
+                } catch (error) {
+                    console.error('튜터 AI 생성 실패', error);
+                    setTutorAiFlash('AI 생성 중 오류가 발생했습니다.');
+                } finally {
+                    if (triggerBtn) {
+                        triggerBtn.disabled = false;
+                        triggerBtn.textContent = originalText || '요약 생성';
+                    }
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('btnOpenTutorAiSummary')?.addEventListener('click', () => {
+                    openTutorAiModal(TUTOR_AI_MODES.SUMMARY);
+                });
+                document.getElementById('btnOpenTutorAiHomework')?.addEventListener('click', () => {
+                    openTutorAiModal(TUTOR_AI_MODES.HOMEWORK);
+                });
+                document.getElementById('btnRunTutorAi')?.addEventListener('click', async function() {
+                    await runTutorAiGeneration(this);
+                });
+                document.getElementById('btnTutorAiViewPreview')?.addEventListener('click', () => setTutorAiView('preview'));
+                document.getElementById('btnTutorAiViewRaw')?.addEventListener('click', () => setTutorAiView('raw'));
+            });
+
+
+
+            // 프로필 이미지를 Base64로 변환
+            function fileToBase64(file) {
+
+                return new Promise((resolve, reject) => {
+
+                    const reader = new FileReader();
+
+                    reader.onload = () => resolve(reader.result);
+
+                    reader.onerror = reject;
+
+                    reader.readAsDataURL(file);
+
+                });
+
+            }
+
+
+
+            function formatFileSize(bytes) {
+
+                if (bytes === 0) return '0 Bytes';
+
+                const k = 1024;
+
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+                return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+
+            }
+
+
+
+            // 프로필 이미지 관련 이벤트 바인딩
+            document.addEventListener('DOMContentLoaded', function() {
+
+                const profileImgInput = document.getElementById('profileImg');
+
+                const profileImgPreview = document.getElementById('profileImgPreview');
+
+                const profileImgCard = document.getElementById('profileImgCard');
+
+                const profileImgEditBtn = document.getElementById('profileImgEditBtn');
+
+                const profileImgDeleteBtn = document.getElementById('profileImgDeleteBtn');
+
+
+
+                // 프로필 이미지 파일 선택 시 미리보기 반영
+                if (profileImgInput) {
+
+                    profileImgInput.addEventListener('change', async (event) => {
+
+                        const file = event.target.files[0];
+
+                        if (!file) return;
+
+                        
+
+                        try {
+
+                            const base64 = await fileToBase64(file);
+
+                            profileImgPreview.src = base64;
+
+                            profileImgCard.style.display = 'block';
+
+                        } catch (e) {
+
+                            console.error('프로필 이미지 미리보기 생성 실패', e);
+                        }
+
+                    });
+
+                }
+
+
+
+                // 수정 버튼 클릭 시 파일 선택 창 열기
+                if (profileImgEditBtn) {
+
+                    profileImgEditBtn.addEventListener('click', () => {
+
+                        profileImgInput.click();
+
+                    });
+
+                }
+
+
+
+                // 삭제 버튼 클릭 시 프로필 이미지 초기화
+                if (profileImgDeleteBtn) {
+
+                    profileImgDeleteBtn.addEventListener('click', () => {
+
+                        profileImgCard.style.display = 'none';
+
+                        profileImgInput.value = null;
+
+                        profileImgPreview.src = '';
+
+                    });
+
+                }
+
+            });
+
+
+
+            let tutorMypageData = null;
+
+            let weeklyFilterBound = false;
+
+            let weeklyDnDBound = false;
+
+            let weeklyDragPayload = null;
+
+
+
+            // 튜터 마이페이지 데이터 로드 및 화면 바인딩
+            document.addEventListener('DOMContentLoaded', async function() {
+
+                try {
+                    const authed = await ensureAuth();
+
+                    if (!authed) {
+
+                        location.href = '/login';
+
+                        return;
+
+                    }
+
+                    const response = await fetchWithAuth('/api/tutors/me');
+
+                    if (!response.ok) throw new Error('Failed to fetch');
+
+                    
+
+                    const result = await response.json();
+
+                    if (result.success && result.data) {
+
+                        const mypage = result.data;
+
+                        tutorMypageData = mypage;
+
+                        console.log('마이페이지 데이터:', mypage);
+
+                        console.log('다가오는 수업:', mypage.upcomingLessons);
+
+                        console.log('지난 수업:', mypage.pastLessons);
+
+                        
+
+                        // 프로필 정보 바인딩
+
+                        if (mypage.tutorProfile) {
+
+                            const profile = mypage.tutorProfile;
+
+
+
+                            // 프로필 이미지
+
+                            const profileImgContainer = document.getElementById('profileImg');
+
+                            if (profile.profileImg) {
+
+                                profileImgContainer.classList.remove('bg-primary');
+
+                                profileImgContainer.innerHTML = `
+
+                                    <img src="${profile.profileImg}"
+
+                                        alt="프로필 이미지"
+
+                                        class="rounded-circle w-100 h-100 object-fit-cover">
+
+                                `;
+
+                            } else {
+
+                                profileImgContainer.classList.add('bg-primary');
+
+                                profileImgContainer.innerHTML = `
+
+                                    <span class="fs-1">👨‍🏫</span>
+
+                                `;
+
+                            }
+
+
+
+                            // 모달 내 프로필 이미지 바인딩
+
+                            const profileImgPreview = document.getElementById('profileImgPreview');
+
+                            const profileImgCard = document.getElementById('profileImgCard');
+
+                            if (profileImgPreview && profileImgCard) {
+
+                                if (profile.profileImg) {
+
+                                    profileImgPreview.src = profile.profileImg;
+
+                                    profileImgCard.style.display = 'block';
+
+                                } else {
+
+                                    profileImgCard.style.display = 'none';
+
+                                }
+
+                            }
+
+
+
+                            // 유튜브 URL
+
+                            const videoWrap = document.getElementById('videoWrap');
+
+                            const iframe = document.getElementById('tutorVideo');
+
+
+
+                            if (profile.videoUrl) {
+
+                                iframe.src = profile.videoUrl;
+
+                                videoWrap.style.display = 'block';
+
+                            } else {
+
+                                videoWrap.style.display = 'none';
+
+                            }                            
+
+
+
+                            document.getElementById('tutorName').textContent = (profile.name || '튜터') + ' 튜터';
+
+                            document.getElementById('tutorEmail').textContent = profile.email || '';
+
+                            document.getElementById('tutorHeadline').textContent = profile.headline || '소개가 없습니다.';
+
+                            document.getElementById('tutorBio').textContent = profile.bio || '소개가 없습니다.';
+                            const tutorAiTutorNameInput = document.getElementById('tutorAiTutorName');
+                            if (tutorAiTutorNameInput) {
+                                tutorAiTutorNameInput.value = profile.name || '튜터';
+                            }
+
+                        }
+
+                        
+
+                        // 통계 바인딩
+
+                        if (mypage.tutorStats) {
+
+                            const stats = mypage.tutorStats;
+
+                            // 총 수업 수
+
+                            document.getElementById('statTotalLessons').textContent = stats.totalLessons || 0;
+
+                            // 총 수익
+
+                            const earnings = stats.totalEarnings || 0;
+
+                            document.getElementById('statTotalEarnings').textContent = new Intl.NumberFormat('ko-KR').format(earnings);
+
+                            // 활성 학생 수
+
+                            document.getElementById('statActiveStudents').textContent = stats.activeStudents || 0;
+
+                            
+
+                            // 평점 및 리뷰 수
+
+                            const ratingDiv = document.querySelector('.rating');
+
+                            if (ratingDiv && mypage.tutorStats) {
+
+                                const stats = mypage.tutorStats;
+
+                                const ratingAvg = (stats.ratingAvg === undefined || stats.ratingAvg === null) ? 0 : Number(stats.ratingAvg);
+
+                                const reviewCount = (stats.reviewCount === undefined || stats.reviewCount === null) ? 0 : Number(stats.reviewCount);
+
+                                const stars = '★'.repeat(Math.floor(ratingAvg)) + '☆'.repeat(5 - Math.floor(ratingAvg));
+
+                                ratingDiv.innerHTML = `
+
+                                    <span class="text-warning">${stars}</span>
+
+                                    <span class="ms-1 fw-semibold">${ratingAvg}</span>
+
+                                    <span class="text-muted small">(${reviewCount} 리뷰)</span>
+
+                                `;
+
+                            }
+
+                        }
+
+                        
+
+                        // 과목(필드) 바인딩
+
+                        if (mypage.languageFields && mypage.languageFields.length > 0) {
+
+                            const fieldContainer = document.querySelector('#fieldContainer');
+
+                            fieldContainer.innerHTML = '';
+
+                            mypage.languageFields.forEach(field => {
+
+                                const badge = document.createElement('span');
+
+                                badge.className = 'badge bg-primary';
+
+                                badge.textContent = field.name;
+
+                                fieldContainer.appendChild(badge);
+
+                            });
+
+                        }
+
+
+
+                        populateWeeklyStudentFilter();
+                        if (weeklyViewCalendar) {
+                            await refreshWeeklyScheduleView();
+                        }
+                         
+
+                        const lessonStatusInfo = (lesson) => {
+
+                            const isPaid = Boolean(lesson.paidAt);
+
+                            if (lesson.status === 'PENDING') return { label: '대기중', className: 'bg-warning text-dark' };
+
+                            if (lesson.status === 'CONFIRMED') {
+
+                                return isPaid
+
+                                    ? { label: '결제완료', className: 'bg-success' }
+
+                                    : { label: '결제대기', className: 'bg-secondary' };
+
+                            }
+
+                            if (lesson.status === 'COMPLETED') return { label: '수업완료', className: 'bg-primary' };
+
+                            if (lesson.status === 'CANCELLED') return { label: '취소됨', className: 'bg-danger' };
+
+                            return { label: lesson.status || '', className: 'bg-secondary' };
+
+                        };
+
+
+
+                        const durationMinutes = (lesson) => {
+
+                            const start = parseDateTimeFlexible(
+                                lesson?.startAt,
+                                lesson?.lessonDate,
+                                lesson?.startTime
+                            );
+                            const end = parseDateTimeFlexible(
+                                lesson?.endAt,
+                                lesson?.lessonDate,
+                                lesson?.endTime
+                            );
+
+                            if (start && end && end > start) {
+                                return Math.max(30, Math.round((end.getTime() - start.getTime()) / 60000));
+                            }
+
+                            const hours = Number(lesson?.durationHours);
+                            if (Number.isFinite(hours) && hours > 0) {
+                                return Math.max(30, Math.round(hours * 60));
+                            }
+
+                            return 30;
+
+                        };
+
+                        const formatDurationText = (lesson) => {
+
+                            const minutes = durationMinutes(lesson);
+
+                            const hours = minutes / 60;
+
+                            if (Number.isInteger(hours)) {
+
+                                return `${hours}시간`;
+
+                            }
+
+                            return `${minutes}분`;
+
+                        };
+
+
+
+                        const formatPriceText = (price) => {
+
+                            const amount = Number(price || 0);
+
+                            return `${new Intl.NumberFormat('ko-KR').format(amount)}원`;
+
+                        };
+
+
+
+                        const renderScheduleLessonLists = (mypageData) => {
+
+                            const upcomingLessons = Array.isArray(mypageData?.upcomingLessons)
+
+                                ? mypageData.upcomingLessons
+
+                                : [];
+
+                            const pastLessons = Array.isArray(mypageData?.pastLessons)
+
+                                ? mypageData.pastLessons
+
+                                : [];
+
+
+
+                            const upcomingContainer = document.getElementById('upcomingLessonsContainer');
+
+                            if (upcomingContainer) {
+
+                                upcomingContainer.innerHTML = '';
+
+                                if (upcomingLessons.length === 0) {
+
+                                    upcomingContainer.innerHTML = `
+
+                                        <div class="text-muted text-center py-3">다가오는 수업이 없습니다.</div>
+
+                                    `;
+
+                                } else {
+
+                                    upcomingLessons.forEach((lesson) => {
+
+                                        const statusInfo = lessonStatusInfo(lesson);
+
+                                        const item = document.createElement('div');
+
+                                        item.className = 'schedule-item p-3 border rounded';
+
+                                        item.innerHTML = `
+
+                                            <div class="d-flex justify-content-between align-items-start">
+
+                                                <div>
+
+                                                    <div class="fw-semibold">${lesson.studentName} 학생</div>
+
+                                                    <div class="small text-muted mt-1">
+
+                                                        <img src="/img/tutors/cal.svg" alt="날짜" style="width:16px;height:16px;margin-right:4px;"> ${lesson.lessonDate}
+
+                                                        | <img src="/img/tutors/time.svg" alt="시간" style="width:16px;height:16px;margin-right:4px;"> ${lesson.startTime} (${formatDurationText(lesson)})
+
+                                                        | <img src="/img/tutors/class.svg" alt="과목" style="width:16px;height:16px;margin-right:4px;"> ${lesson.subject}
+
+                                                    </div>
+
+                                                    <div class="small text-primary fw-semibold mt-1">수업료 ${formatPriceText(lesson.price)}</div>
+
+                                                </div>
+
+                                                <div class="d-flex flex-column align-items-end gap-2">
+
+                                                    <span class="badge ${statusInfo.className}">${statusInfo.label}</span>
+
+                                                    
+
+                                                </div>
+
+                                            </div>
+
+                                        `;
+
+                                        upcomingContainer.appendChild(item);
+
+                                    });
+
+                                }
+
+                            }
+
+
+
+                            const pastContainer = document.getElementById('pastLessonsContainer');
+
+                            if (pastContainer) {
+
+                                pastContainer.innerHTML = '';
+
+                                if (pastLessons.length === 0) {
+
+                                    pastContainer.innerHTML = `
+
+                                        <div class="text-muted text-center py-3">지난 수업 내역이 없습니다.</div>
+
+                                    `;
+
+                                } else {
+
+                                    pastLessons.forEach((lesson) => {
+
+                                        const statusInfo = lessonStatusInfo(lesson);
+
+                                        const item = document.createElement('div');
+
+                                        item.className = 'schedule-item p-3 border rounded bg-light';
+
+                                        item.innerHTML = `
+
+                                        <div class="d-flex justify-content-between align-items-start">
+
+                                            <div>
+
+                                                <div class="fw-semibold">${lesson.studentName} 학생</div>
+
+                                                <div class="small text-muted mt-1">
+
+                                                    <img src="/img/tutors/cal.svg" alt="날짜" style="width:16px;height:16px;margin-right:4px;"> ${lesson.lessonDate}
+
+                                                    | <img src="/img/tutors/time.svg" alt="시간" style="width:16px;height:16px;margin-right:4px;"> ${lesson.startTime} (${formatDurationText(lesson)})
+
+                                                    | <img src="/img/tutors/class.svg" alt="과목" style="width:16px;height:16px;margin-right:4px;"> ${lesson.subject}
+
+                                                </div>
+
+                                                <div class="small text-primary fw-semibold mt-1">수업료 ${formatPriceText(lesson.price)}</div>
+
+                                            </div>
+
+                                            <span class="badge ${statusInfo.className}">
+
+                                                ${statusInfo.label}
+
+                                            </span>
+
+                                        </div>
+
+                                        `;
+
+                                        pastContainer.appendChild(item);
+
+                                    });
+
+                                }
+
+                            }
+
+                        };
+
+
+
+                        window.refreshTutorScheduleSections = async () => {
+
+                            try {
+
+                                const refreshed = await fetchWithAuth('/api/tutors/me');
+
+                                if (!refreshed.ok) throw new Error('Failed to fetch');
+
+                                const refreshedResult = await refreshed.json();
+
+                                if (!(refreshedResult.success && refreshedResult.data)) {
+
+                                    throw new Error(refreshedResult.message || 'Failed to refresh');
+
+                                }
+
+
+
+                                tutorMypageData = refreshedResult.data;
+
+                                renderScheduleLessonLists(tutorMypageData);
+
+                                populateWeeklyStudentFilter();
+
+                                await refreshWeeklyScheduleView();
+
+                            } catch (refreshError) {
+
+                                console.error('수업/스케줄 섹션 새로고침 실패', refreshError);
+                                alert('수업/스케줄 섹션을 새로고침하지 못했습니다.');
+                            }
+
+                        };
+
+
+
+                        window.openTutorReschedulePrompt = async (bookingId, lessonDate, startTime, lessonMinutes) => {
+
+                            if (!bookingId) {
+
+                                alert('예약 정보가 올바르지 않습니다.');
+                                return;
+
+                            }
+
+
+
+                            const startInput = prompt(
+
+                                '변경할 시작 일시를 입력하세요 (형식: YYYY-MM-DD HH:mm)',
+                                `${lessonDate} ${startTime}`
+
+                            );
+
+                            if (!startInput) return;
+
+
+
+                            const startMatched = String(startInput).trim().match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})$/);
+
+                            if (!startMatched) {
+
+                                alert('시작 일시 형식이 올바르지 않습니다. 예: 2026-02-20 20:00');
+                                return;
+
+                            }
+
+
+
+                            const expectedEnd = (() => {
+
+                                const hhmm = startMatched[2];
+
+                                const m = hhmm.match(/^(\d{2}):(\d{2})$/);
+
+                                if (!m) return '00:30';
+
+                                const total = Number(m[1]) * 60 + Number(m[2]) + Number(lessonMinutes || 30);
+
+                                const normalized = ((total % 1440) + 1440) % 1440;
+
+                                const hh = String(Math.floor(normalized / 60)).padStart(2, '0');
+
+                                const mm = String(normalized % 60).padStart(2, '0');
+
+                                return `${hh}:${mm}`;
+
+                            })();
+
+
+
+                            const endInput = prompt('새 종료 시간을 입력하세요 (형식: HH:mm)', expectedEnd);
+                            if (!endInput) return;
+
+                            if (!/^\d{2}:\d{2}$/.test(endInput)) {
+
+                                alert('종료 시간 형식이 올바르지 않습니다. 예: 21:30');
+                                return;
+
+                            }
+
+
+
+                            try {
+
+                                const res = await fetchWithAuth(`/api/bookings/${bookingId}/reschedule`, {
+
+                                    method: 'PUT',
+
+                                    headers: { 'Content-Type': 'application/json' },
+
+                                    body: JSON.stringify({
+
+                                        date: startMatched[1],
+
+                                        time: startMatched[2],
+
+                                        endTime: endInput
+
+                                    })
+
+                                });
+
+                                const payload = await res.json();
+
+                                if (!payload.success) {
+
+                                    alert(payload.message || '예약 시간 변경 요청에 실패했습니다.');
+                                    return;
+
+                                }
+
+                                alert('예약 시간이 변경되었습니다.');
+                                if (typeof window.refreshTutorScheduleSections === 'function') {
+
+                                    await window.refreshTutorScheduleSections();
+
+                                } else {
+
+                                    location.reload();
+
+                                }
+
+                            } catch (error) {
+
+                                console.error('예약 시간 변경 처리 실패', error);
+                                alert('예약 시간 변경 중 오류가 발생했습니다.');
+                            }
+
+                        };
+
+
+
+                        renderScheduleLessonLists(mypage);
+
+                        
+
+                        // 리뷰 바인딩
+
+                        const reviewContainer = document.querySelector('#reviewsTab .d-grid');
+
+                        if (reviewContainer) {
+
+                            reviewContainer.innerHTML = '';
+
+                            if (mypage.tutorReviews && mypage.tutorReviews.length > 0) {
+
+                                mypage.tutorReviews.forEach(review => {
+
+                                    const rating = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+
+                                    const createdDate = new Date(review.createdAt).toLocaleDateString('ko-KR');
+
+                                    const item = document.createElement('div');
+
+                                    item.className = 'review-item p-3 bg-light rounded';
+
+                                    item.innerHTML = `
+
+                                        <div class="d-flex justify-content-between mb-2">
+
+                                            <div class="fw-semibold">${review.studentName}</div>
+
+                                            <div class="text-warning">${rating}</div>
+
+                                        </div>
+
+                                        <p class="small mb-1">${review.content}</p>
+
+                                        <div class="small text-muted">${createdDate}</div>
+
+                                    `;
+
+                                    reviewContainer.appendChild(item);
+
+                                });
+
+                            } else {
+
+                                reviewContainer.innerHTML = `
+
+                                    <div class="text-muted text-center py-3">리뷰가 없습니다.</div>
+                                `;
+
+                            }
+
+                        }
+
+                        
+
+                        // 월별 수익 통계 렌더링
+                        const tbody = document.querySelector('#earningsTab tbody');
+
+                        if (tbody) {
+
+                            tbody.innerHTML = '';
+
+                            if (mypage.monthlyEarnings && mypage.monthlyEarnings.length > 0) {
+
+                                mypage.monthlyEarnings.forEach(earning => {
+
+                                    const yearMonth = earning.yearMonth.replace('-', '년 ') + '월';
+                                    const row = document.createElement('tr');
+
+                                    row.innerHTML = `
+
+                                        <td>${yearMonth}</td>
+
+                                        <td>${earning.lessonCount}건</td>
+                                        <td>${Math.round(earning.totalHours)}시간</td>
+                                        <td class="text-end fw-semibold text-success">${new Intl.NumberFormat('ko-KR').format(earning.totalEarnings)}원</td>
+                                    `;
+
+                                    tbody.appendChild(row);
+
+                                });
+
+                            } else {
+
+                                const row = document.createElement('tr');
+
+                                row.innerHTML = `
+
+                                    <td colspan="4" class="text-center text-muted py-3">수익 내역이 없습니다.</td>
+                                `;
+
+                                tbody.appendChild(row);
+
+                            }
+
+                        }
+
+                    }
+
+                } catch (e) {
+
+                    console.warn('마이페이지 정보 렌더링 실패', e);
+                }
+
+            });
+
+
+
+            // 튜터 정보 수정 폼 제출 처리
+            document.getElementById('tutorProfileEditForm')?.addEventListener('submit', async e => {
+
+                e.preventDefault();
+
+                const formData = new FormData(e.target);
+
+                
+
+                try {
+
+                    const response = await fetchWithAuth('/api/tutors', {
+
+                        method: 'PUT',
+
+                        body: formData                    
+
+                    });
+
+                    
+
+                    console.log("Response status:", response.status);
+
+                    console.log("Response ok:", response.ok);
+
+                    console.log("Response:", response);
+
+                    
+
+                    // 응답 실패 시 에러 메시지 확인
+                    if (!response.ok) {
+
+                        const errorText = await response.text();
+
+                        console.log("Error response:", errorText);
+
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+
+                    }
+
+
+
+                    const result = await response.json();
+
+                    if (!result.success) {
+
+                        alert(result.message || '튜터 정보 수정에 실패했습니다.');
+                        return;
+
+                    }
+
+
+
+                    alert('튜터 정보 수정 성공');
+                    location.reload();
+
+                } catch (error) {
+
+                    console.error('Error:', error);
+
+                    alert('요청을 처리하는 중 오류가 발생했습니다: ' + error.message);
+                }                
+
+
+
+            });
+
+            
+
+            let mypageCalendar = null;
+
+            const dayEnumToIndex = { SUN: 0, MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6 };
+
+            function resolveDayIndex(rawDay) {
+
+                if (rawDay === null || rawDay === undefined) return undefined;
+
+                if (typeof rawDay === 'number' && Number.isFinite(rawDay)) {
+
+                    if (rawDay >= 0 && rawDay <= 6) return rawDay;
+
+                    if (rawDay >= 1 && rawDay <= 7) return rawDay % 7;
+
+                }
+
+                const source = String(rawDay).trim();
+
+                if (!source) return undefined;
+
+                const asNumber = Number(source);
+
+                if (Number.isFinite(asNumber)) {
+
+                    if (asNumber >= 0 && asNumber <= 6) return asNumber;
+
+                    if (asNumber >= 1 && asNumber <= 7) return asNumber % 7;
+
+                }
+
+                const normalized = source.toUpperCase();
+
+                const table = {
+
+                    SUN: 0, SUNDAY: 0, '일': 0, '일요일': 0,
+
+                    MON: 1, MONDAY: 1, '월': 1, '월요일': 1,
+
+                    TUE: 2, TUES: 2, TUESDAY: 2, '화': 2, '화요일': 2,
+
+                    WED: 3, WEDNESDAY: 3, '수': 3, '수요일': 3,
+
+                    THU: 4, THUR: 4, THURS: 4, THURSDAY: 4, '목': 4, '목요일': 4,
+
+                    FRI: 5, FRIDAY: 5, '금': 5, '금요일': 5,
+
+                    SAT: 6, SATURDAY: 6, '토': 6, '토요일': 6
+
+                };
+
+                return table[normalized] ?? table[source];
+
+            }
+
+            function hasAnyRange(ranges = {}) {
+
+                return Object.values(ranges).some((dayRanges) => Array.isArray(dayRanges) && dayRanges.length > 0);
+
+            }
+
+            function deriveBaseTimeRangesFromRows(rows = [], stepMinutes = 30) {
+
+                const slotsByDay = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+
+                rows.forEach((row) => {
+
+                    const date = String(row?.date || '');
+
+                    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Array.isArray(row?.slots)) return;
+
+                    const dayIdx = new Date(`${date}T00:00:00`).getDay();
+
+                    if (!Number.isFinite(dayIdx) || dayIdx < 0 || dayIdx > 6) return;
+
+                    row.slots.forEach((slotTime) => {
+
+                        const time = String(slotTime || '').slice(0, 5);
+
+                        if (/^\d{2}:\d{2}$/.test(time)) {
+
+                            slotsByDay[dayIdx].push(time);
+
+                        }
+
+                    });
+
+                });
+
+                const result = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+
+                Object.keys(slotsByDay).forEach((key) => {
+
+                    const uniqueTimes = Array.from(new Set(slotsByDay[key]));
+
+                    if (uniqueTimes.length === 0) return;
+
+                    const minutes = uniqueTimes
+
+                        .map((time) => parseTimeToMinutes(time))
+
+                        .filter((value) => Number.isFinite(value))
+
+                        .sort((a, b) => a - b);
+
+                    if (minutes.length === 0) return;
+
+                    const start = minutesToTime(minutes[0]);
+
+                    const end = minutesToTime(minutes[minutes.length - 1] + stepMinutes);
+
+                    if (!start || !end || start >= end) return;
+
+                    result[key].push({ start, end });
+
+                });
+
+                return result;
+
+            }
+
+
+
+            const DEFAULT_BASE_TIME_RANGES = {
+
+                0: [],
+
+                1: [],
+
+                2: [],
+
+                3: [],
+
+                4: [],
+
+                5: [],
+
+                6: []
+
+            };
+
+
+
+            function formatLocalDateTime(date) {
+
+                const y = date.getFullYear();
+
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+
+                const d = String(date.getDate()).padStart(2, '0');
+
+                const hh = String(date.getHours()).padStart(2, '0');
+
+                const mm = String(date.getMinutes()).padStart(2, '0');
+
+                const ss = String(date.getSeconds()).padStart(2, '0');
+
+                return `${y}-${m}-${d}T${hh}:${mm}:${ss}`;
+
+            }
+
+
+
+            function getDateRangeForMaxWeeks(maxWeeks = 9) {
+
+                const today = new Date();
+
+                today.setHours(0, 0, 0, 0);
+
+                const day = today.getDay();
+
+                const sunday = new Date(today);
+
+                sunday.setDate(today.getDate() - day);
+
+
+
+                const start = new Date(sunday);
+
+                start.setHours(0, 0, 0, 0);
+
+
+
+                const maxWeekStart = new Date(sunday);
+
+                maxWeekStart.setDate(maxWeekStart.getDate() + (maxWeeks * 7));
+
+                const end = new Date(maxWeekStart);
+
+                end.setDate(end.getDate() + 6);
+
+                end.setHours(23, 59, 59, 0);
+
+
+
+                return {
+
+                    start: formatLocalDateTime(start),
+
+                    end: formatLocalDateTime(end)
+
+                };
+
+            }
+
+
+
+            function normalizeTimeToStep(rawTime, stepMinutes = 30) {
+
+                const matched = String(rawTime || '').match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+
+                if (!matched) return '';
+
+                const hour = Number(matched[1]);
+
+                const minute = Number(matched[2]);
+
+                const second = Number(matched[3] || '0');
+
+                if (!Number.isFinite(hour) || !Number.isFinite(minute) || !Number.isFinite(second)) return '';
+
+                if (minute % stepMinutes !== 0 || second !== 0) return '';
+
+                return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+
+            }
+
+
+
+            function toLocalDateKey(date) {
+
+                const y = date.getFullYear();
+
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+
+                const d = String(date.getDate()).padStart(2, '0');
+
+                return `${y}-${m}-${d}`;
+
+            }
+
+
+
+            function parseDateTimeFlexible(value, fallbackDate = '', fallbackTime = '') {
+
+                if (value instanceof Date && !Number.isNaN(value.getTime())) {
+                    return new Date(value.getTime());
+                }
+
+                if (Array.isArray(value) && value.length >= 5) {
+                    const year = Number(value[0]);
+                    const month = Number(value[1]);
+                    const day = Number(value[2]);
+                    const hour = Number(value[3] ?? 0);
+                    const minute = Number(value[4] ?? 0);
+                    const second = Number(value[5] ?? 0);
+                    if (
+                        Number.isFinite(year) &&
+                        Number.isFinite(month) &&
+                        Number.isFinite(day) &&
+                        Number.isFinite(hour) &&
+                        Number.isFinite(minute) &&
+                        Number.isFinite(second)
+                    ) {
+                        const parsed = new Date(year, month - 1, day, hour, minute, second);
+                        if (!Number.isNaN(parsed.getTime())) {
+                            return parsed;
+                        }
+                    }
+                }
+
+                if (value && typeof value === 'object') {
+                    const year = Number(value.year);
+                    const month = Number(value.monthValue ?? value.month);
+                    const day = Number(value.dayOfMonth ?? value.day);
+                    const hour = Number(value.hour ?? 0);
+                    const minute = Number(value.minute ?? 0);
+                    const second = Number(value.second ?? 0);
+                    if (
+                        Number.isFinite(year) &&
+                        Number.isFinite(month) &&
+                        Number.isFinite(day) &&
+                        Number.isFinite(hour) &&
+                        Number.isFinite(minute) &&
+                        Number.isFinite(second)
+                    ) {
+                        const parsed = new Date(year, month - 1, day, hour, minute, second);
+                        if (!Number.isNaN(parsed.getTime())) {
+                            return parsed;
+                        }
+                    }
+                }
+
+                if (typeof value === 'string') {
+                    const raw = value.trim();
+                    if (raw) {
+                        const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T');
+                        const parsed = new Date(normalized);
+                        if (!Number.isNaN(parsed.getTime())) {
+                            return parsed;
+                        }
+                    }
+                }
+
+                if (fallbackDate) {
+                    const timeMatch = String(fallbackTime || '').match(/^(\d{2}:\d{2})/);
+                    const fallbackHhmm = timeMatch ? timeMatch[1] : '';
+                    if (fallbackHhmm) {
+                        const parsed = new Date(`${fallbackDate}T${fallbackHhmm}:00`);
+                        if (!Number.isNaN(parsed.getTime())) {
+                            return parsed;
+                        }
+                    }
+                }
+
+                return null;
+
+            }
+
+
+
+            function expandAvailabilityToSlots(item, stepMinutes = 30) {
+
+                const start = parseDateTimeFlexible(item?.startAt);
+
+                if (!start) return [];
+
+
+
+                const endParsed = parseDateTimeFlexible(item?.endAt);
+
+                const end = endParsed && !Number.isNaN(endParsed.getTime()) && endParsed > start
+
+                    ? endParsed
+
+                    : new Date(start.getTime() + (stepMinutes * 60000));
+
+
+
+                const slots = [];
+
+                for (let cursor = new Date(start); cursor < end; cursor = new Date(cursor.getTime() + (stepMinutes * 60000))) {
+
+                    const time = normalizeTimeToStep(
+
+                        `${String(cursor.getHours()).padStart(2, '0')}:${String(cursor.getMinutes()).padStart(2, '0')}:00`,
+
+                        stepMinutes
+
+                    );
+
+                    if (!time) continue;
+
+                    slots.push({
+
+                        date: toLocalDateKey(cursor),
+
+                        time
+
+                    });
+
+                }
+
+                return slots;
+
+            }
+
+
+
+            function buildBookedLessonMaps(selectedStudentId = '') {
+
+                const bookedMap = new Map();
+
+                const metaByDate = new Map();
+
+
+
+                const lessons = [
+
+                    ...(Array.isArray(tutorMypageData?.upcomingLessons) ? tutorMypageData.upcomingLessons : []),
+
+                    ...(Array.isArray(tutorMypageData?.pastLessons) ? tutorMypageData.pastLessons : [])
+
+                ];
+
+
+
+                lessons.forEach((lesson) => {
+
+                    if (!lesson) return;
+
+                    if (lesson.status === 'CANCELLED') return;
+
+                    if (selectedStudentId && lesson.studentId !== selectedStudentId) return;
+
+                    const start = parseDateTimeFlexible(
+                        lesson?.startAt,
+                        lesson?.lessonDate,
+                        lesson?.startTime
+                    );
+                    if (!start) return;
+
+                    const parsedEnd = parseDateTimeFlexible(
+                        lesson?.endAt,
+                        lesson?.lessonDate,
+                        lesson?.endTime
+                    );
+                    const fallbackDuration = (() => {
+                        const hours = Number(lesson?.durationHours);
+                        if (Number.isFinite(hours) && hours > 0) {
+                            return Math.max(30, Math.round(hours * 60));
+                        }
+                        return 30;
+                    })();
+                    const end = parsedEnd && !Number.isNaN(parsedEnd.getTime()) && parsedEnd > start
+                        ? parsedEnd
+                        : new Date(start.getTime() + fallbackDuration * 60000);
+
+                    const totalMinutes = Math.max(30, Math.round((end.getTime() - start.getTime()) / 60000));
+
+                    const startDateKey = toLocalDateKey(start);
+
+                    const startTime = normalizeTimeToStep(
+
+                        `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}:00`,
+
+                        30
+
+                    );
+
+                    const endTime = normalizeTimeToStep(
+
+                        `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}:00`,
+
+                        30
+
+                    );
+
+
+
+                    for (let cursor = new Date(start); cursor < end; cursor = new Date(cursor.getTime() + 30 * 60000)) {
+
+                        const dateKey = toLocalDateKey(cursor);
+
+                        const time = normalizeTimeToStep(
+
+                            `${String(cursor.getHours()).padStart(2, '0')}:${String(cursor.getMinutes()).padStart(2, '0')}:00`,
+
+                            30
+
+                        );
+
+                        if (!time) continue;
+
+
+
+                        if (!bookedMap.has(dateKey)) bookedMap.set(dateKey, new Set());
+
+                        bookedMap.get(dateKey).add(time);
+
+
+
+                        if (!metaByDate.has(dateKey)) metaByDate.set(dateKey, {});
+
+                        if (!metaByDate.get(dateKey)[time]) {
+
+                            metaByDate.get(dateKey)[time] = {
+
+                                bookingId: lesson.bookingId || '',
+
+                                studentId: lesson.studentId || '',
+
+                                studentName: lesson.studentName || '학생',
+                                subject: lesson.subject || '',
+
+                                status: lesson.status || '',
+
+                                paidAt: lesson.paidAt || null,
+
+                                lessonDate: lesson.lessonDate || '',
+
+                                startTime: lesson.startTime || startTime || '',
+
+                                endTime: endTime || '',
+
+                                durationMinutes: totalMinutes,
+
+                                isStartSlot: dateKey === startDateKey && time === startTime
+
+                            };
+
+                        }
+
+                    }
+
+                });
+
+
+
+                return { bookedMap, metaByDate };
+
+            }
+
+
+
+            function populateWeeklyStudentFilter() {
+
+                const select = document.getElementById('weeklyStudentFilter');
+
+                if (!select) return;
+
+
+
+                const previousValue = select.value || '';
+
+                const upcomingLessons = Array.isArray(tutorMypageData?.upcomingLessons)
+
+                    ? tutorMypageData.upcomingLessons
+
+                    : [];
+
+                const studentMap = new Map();
+
+                upcomingLessons.forEach((lesson) => {
+
+                    if (!lesson?.studentId || lesson.status === 'CANCELLED') return;
+
+                    if (!studentMap.has(lesson.studentId)) {
+
+                        studentMap.set(lesson.studentId, lesson.studentName || '학생');
+                    }
+
+                });
+
+
+
+                select.innerHTML = '<option value="">전체 학생</option>';
+                Array.from(studentMap.entries()).forEach(([studentId, studentName]) => {
+
+                    const option = document.createElement('option');
+
+                    option.value = studentId;
+
+                    option.textContent = studentName;
+
+                    select.appendChild(option);
+
+                });
+
+
+
+                if (previousValue && studentMap.has(previousValue)) {
+
+                    select.value = previousValue;
+
+                } else {
+
+                    select.value = '';
+
+                }
+
+            }
+
+
+
+            function updateWeeklyHoverInfo(meta) {
+
+                const info = document.getElementById('weeklyBookingHoverInfo');
+
+                if (!info) return;
+
+                if (!meta) {
+
+                    info.className = 'small text-muted border rounded-12 px-3 py-2 mt-2 mb-3';
+
+                    info.textContent = '예약된 시간에 마우스를 올리면 학생/수업 정보를 볼 수 있습니다.';
+                    return;
+
+                }
+
+
+
+                info.className = 'small border border-primary-subtle bg-primary-subtle rounded-12 px-3 py-2 mt-2 mb-3';
+
+                const studentName = meta.studentName || '학생';
+                const subject = meta.subject || '과목 정보 없음';
+                const date = meta.date || '';
+
+                const time = meta.time || '';
+
+                info.textContent = `${studentName} | ${subject} | ${date} ${time}`;
+
+            }
+
+
+
+            function parseTimeToMinutes(hhmm) {
+
+                const matched = String(hhmm || '').match(/^(\d{2}):(\d{2})$/);
+
+                if (!matched) return NaN;
+
+                return (Number(matched[1]) * 60) + Number(matched[2]);
+
+            }
+
+
+
+            function minutesToTime(totalMinutes) {
+
+                if (!Number.isFinite(totalMinutes) || totalMinutes < 0 || totalMinutes >= 1440) return '';
+
+                const hh = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
+
+                const mm = String(totalMinutes % 60).padStart(2, '0');
+
+                return `${hh}:${mm}`;
+
+            }
+
+
+
+            function isPastDateTime(dateKey, time) {
+
+                const date = new Date(`${dateKey}T${time}:00`);
+
+                if (Number.isNaN(date.getTime())) return true;
+
+                return date.getTime() < Date.now();
+
+            }
+
+
+
+            function clearWeeklyDragOverStyles() {
+
+                const wrap = document.getElementById('mypageWeeklySchedule');
+
+                if (!wrap) return;
+
+                wrap.querySelectorAll('.sch_time.drag-over-valid, .sch_time.drag-over-invalid').forEach((el) => {
+
+                    el.classList.remove('drag-over-valid', 'drag-over-invalid');
+
+                });
+
+                wrap.querySelectorAll('.sch_time.dragging-source').forEach((el) => {
+
+                    el.classList.remove('dragging-source');
+
+                });
+
+            }
+
+
+
+            function validateWeeklyDropTarget(dateKey, startTime, payload) {
+
+                if (!weeklyViewCalendar || !payload) {
+
+                    return { ok: false, message: '드래그 정보가 올바르지 않습니다.' };
+                }
+
+                if (!dateKey || !startTime) {
+
+                    return { ok: false, message: '날짜 또는 시간이 올바르지 않습니다.' };
+                }
+
+                if (payload.startDate === dateKey && payload.startTime === startTime) {
+
+                    return { ok: false, message: '' };
+
+                }
+
+                if (isPastDateTime(dateKey, startTime)) {
+
+                    return { ok: false, message: '지난 시간대로는 이동할 수 없습니다.' };
+                }
+
+
+
+                const durationMinutes = Number(payload.durationMinutes || 30);
+
+                const stepMinutes = Number(weeklyViewCalendar?.options?.timeStepMinutes || 30);
+
+                if (!Number.isFinite(durationMinutes) || durationMinutes <= 0 || (durationMinutes % stepMinutes) !== 0) {
+
+                    return { ok: false, message: '수업 길이 정보가 올바르지 않습니다.' };
+                }
+
+
+
+                const startMinutes = parseTimeToMinutes(startTime);
+
+                if (!Number.isFinite(startMinutes)) {
+
+                    return { ok: false, message: '시작 시간이 올바르지 않습니다.' };
+                }
+
+
+
+                const slotCount = durationMinutes / stepMinutes;
+
+                const bookedSet = weeklyViewCalendar.state.bookedSlots.get(dateKey) || new Set();
+
+                const openSet = weeklyViewCalendar.state.selectedSlots.get(dateKey) || new Set();
+
+                for (let i = 0; i < slotCount; i++) {
+
+                    const slotTime = minutesToTime(startMinutes + (i * stepMinutes));
+
+                    if (!slotTime) {
+
+                        return { ok: false, message: '하루 범위를 벗어나는 시간입니다.' };
+                    }
+
+                    if (bookedSet.has(slotTime)) {
+
+                        return { ok: false, message: '이미 예약된 시간과 겹칩니다.' };
+                    }
+
+                    if (!openSet.has(slotTime)) {
+
+                        return { ok: false, message: '수업 가능 시간이 아닌 구간이 포함되어 있습니다.' };
+                    }
+
+                }
+
+
+
+                const endTime = minutesToTime(startMinutes + durationMinutes);
+
+                if (!endTime) {
+
+                    return { ok: false, message: '종료 시간을 계산할 수 없습니다.' };
+                }
+
+
+
+                return { ok: true, endTime };
+
+            }
+
+
+
+            function markWeeklyDragSources() {
+
+                const wrap = document.getElementById('mypageWeeklySchedule');
+
+                const body = wrap?.querySelector('.dayCon');
+
+                if (!wrap || !body || !weeklyViewCalendar) return;
+
+
+
+                wrap.classList.add('allow-booked-dnd');
+
+                body.querySelectorAll('a.time_in').forEach((anchor) => {
+
+                    const dateKey = anchor.dataset.date;
+
+                    const time = anchor.dataset.time;
+
+                    const key = `${dateKey}|${time}`;
+
+                    const meta = weeklyViewCalendar.state.bookedSlotMeta.get(key);
+
+                    const canDrag = Boolean(
+
+                        meta &&
+
+                        meta.bookingId &&
+
+                        meta.isStartSlot === true &&
+
+                        (meta.status === 'PENDING' || meta.status === 'CONFIRMED')
+
+                    );
+
+                    anchor.draggable = canDrag;
+
+                    anchor.classList.toggle('booked-drag-source', canDrag);
+
+                });
+
+            }
+
+
+
+            function bindWeeklyDnDEvents() {
+
+                if (weeklyDnDBound) return;
+
+                const wrap = document.getElementById('mypageWeeklySchedule');
+
+                const body = wrap?.querySelector('.dayCon');
+
+                if (!wrap || !body) return;
+
+
+
+                weeklyDnDBound = true;
+
+
+
+                body.addEventListener('dragstart', (e) => {
+
+                    const target = e.target.closest('a.time_in.booked-drag-source');
+
+                    if (!target || !body.contains(target) || !weeklyViewCalendar) return;
+
+
+
+                    const dateKey = target.dataset.date;
+
+                    const time = target.dataset.time;
+
+                    const meta = weeklyViewCalendar.state.bookedSlotMeta.get(`${dateKey}|${time}`);
+
+                    if (!meta || !meta.bookingId) {
+
+                        e.preventDefault();
+
+                        return;
+
+                    }
+
+
+
+                    weeklyDragPayload = {
+
+                        bookingId: meta.bookingId,
+
+                        startDate: dateKey,
+
+                        startTime: time,
+
+                        durationMinutes: Number(meta.durationMinutes || 30)
+
+                    };
+
+
+
+                    target.closest('.sch_time')?.classList.add('dragging-source');
+
+                    if (e.dataTransfer) {
+
+                        e.dataTransfer.effectAllowed = 'move';
+
+                        e.dataTransfer.setData('text/plain', meta.bookingId);
+
+                    }
+
+                });
+
+
+
+                body.addEventListener('dragend', () => {
+
+                    weeklyDragPayload = null;
+
+                    clearWeeklyDragOverStyles();
+
+                });
+
+
+
+                body.addEventListener('dragover', (e) => {
+
+                    if (!weeklyDragPayload) return;
+
+                    const target = e.target.closest('a.time_in');
+
+                    if (!target || !body.contains(target)) return;
+
+
+
+                    e.preventDefault();
+
+                    clearWeeklyDragOverStyles();
+
+
+
+                    const dateKey = target.dataset.date;
+
+                    const time = target.dataset.time;
+
+                    const inRange = target.dataset.inRange === 'true';
+
+                    const slotWrap = target.closest('.sch_time');
+
+                    if (!slotWrap || !inRange) {
+
+                        slotWrap?.classList.add('drag-over-invalid');
+
+                        if (e.dataTransfer) e.dataTransfer.dropEffect = 'none';
+
+                        return;
+
+                    }
+
+
+
+                    const check = validateWeeklyDropTarget(dateKey, time, weeklyDragPayload);
+
+                    slotWrap.classList.add(check.ok ? 'drag-over-valid' : 'drag-over-invalid');
+
+                    if (e.dataTransfer) {
+
+                        e.dataTransfer.dropEffect = check.ok ? 'move' : 'none';
+
+                    }
+
+                });
+
+
+
+                body.addEventListener('drop', async (e) => {
+
+                    if (!weeklyDragPayload) return;
+
+                    const target = e.target.closest('a.time_in');
+
+                    if (!target || !body.contains(target)) return;
+
+
+
+                    e.preventDefault();
+
+                    const dateKey = target.dataset.date;
+
+                    const time = target.dataset.time;
+
+                    const check = validateWeeklyDropTarget(dateKey, time, weeklyDragPayload);
+
+                    clearWeeklyDragOverStyles();
+
+
+
+                    if (!check.ok) {
+
+                        if (check.message) alert(check.message);
+
+                        return;
+
+                    }
+
+
+
+                    try {
+
+                        const response = await fetchWithAuth(`/api/bookings/${weeklyDragPayload.bookingId}/reschedule`, {
+
+                            method: 'PUT',
+
+                            headers: { 'Content-Type': 'application/json' },
+
+                            body: JSON.stringify({
+
+                                date: dateKey,
+
+                                time: time,
+
+                                endTime: check.endTime
+
+                            })
+
+                        });
+
+                        const result = await response.json();
+
+                        if (!result.success) {
+
+                            alert(result.message || '시간 변경에 실패했습니다.');
+                            return;
+
+                        }
+
+
+
+                        alert('예약 시간이 변경되었습니다.');
+                        if (typeof window.refreshTutorScheduleSections === 'function') {
+
+                            await window.refreshTutorScheduleSections();
+
+                        } else {
+
+                            location.reload();
+
+                        }
+
+                    } catch (error) {
+
+                        console.error('드래그 예약 변경 실패', error);
+                        alert('시간 변경 중 오류가 발생했습니다.');
+                    }
+
+                });
+
+            }
+
+
+
+            function enableWeeklyRescheduleDnD() {
+
+                markWeeklyDragSources();
+
+                bindWeeklyDnDEvents();
+
+            }
+
+
+
+            async function loadBaseTimeRanges() {
+
+                try {
+
+                    const response = await fetchWithAuth('/api/tutors/me/time-ranges');
+
+                    if (!response.ok) throw new Error('Failed to load');
+
+                    const result = await response.json();
+
+
+
+                    if (result.success && result.data) {
+
+                        const ranges = JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+
+                        result.data.forEach(item => {
+
+                            const dayIdx = resolveDayIndex(item.dayOfWeek ?? item.day ?? item.weekDay);
+
+                            if (dayIdx !== undefined) {
+
+                                const startTime = String(item.startTime || item.startAt || '').slice(0, 5);
+
+                                const endTime = String(item.endTime || item.endAt || '').slice(0, 5);
+
+                                if (!/^\d{2}:\d{2}$/.test(startTime) || !/^\d{2}:\d{2}$/.test(endTime) || startTime >= endTime) {
+
+                                    return;
+
+                                }
+
+                                ranges[dayIdx].push({ start: startTime, end: endTime });
+
+                            }
+
+                        });
+
+                        return ranges;
+
+                    }
+
+                } catch (e) {
+
+                    console.warn('Failed to load time ranges from API', e);
+
+                }
+
+
+
+                return JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+
+            }
+
+
+
+            async function loadAvailability(selectedStudentId = '') {
+
+                try {
+
+                    const { start, end } = getDateRangeForMaxWeeks(9);
+
+                    const response = await fetchWithAuth(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+
+                    if (!response.ok) throw new Error('Failed to load');
+
+
+
+                    const result = await response.json();
+
+                    if (result.success && result.data) {
+
+                        const selectedMap = new Map();
+
+                        const bookedMap = new Map();
+
+                        const { bookedMap: lessonBookedMap, metaByDate } = buildBookedLessonMaps(selectedStudentId);
+
+
+
+                        result.data.forEach(item => {
+
+                            const slots = expandAvailabilityToSlots(item, 30);
+
+                            const status = String(item.status || '').toUpperCase();
+
+
+
+                            slots.forEach((slot) => {
+
+                                if (status === 'BOOKED') {
+
+                                    if (selectedStudentId) {
+
+                                        const lessonSlots = lessonBookedMap.get(slot.date);
+
+                                        if (!lessonSlots || !lessonSlots.has(slot.time)) {
+
+                                            return;
+
+                                        }
+
+                                    }
+
+                                    if (!bookedMap.has(slot.date)) bookedMap.set(slot.date, new Set());
+
+                                    bookedMap.get(slot.date).add(slot.time);
+
+                                    if (!metaByDate.has(slot.date)) metaByDate.set(slot.date, {});
+
+                                    if (!metaByDate.get(slot.date)[slot.time]) {
+
+                                        metaByDate.get(slot.date)[slot.time] = {
+
+                                            studentId: '',
+
+                                            studentName: '',
+
+                                            subject: '',
+
+                                            status: 'BOOKED'
+
+                                        };
+
+                                    }
+
+                                    return;
+
+                                }
+
+
+
+                                if (status && status !== 'OPEN') return;
+
+                                if (!selectedMap.has(slot.date)) selectedMap.set(slot.date, new Set());
+
+                                selectedMap.get(slot.date).add(slot.time);
+
+                            });
+
+                        });
+
+
+
+                        const resultData = [];
+
+                        selectedMap.forEach((times, date) => {
+
+                            resultData.push({ date, slots: Array.from(times) });
+
+                        });
+
+                        bookedMap.forEach((times, date) => {
+
+                            resultData.push({
+
+                                date,
+
+                                slots: Array.from(times),
+
+                                booked: true,
+
+                                metaByTime: metaByDate.get(date) || {}
+
+                            });
+
+                        });
+
+
+
+                        return resultData;
+
+                    }
+
+                } catch (e) {
+
+                    console.warn('Failed to load availability from API', e);
+
+                }
+
+                return [];
+
+            }
+
+            async function resetAllSchedulesFromEditor() {
+
+                const timeRangeResponse = await fetchWithAuth('/api/tutors/me/time-ranges', {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify([])
+
+                });
+
+                const timeRangeResult = await timeRangeResponse.json();
+
+                if (!(timeRangeResponse.ok && timeRangeResult.success)) {
+
+                    throw new Error(timeRangeResult?.message || '기본 시간대 초기화 실패');
+
+                }
+
+                const { start, end } = getDateRangeForMaxWeeks(520);
+
+                const availabilityResponse = await fetchWithAuth(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify([])
+
+                });
+
+                const availabilityResult = await availabilityResponse.json();
+
+                if (!(availabilityResponse.ok && availabilityResult.success)) {
+
+                    throw new Error(availabilityResult?.message || '가용 시간 초기화 실패');
+
+                }
+
+            }
+
+            async function refreshScheduleCalendarsOnly() {
+
+                const baseTimeRangesFromApi = await loadBaseTimeRanges();
+                const editorData = await loadAvailability();
+                const derivedBaseTimeRanges = deriveBaseTimeRangesFromRows(editorData, 30);
+                const effectiveBaseTimeRanges = hasAnyRange(baseTimeRangesFromApi)
+                    ? baseTimeRangesFromApi
+                    : derivedBaseTimeRanges;
+
+                if (mypageCalendar) {
+                    const currentWeekStart = mypageCalendar?.state?.weekStart
+                        ? new Date(mypageCalendar.state.weekStart)
+                        : null;
+                    mypageCalendar.options.baseTimeRanges = effectiveBaseTimeRanges;
+                    mypageCalendar.options.renderOnlyInRange = hasAnyRange(effectiveBaseTimeRanges);
+                    mypageCalendar.setInitialData(editorData);
+                    if (currentWeekStart) {
+                        mypageCalendar.state.weekStart = currentWeekStart;
+                        mypageCalendar.render();
+                    }
+                }
+
+                if (weeklyViewCalendar) {
+                    const selectedStudentId = document.getElementById('weeklyStudentFilter')?.value || '';
+                    const weeklyData = await loadAvailability(selectedStudentId);
+                    const currentWeekStart = weeklyViewCalendar?.state?.weekStart
+                        ? new Date(weeklyViewCalendar.state.weekStart)
+                        : null;
+                    weeklyViewCalendar.options.baseTimeRanges = effectiveBaseTimeRanges;
+                    weeklyViewCalendar.options.renderOnlyInRange = hasAnyRange(effectiveBaseTimeRanges);
+                    weeklyViewCalendar.setInitialData(weeklyData);
+                    if (currentWeekStart) {
+                        weeklyViewCalendar.state.weekStart = currentWeekStart;
+                        weeklyViewCalendar.render();
+                    }
+                    updateWeeklyHoverInfo(null);
+                    enableWeeklyRescheduleDnD();
+                }
+
+            }
+
+
+
+            async function toggleScheduleEditor() {
+
+                const editorCard = document.getElementById('scheduleEditorCard');
+
+                const isVisible = editorCard.style.display !== 'none';
+
+                
+
+                if (isVisible) {
+
+                    editorCard.style.display = 'none';
+
+                } else {
+
+                    editorCard.style.display = 'block';
+
+                    
+
+                    // 캘린더 초기화 (최초 1회만)
+                    if (!mypageCalendar) {
+
+                        const baseTimeRangesFromApi = await loadBaseTimeRanges();
+
+                        const initialData = await loadAvailability();
+
+                        const derivedBaseTimeRanges = deriveBaseTimeRangesFromRows(initialData, 30);
+
+                        const effectiveBaseTimeRanges = hasAnyRange(baseTimeRangesFromApi)
+
+                            ? baseTimeRangesFromApi
+
+                            : derivedBaseTimeRanges;
+
+
+
+                        mypageCalendar = new TutorCalendar({
+
+                            containerId: 'mypageScheduleEditor',
+
+                            mode: 'edit',
+
+                            baseTimeRanges: effectiveBaseTimeRanges,
+
+                            renderOnlyInRange: hasAnyRange(effectiveBaseTimeRanges),
+
+                            timeStepMinutes: 30,
+
+                            initialData: initialData
+
+                        });
+
+
+
+                        // 저장 버튼
+                        document.getElementById('btnSaveSchedule').addEventListener('click', async () => {
+
+                            const selectedData = mypageCalendar.getSelectedData();
+
+                            
+
+                            if (selectedData.length === 0) {
+
+                                alert('선택된 시간이 없습니다.');
+                                return;
+
+                            }
+
+
+
+                            try {
+
+                                const { start, end } = getDateRangeForMaxWeeks(9);
+
+                                const availabilities = selectedData.map(item => {
+
+                                    const startDate = new Date(`${item.date}T${item.time}:00`);
+
+                                    const endDate = new Date(startDate.getTime() + (mypageCalendar.options.timeStepMinutes * 60000));
+
+                                    return {
+
+                                        startAt: formatLocalDateTime(startDate),
+
+                                        endAt: formatLocalDateTime(endDate),
+
+                                        status: 'OPEN'
+
+                                    };
+
+                                });
+
+
+
+                                const response = await fetchWithAuth(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+
+                                    method: 'POST',
+
+                                    headers: { 'Content-Type': 'application/json' },
+
+                                    body: JSON.stringify(availabilities)
+
+                                });
+
+
+
+                                const result = await response.json();
+
+                                if (!result.success) throw new Error(result.message || '저장 실패');
+
+
+                                alert('스케줄이 저장되었습니다.');
+                                toggleScheduleEditor();
+
+                            } catch (error) {
+
+                                console.error('저장 중 오류:', error);
+                                alert('저장에 실패했습니다.');
+                            }
+
+                        });
+
+                        document.getElementById('btnResetScheduleAllMypage')?.addEventListener('click', async () => {
+
+                            if (!confirm('스케줄을 전체 초기화하시겠습니까?\n예약된 수업은 유지됩니다.')) {
+
+                                return;
+
+                            }
+
+                            const btnSaveSchedule = document.getElementById('btnSaveSchedule');
+                            const btnResetSchedule = document.getElementById('btnResetScheduleAllMypage');
+                            if (btnSaveSchedule) btnSaveSchedule.disabled = true;
+                            if (btnResetSchedule) btnResetSchedule.disabled = true;
+
+                            try {
+
+                                await resetAllSchedulesFromEditor();
+                                await refreshScheduleCalendarsOnly();
+
+                                alert('스케줄이 전체 초기화되었습니다. 예약된 수업은 유지됩니다.');
+
+                            } catch (error) {
+
+                                console.error('전체 초기화 중 오류:', error);
+                                alert(error?.message || '전체 초기화에 실패했습니다.');
+
+                            } finally {
+
+                                if (btnSaveSchedule) btnSaveSchedule.disabled = false;
+                                if (btnResetSchedule) btnResetSchedule.disabled = false;
+
+                            }
+
+                        });
+
+                    }
+
+                }
+
+            }
+
+
+
+            // 주간 스케줄 탭 - readonly 캘린더
+            let weeklyViewCalendar = null;
+
+            async function refreshWeeklyScheduleView() {
+
+                if (!weeklyViewCalendar) return;
+
+                const selectedStudentId = document.getElementById('weeklyStudentFilter')?.value || '';
+
+                const initialData = await loadAvailability(selectedStudentId);
+
+                weeklyViewCalendar.setInitialData(initialData);
+
+                updateWeeklyHoverInfo(null);
+
+                enableWeeklyRescheduleDnD();
+
+            }
+
+
+
+            async function initWeeklyScheduleView() {
+
+                if (weeklyViewCalendar) return;
+
+
+
+                try {
+
+                    const baseTimeRangesFromApi = await loadBaseTimeRanges();
+
+                    const initialData = await loadAvailability();
+
+                    const derivedBaseTimeRanges = deriveBaseTimeRangesFromRows(initialData, 30);
+
+                    const effectiveBaseTimeRanges = hasAnyRange(baseTimeRangesFromApi)
+
+                        ? baseTimeRangesFromApi
+
+                        : derivedBaseTimeRanges;
+
+
+
+                    weeklyViewCalendar = new TutorCalendar({
+
+                        containerId: 'mypageWeeklySchedule',
+
+                        prevBtnId: 'btnPrevWeekView',
+
+                        nextBtnId: 'btnNextWeekView',
+
+                        rangeLabelId: 'weekRangeLabelView',
+
+                        mode: 'readonly',
+
+                        baseTimeRanges: effectiveBaseTimeRanges,
+
+                        renderOnlyInRange: hasAnyRange(effectiveBaseTimeRanges),
+
+                        timeStepMinutes: 30,
+
+                        initialData: initialData,
+
+                        onBookedSlotHover: updateWeeklyHoverInfo,
+
+                        onWeekChange: () => {
+
+                            enableWeeklyRescheduleDnD();
+
+                            updateWeeklyHoverInfo(null);
+
+                        }
+
+                    });
+
+                    enableWeeklyRescheduleDnD();
+
+
+
+                    const studentFilter = document.getElementById('weeklyStudentFilter');
+
+                    if (studentFilter && !weeklyFilterBound) {
+
+                        weeklyFilterBound = true;
+
+                        studentFilter.addEventListener('change', async () => {
+
+                            await refreshWeeklyScheduleView();
+
+                        });
+
+                    }
+
+                } catch (e) {
+
+                    console.warn('주간 스케줄 캘린더 초기화 실패', e);
+                }
+
+            }
+
+
+
+            // 탭 전환 시 lazy 초기화
+            document.addEventListener('DOMContentLoaded', function() {
+
+                const weeklyTabBtn = document.querySelector('[data-bs-target="#weeklyScheduleTab"]');
+
+                if (weeklyTabBtn) {
+
+                    weeklyTabBtn.addEventListener('shown.bs.tab', async function() {
+
+                        await initWeeklyScheduleView();
+
+                        await refreshWeeklyScheduleView();
+
+                    });
+
+                }
+
+            });
+
+        </script>
+
+    </div>
+
+</div>
+
+
+
+

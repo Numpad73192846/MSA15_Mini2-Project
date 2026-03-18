@@ -1,0 +1,457 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/main_layout}">
+
+  <div layout:fragment="content">
+    <div class="container py-5">
+      <div class="mb-4">
+        <h2 class="h3 fw-bold mb-1">튜터 찾기</h2>
+        <p class="text-muted mb-0">나에게 맞는 전문 튜터를 찾아보세요</p>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label">검색</label>
+              <input id="tutorSearch" type="text" class="form-control" placeholder="튜터 이름 또는 과목 검색...">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">언어</label>
+              <div class="dropdown" style="position: relative;">
+                <button class="form-select text-start" type="button" id="languageDropdown"
+                  style="cursor: pointer; background-color: #fff;" onclick="toggleMenu('languageDropdownMenu')">
+                  전체 언어
+                </button>
+                <div class="dropdown_inner" id="languageDropdownMenu"
+                  style="display:none; position:absolute; top:100%; left:0; right:0; z-index:1000; border:1px solid #ddd; border-radius:4px; max-height:200px; overflow-y:auto; background:#fff; margin-top:4px; box-shadow:0 2px 8px rgba(0,0,0,0.1); opacity:0; transform:translateY(-10px); transition:all 0.3s ease;">
+                  <div class="drop_tit"
+                    style="padding:10px 14px; background-color:#f8f9fa; border-bottom:1px solid #e9ecef; font-weight:600; font-size:12px;">
+                    언어 선택
+                  </div>
+
+                  <ul class="check_list list flex wrap"
+                    style="list-style:none; padding:10px 14px; margin:0; display:flex; flex-wrap:wrap; gap:6px;">
+                    <li><button type="button" class="languageFilterBtn" value="all"
+                        style="background-color:#0066cc; color:#fff; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">전체</button>
+                    </li>
+                    <li><button type="button" class="languageFilterBtn" value="한국어"
+                        style="background-color:#f0f0f0; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">한국어</button>
+                    </li>
+                    <li><button type="button" class="languageFilterBtn" value="영어"
+                        style="background-color:#f0f0f0; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">영어</button>
+                    </li>
+                    <li><button type="button" class="languageFilterBtn" value="중국어"
+                        style="background-color:#f0f0f0; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">중국어</button>
+                    </li>
+                    <li><button type="button" class="languageFilterBtn" value="일본어"
+                        style="background-color:#f0f0f0; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">일본어</button>
+                    </li>
+                    <li><button type="button" class="languageFilterBtn" value="불어"
+                        style="background-color:#f0f0f0; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">불어</button>
+                    </li>
+                    <li><button type="button" class="languageFilterBtn" value="스페인어"
+                        style="background-color:#f0f0f0; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">스페인어</button>
+                    </li>
+                    <li><button type="button" class="languageFilterBtn" value="독일어"
+                        style="background-color:#f0f0f0; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">독일어</button>
+                    </li>
+                    <li><button type="button" class="languageFilterBtn" value="러시아어"
+                        style="background-color:#f0f0f0; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">러시아어</button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">카테고리</label>
+              <div class="dropdown" style="position: relative;">
+                <button class="form-select text-start" type="button" id="categoryDropdown"
+                  style="cursor: pointer; background-color: #fff;" onclick="toggleMenu('categoryDropdownMenu')">
+                  수업 분야 선택
+                </button>
+                <div class="dropdown_inner scrollst" id="categoryDropdownMenu"
+                  style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; border: 1px solid #ddd; border-radius: 4px; max-height: 250px; overflow-y: auto; background: #fff; margin-top: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); opacity: 0; transform: translateY(-10px); transition: all 0.3s ease;">
+                  <!-- 일반 섹션 -->
+                  <div class="drop_tit"
+                    style="padding: 10px 14px; background-color: #f8f9fa; border-bottom: 1px solid #e9ecef; font-weight: 600; font-size: 12px;">
+                    <span class="tt">일반</span>
+                  </div>
+                  <ul class="check_list list flex wrap"
+                    style="list-style: none; padding: 10px 14px; margin: 0; display: flex; flex-wrap: wrap; gap: 6px;">
+                    <li><button type="button" class="fieldFilterBtn" value="회화"
+                        style="background-color: #f0f0f0; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s;">회화</button>
+                    </li>
+                    <li><button type="button" class="fieldFilterBtn" value="문법"
+                        style="background-color: #f0f0f0; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s;">문법</button>
+                    </li>
+                    <li><button type="button" class="fieldFilterBtn" value="읽기"
+                        style="background-color: #f0f0f0; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s;">읽기</button>
+                    </li>
+                    <li><button type="button" class="fieldFilterBtn" value="작문"
+                        style="background-color: #f0f0f0; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s;">작문</button>
+                    </li>
+                    <li><button type="button" class="fieldFilterBtn" value="발음"
+                        style="background-color: #f0f0f0; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s;">발음</button>
+                    </li>
+                  </ul>
+
+                  <!-- 분야별 섹션 -->
+                  <div class="drop_tit"
+                    style="padding: 10px 14px; background-color: #f8f9fa; border-top: 1px solid #e9ecef; border-bottom: 1px solid #e9ecef; font-weight: 600; font-size: 12px;">
+                    <span class="tt">분야별</span>
+                  </div>
+                  <ul class="check_list list flex wrap"
+                    style="list-style: none; padding: 10px 14px; margin: 0; display: flex; flex-wrap: wrap; gap: 6px;">
+                    <li><button type="button" class="fieldFilterBtn" value="학교"
+                        style="background-color: #f0f0f0; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s;">학교</button>
+                    </li>
+                    <li><button type="button" class="fieldFilterBtn" value="비즈니스"
+                        style="background-color: #f0f0f0; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s;">비즈니스</button>
+                    </li>
+                    <li><button type="button" class="fieldFilterBtn" value="여행"
+                        style="background-color: #f0f0f0; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s;">여행</button>
+                    </li>
+                    <li><button type="button" class="fieldFilterBtn" value="노래"
+                        style="background-color: #f0f0f0; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s;">노래</button>
+                    </li>
+                    <li><button type="button" class="fieldFilterBtn" value="영화"
+                        style="background-color: #f0f0f0; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s;">영화</button>
+                    </li>
+                    <li><button type="button" class="fieldFilterBtn" value="드라마"
+                        style="background-color: #f0f0f0; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s;">드라마</button>
+                    </li>
+                    <li><button type="button" class="fieldFilterBtn" value="문화"
+                        style="background-color: #f0f0f0; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s;">문화</button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">가격대</label>
+              <div class="dropdown" style="position: relative;">
+                <button class="form-select text-start" type="button" id="priceDropdown"
+                  style="cursor: pointer; background-color: #fff;" onclick="toggleMenu('priceDropdownMenu')">
+                  전체 가격
+                </button>
+                <div class="dropdown_inner" id="priceDropdownMenu"
+                  style="display:none; position:absolute; top:100%; left:0; right:0; z-index:1000; border:1px solid #ddd; border-radius:4px; max-height:200px; overflow-y:auto; background:#fff; margin-top:4px; box-shadow:0 2px 8px rgba(0,0,0,0.1); opacity:0; transform:translateY(-10px); transition:all 0.3s ease;">
+                  <div class="drop_tit"
+                    style="padding:10px 14px; background-color:#f8f9fa; border-bottom:1px solid #e9ecef; font-weight:600; font-size:12px;">
+                    가격대 선택
+                  </div>
+
+                  <ul class="check_list list flex wrap"
+                    style="list-style:none; padding:10px 14px; margin:0; display:flex; flex-wrap:wrap; gap:6px;">
+                    <li><button type="button" class="priceFilterBtn" value="all"
+                        style="background-color:#0066cc; color:#fff; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">전체</button>
+                    </li>
+                    <li><button type="button" class="priceFilterBtn" value="low"
+                        style="background-color:#f0f0f0; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">~35,000원</button>
+                    </li>
+                    <li><button type="button" class="priceFilterBtn" value="mid"
+                        style="background-color:#f0f0f0; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">35,000~40,000원</button>
+                    </li>
+                    <li><button type="button" class="priceFilterBtn" value="high"
+                        style="background-color:#f0f0f0; border:1px solid #ddd; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:12px; transition:all 0.2s;">40,000원~</button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tutorList" class="row g-4">
+        <!-- 동적 렌더링 -->
+      </div>
+
+      <div id="tutorEmpty" class="text-center py-5 d-none">
+        <p class="text-muted fs-5 mb-0">검색 결과가 없습니다.</p>
+      </div>
+    </div>
+  </div>
+  <th:block layout:fragment="extra-scripts">
+    <script th:inline="javascript">
+
+      const filterState = {
+        searchTerm: '',
+        selectedLanguage: 'all',
+        selectedPrice: 'all',
+        selectedFields: new Set()
+      };
+
+      const priceMap = {
+        low: { min: 0, max: 35000 },
+        mid: { min: 35000, max: 40000 },
+        high: { min: 40000, max: 1000000 }
+      };
+
+
+      function toggleMenu(menuId) {
+        const menu = document.getElementById(menuId);
+        if (!menu) return;
+
+        // 다른 메뉴 닫기
+        document.querySelectorAll('.dropdown_inner').forEach(m => {
+          if (m.id !== menuId) {
+            m.style.display = 'none';
+            m.style.opacity = '0';
+            m.style.transform = 'translateY(-10px)';
+          }
+        });
+
+        // 현재 메뉴 토글
+        const isOpen = menu.style.display === 'block';
+
+        if (isOpen) {
+          menu.style.display = 'none';
+          menu.style.opacity = '0';
+          menu.style.transform = 'translateY(-10px)';
+        } else {
+          menu.style.display = 'block';
+          menu.style.opacity = '1';
+          menu.style.transform = 'translateY(0)';
+        }
+      }
+
+      // 외부 클릭 시 메뉴 닫기
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest('.dropdown')) {
+          document.querySelectorAll('.dropdown_inner').forEach(menu => {
+            menu.style.display = 'none';
+            menu.style.opacity = '0';
+            menu.style.transform = 'translateY(-10px)';
+          });
+        }
+      });
+
+      // 칩 선택 스타일
+      function setChipSelected(btn, selected) {
+        if (selected) {
+          btn.style.backgroundColor = '#0066cc';
+          btn.style.color = '#fff';
+        } else {
+          btn.style.backgroundColor = '#f0f0f0';
+          btn.style.color = '#000';
+        }
+
+      }
+
+      async function fetchTutors() {
+        const params = new URLSearchParams();
+
+        if (filterState.searchTerm) {
+          params.append('searchTerm', filterState.searchTerm);
+        }
+
+        if (filterState.selectedLanguage && filterState.selectedLanguage !== 'all') {
+          params.append('language', filterState.selectedLanguage);
+        }
+
+        if (filterState.selectedFields.size > 0) {
+          params.append('subjects', Array.from(filterState.selectedFields).join(','));
+        }
+
+        if (filterState.selectedPrice !== 'all') {
+          const range = priceMap[filterState.selectedPrice];
+          if (range) {
+            params.append('minPrice', range.min);
+            params.append('maxPrice', range.max);
+          }
+        }
+
+        try {
+          const url = '/api/tutors?' + params.toString();
+          console.log('[DEBUG] Fetching tutors:', url);
+          const response = await fetch(url);
+          const result = await response.json();
+          console.log('[DEBUG] API Response:', result);
+
+          if (result.success) {
+            console.log('[DEBUG] Tutors data:', result.data);
+            renderTutors(result.data);
+          }
+          else {
+            console.log('[DEBUG] API failed:', result);
+            renderTutors([]);
+          }
+        } catch (error) {
+          console.error('[DEBUG] Fetch error:', error);
+          renderTutors([]);
+        }
+
+      }
+
+      function renderTutors(tutors) {
+        console.log('[DEBUG] Rendering tutors:', tutors);
+        const tutorList = document.getElementById('tutorList');
+        const tutorEmpty = document.getElementById('tutorEmpty');
+
+        if (!tutors || tutors.length === 0) {
+          tutorList.innerHTML = '';
+          tutorEmpty.classList.remove('d-none');
+          return;
+        }
+
+        tutorEmpty.classList.add('d-none');
+
+        const html = tutors.map(tutor => {
+          const subjects = (tutor.subjects || '').split(',').map(subject => subject.trim()).filter(Boolean);
+          const subjectBadges = subjects.map(subject =>
+            `<span class="badge text-bg-light">${subject}</span>`
+          ).join('');
+
+          return `
+          <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm tutor-card">
+                    <div class="card-body">
+                        <div class="d-flex gap-3">
+                            <div class="rounded-circle ${tutor.profileImg ? '' : 'bg-primary'} text-white d-flex align-items-center justify-content-center overflow-hidden"
+                                 style="width:64px;height:64px;font-size:24px;flex:0 0 auto;">
+                                ${tutor.profileImg
+              ? `<img src="${tutor.profileImg}" alt="프로필 이미지" class="w-100 h-100 object-fit-cover">`
+              : (tutor.name || 'T').charAt(0)}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold fs-5">${tutor.nickname || '튜터'}</div>
+                                <div class="small text-muted mb-2">
+                                    <img src="/img/tutors/star.svg" alt="별점" style="width:16px;height:16px;margin-right:4px;">
+                                    <span class="fw-semibold">${tutor.ratingAvg || '-'}</span>
+                                    <span class="text-muted">(${tutor.reviewCount || 0})</span>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 mb-2">
+                                    ${subjectBadges}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p class="text-muted mt-3 mb-3">${tutor.bio || ''}</p>
+                        
+                        <div class="small text-muted mb-1">
+                            <img src="/img/tutors/time.svg" alt="경력" style="width:16px;height:16px;margin-right:4px;">
+                            경력 <span>${tutor.experience || '정보 없음'}</span>
+                        </div>
+                        <div class="small mb-3">
+                            <img src="/img/tutors/money.svg" alt="가격" style="width:16px;height:16px;margin-right:4px;">
+                            <span class="fw-semibold text-primary">수업당 <span>${tutor.price ? Number(tutor.price).toLocaleString() : '가격 미정'}</span>원</span>
+                        </div>
+                        
+                        <a class="btn btn-primary w-100" href="/tutors/${tutor.id}">프로필 보기</a>
+                    </div>
+                </div>
+            </div>
+        `;
+        }).join('');
+
+        tutorList.innerHTML = html;
+
+      }
+
+      let searchTimer = null;
+      function handleSearchInput(value) {
+        if (searchTimer) {
+          clearTimeout(searchTimer);
+        }
+
+        searchTimer = setTimeout(() => {
+          filterState.searchTerm = value.trim();
+          fetchTutors();
+        }, 300);
+      }
+
+      // DOM 로드 완료 후 이벤트 리스너 등록 (★ 1번만!)
+      document.addEventListener('DOMContentLoaded', function () {
+
+        // ✅ 언어: 단일 선택
+        let selectedLanguage = 'all';
+        document.querySelectorAll('.languageFilterBtn').forEach(btn => {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+
+            selectedLanguage = this.value;
+            filterState.selectedLanguage = selectedLanguage;
+
+            // 전체 초기화 후 선택만 강조
+            document.querySelectorAll('.languageFilterBtn').forEach(b =>
+              setChipSelected(b, b.value === selectedLanguage)
+            );
+
+            // 버튼 텍스트 갱신
+            const langBtn = document.getElementById('languageDropdown');
+            if (langBtn) {
+              langBtn.textContent = (selectedLanguage === 'all') ? '전체 언어' : this.textContent;
+            }
+
+            fetchTutors();
+          });
+        });
+
+        // ✅ 가격: 단일 선택
+        let selectedPrice = 'all';
+        document.querySelectorAll('.priceFilterBtn').forEach(btn => {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+
+            selectedPrice = this.value;
+            filterState.selectedPrice = selectedPrice;
+
+            document.querySelectorAll('.priceFilterBtn').forEach(b =>
+              setChipSelected(b, b.value === selectedPrice)
+            );
+
+            const priceBtn = document.getElementById('priceDropdown');
+            if (priceBtn) {
+              priceBtn.textContent = (selectedPrice === 'all') ? '전체 가격' : this.textContent;
+            }
+
+            fetchTutors();
+          });
+        });
+
+        // ✅ 카테고리: 다중 선택 (기존)
+        const selectedFields = new Set();
+        document.querySelectorAll('.fieldFilterBtn').forEach(btn => {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+
+            const value = this.value;
+
+            if (selectedFields.has(value)) {
+              selectedFields.delete(value);
+              this.style.backgroundColor = '#f0f0f0';
+              this.style.color = '#000';
+            } else {
+              selectedFields.add(value);
+              this.style.backgroundColor = '#0066cc';
+              this.style.color = '#fff';
+            }
+
+            filterState.selectedFields = selectedFields;
+
+            const categoryBtn = document.getElementById('categoryDropdown');
+            if (categoryBtn) {
+              categoryBtn.textContent = (selectedFields.size === 0)
+                ? '수업 분야 선택'
+                : (selectedFields.size + '개 선택됨');
+            }
+
+            fetchTutors();
+          });
+        });
+
+        // ✅ 검색 입력
+        const searchInput = document.getElementById('tutorSearch');
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            handleSearchInput(e.target.value);
+          });
+        }
+
+        fetchTutors();
+
+      });
+
+    </script>
+  </th:block>

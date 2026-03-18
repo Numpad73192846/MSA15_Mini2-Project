@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TutorDocumentMapper">
+
+    <resultMap id="TutorDocumentMap" type="com.aloha.teamproject.dto.TutorDocument">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="docType" column="doc_type"/>
+        <result property="fileSize" column="file_size"/>
+        <result property="reviewedBy" column="reviewed_by"/>
+        <result property="reviewedAt" column="reviewed_at"/>
+        <result property="rejectReason" column="reject_reason"/>
+        <result property="originalName" column="original_name"/>
+        <result property="storeName" column="store_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="contentType" column="content_type"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="TutorDocumentMap">
+        SELECT * FROM tutor_document
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectById" resultMap="TutorDocumentMap">
+        SELECT * FROM tutor_document
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByUserId" resultMap="TutorDocumentMap">
+        SELECT * FROM tutor_document
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert">
+        INSERT INTO tutor_document (
+            id, user_id, doc_type, file_size, original_name, store_name, file_path, content_type
+        ) VALUES (
+            UUID(), #{userId}, #{docType}, #{fileSize}, #{originalName}, #{storeName}, #{filePath}, #{contentType}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE tutor_document
+        SET doc_type = #{docType}, file_path = #{filePath}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM tutor_document WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByUserIdAndDocType">
+        DELETE FROM tutor_document
+        WHERE user_id = #{userId}
+          AND doc_type = #{docType}
+    </delete>
+
+    <update id="approve">
+        UPDATE tutor_document
+        SET reviewed_by = #{reviewedBy}, reviewed_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="reject">
+        UPDATE tutor_document
+        SET reviewed_by = #{reviewedBy}, reviewed_at = NOW(), reject_reason = #{rejectReason}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

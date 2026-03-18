@@ -1,0 +1,41 @@
+<section class="edit-section">
+  <div class="card edit-card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="step-section-title">프로필</div>
+      <div class="step-section-desc">학생들에게 보여지는 소개 정보를 수정하세요</div>
+
+      <div class="admin-box">
+        <div class="mb-3">
+          <label class="form-label">한 줄 소개 <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="editHeadline" name="headline" 
+                 placeholder="예) 영어 회화 전문 10년 경력, TOEIC 만점 강사" required>
+          <small class="text-muted">학생들에게 보여지는 첫 인상입니다</small>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">소개 <span class="text-danger">*</span></label>
+          <textarea class="form-control" id="editBio" name="bio" rows="5" 
+                    placeholder="튜터님에 대해 자세히 소개해 주세요" required></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">강의 스타일 <span class="text-danger">*</span></label>
+          <textarea class="form-control" id="editSelfIntro" name="selfIntro" rows="5" 
+                    placeholder="어떤 방식으로 수업을 진행하시나요?" required></textarea>
+        </div>
+
+        <div class="mb-1">
+          <label class="form-label">소개 영상 (선택)</label>
+          <input type="url" class="form-control" id="editVideoUrl" name="videoUrl" 
+                 placeholder="https://youtube.com/watch?v=...">
+          <small class="text-muted">유튜브 소개 영상이 있다면 링크를 입력하세요</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="d-flex justify-content-end">
+    <button type="button" class="btn btn-primary px-4" onclick="saveSection('profile')">
+        <i class="bi bi-check-lg me-1"></i> 프로필 저장
+    </button>
+</div>

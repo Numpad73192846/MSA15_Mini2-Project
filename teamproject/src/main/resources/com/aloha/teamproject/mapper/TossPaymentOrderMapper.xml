@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TossPaymentOrderMapper">
+
+    <resultMap id="TossPaymentOrderMap" type="com.aloha.teamproject.dto.TossPaymentOrder">
+        <id property="id" column="id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="tutorId" column="tutor_id"/>
+        <result property="tutorName" column="tutor_name"/>
+        <result property="bookingCount" column="booking_count"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="status" column="status"/>
+        <result property="paymentKey" column="payment_key"/>
+        <result property="paidAt" column="paid_at"/>
+    </resultMap>
+
+    <resultMap id="TossPaymentOrderItemMap" type="com.aloha.teamproject.dto.TossPaymentOrderItem">
+        <id property="id" column="id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="bookingId" column="booking_id"/>
+        <result property="amount" column="amount"/>
+    </resultMap>
+
+    <insert id="insertOrder">
+        INSERT INTO toss_payment_order (
+            id, order_id, user_id, tutor_id, tutor_name, booking_count, total_amount, status
+        ) VALUES (
+            UUID(), #{orderId}, #{userId}, #{tutorId}, #{tutorName}, #{bookingCount}, #{totalAmount}, #{status}
+        )
+    </insert>
+
+    <insert id="insertOrderItem">
+        INSERT INTO toss_payment_order_item (
+            id, order_id, booking_id, amount
+        ) VALUES (
+            UUID(), #{orderId}, #{bookingId}, #{amount}
+        )
+    </insert>
+
+    <select id="selectOrderByOrderId" resultMap="TossPaymentOrderMap">
+        SELECT *
+        FROM toss_payment_order
+        WHERE order_id = #{orderId}
+        LIMIT 1
+    </select>
+
+    <select id="selectItemsByOrderId" resultMap="TossPaymentOrderItemMap">
+        SELECT *
+        FROM toss_payment_order_item
+        WHERE order_id = #{orderId}
+        ORDER BY no ASC
+    </select>
+
+    <update id="markOrderPaid">
+        UPDATE toss_payment_order
+        SET status = 'PAID',
+            payment_key = #{paymentKey},
+            paid_at = NOW()
+        WHERE order_id = #{orderId}
+    </update>
+
+</mapper>

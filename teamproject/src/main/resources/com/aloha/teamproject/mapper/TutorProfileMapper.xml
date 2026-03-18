@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TutorProfileMapper">
+
+    <resultMap id="tutorProfileMap" type="TutorProfile">
+        <id property="no" column="no" />
+        <result property="userId" column="user_id" />
+        <result property="id" column="id" />
+        <result property="phone" column="phone" />
+        <result property="profileImg" column="profile_img" />
+        <result property="headline" column="headline" />
+        <result property="bio" column="bio" />
+        <result property="selfIntro" column="self_intro" />
+        <result property="videoUrl" column="video_url" />
+        <result property="defaultZoomUrl" column="default_zoom_url" />
+        <result property="bankName" column="bank_name" />
+        <result property="accountNumber" column="account_number" />
+        <result property="accountHolder" column="account_holder" />
+        <result property="verified" column="is_verified" />
+        <result property="ratingAvg" column="rating_avg" />
+        <result property="reviewCount" column="review_count" />
+        <result property="createdAt" column="created_at" />
+        <result property="updatedAt" column="updated_at" />
+    </resultMap>
+
+    <insert id="upsertProfile">
+        INSERT INTO tutor_profile (
+            id, user_id, phone, headline, bio, self_intro, video_url, default_zoom_url,
+            bank_name, account_number, account_holder,
+            is_verified, rating_avg, review_count
+        )
+        VALUES (
+            #{id}, #{userId}, #{phone}, #{headline}, #{bio}, #{selfIntro}, #{videoUrl}, #{defaultZoomUrl},
+            #{bankName}, #{accountNumber}, #{accountHolder},
+            #{verified}, #{ratingAvg}, #{reviewCount}
+        )
+        ON DUPLICATE KEY UPDATE
+            phone = VALUES(phone),
+            headline = VALUES(headline),
+            bio = VALUES(bio),
+            self_intro = VALUES(self_intro),
+            video_url = VALUES(video_url),
+            default_zoom_url = VALUES(default_zoom_url),
+            bank_name = VALUES(bank_name),
+            account_number = VALUES(account_number),
+            account_holder = VALUES(account_holder),
+            updated_at = NOW();
+    </insert>
+
+    <select id="selectByUserId" resultMap="tutorProfileMap">
+        SELECT
+            tp.no,
+            tp.user_id,
+            tp.id,
+            tp.phone,
+            u.profile_img AS profile_img,
+            tp.headline,
+            tp.bio,
+            tp.self_intro,
+            tp.video_url,
+            tp.default_zoom_url,
+            tp.bank_name,
+            tp.account_number,
+            tp.account_holder,
+            tp.is_verified,
+            tp.rating_avg,
+            tp.review_count,
+            tp.created_at,
+            tp.updated_at
+        FROM tutor_profile tp
+        JOIN users u ON tp.user_id = u.id
+        WHERE tp.user_id = #{userId}
+    </select>
+
+</mapper>

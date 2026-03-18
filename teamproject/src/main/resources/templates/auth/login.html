@@ -1,0 +1,512 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <div class="container py-5">
+            <div class="text-center mb-4">
+                <h2 class="h3 fw-bold mb-1">로그인 / 회원가입</h2>
+                <p class="text-muted mb-0">튜터링고에서 학습을 시작하세요</p>
+            </div>
+
+            <div class="d-flex justify-content-center gap-2 mb-4">
+                <button id="userTypeStudent" class="btn btn-primary">학생으로 시작</button>
+                <button id="userTypeTutor" class="btn btn-outline-primary">튜터로 시작</button>
+            </div>
+
+            <div class="card shadow-sm mx-auto" style="max-width:520px;">
+                <div class="card-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabLogin">로그인</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSignup">회원가입</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content pt-4">
+                        <div class="tab-pane fade show active" id="tabLogin">
+                            <form id="loginForm">
+                                <div class="mb-3">
+                                    <label class="form-label">이메일</label>
+                                    <input name="username" type="email" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">비밀번호</label>
+                                    <input name="password" type="password" class="form-control" required>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="rememberMe" id="rememberMe">
+                                            <label class="form-check-label" for="rememberMe">자동 로그인</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="rememberId" id="rememberId">
+                                            <label class="form-check-label" for="rememberId">아이디 저장</label>
+                                        </div>
+                                    </div>
+                                    <a href="javascript:void(0)" class="small">비밀번호 찾기</a>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">로그인</button>
+                            </form>
+                            
+                            <div class="text-center my-3">
+                                <div class="position-relative">
+                                    <hr>
+                                    <span class="position-absolute top-50 start-50 translate-middle bg-white px-2 text-muted small">또는</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 구글 로그인 -->
+                            <button type="button" class="btn btn-outline-dark w-100 d-flex align-items-center justify-content-center gap-2 mb-2" onclick="loginWithGoogle()">
+                                <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+                                    <path fill="#34A853" d="M9.003 18c2.43 0 4.467-.806 5.956-2.18L12.05 13.56c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.485 18 9.003 18z"/>
+                                    <path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9.001c0 1.452.348 2.827.957 4.041l3.007-2.332z"/>
+                                    <path fill="#EA4335" d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z"/>
+                                </svg>
+                                구글로 로그인
+                            </button>
+                            
+                            <!-- 네이버 로그인 -->
+                            <button type="button" class="btn w-100 d-flex align-items-center justify-content-center gap-2 mb-2" style="background-color: #03C75A; color: white; border: none;" onclick="loginWithNaver()">
+                                <img src="/img/guide/naver.png" alt="Naver" width="20" height="20">
+                                네이버로 로그인
+                            </button>
+                            
+                            <!-- 카카오 로그인 -->
+                            <button type="button" class="btn w-100 d-flex align-items-center justify-content-center gap-2" style="background-color: #FEE500; color: #000000;" onclick="loginWithKakao()">
+                                <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill="#000000" d="M9 1.5C4.86 1.5 1.5 4.08 1.5 7.31c0 2.03 1.34 3.82 3.38 4.88-.13.47-.87 3.13-.99 3.63-.15.63.23.62.49.45.19-.13 3.08-2.05 3.57-2.38.35.05.71.08 1.08.08 4.14 0 7.5-2.58 7.5-5.81S13.14 1.5 9 1.5z"/>
+                                </svg>
+                                카카오로 로그인
+                            </button>
+                        </div>
+
+                        <div class="tab-pane fade" id="tabSignup">
+                            <form id="signupForm" class="needs-validation" onsubmit="event.preventDefault();" novalidate>
+                                <input type="hidden" name="role" id="role" value="ROLE_USER">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">아이디(이메일)</label>
+                                    <div class="input-group">
+                                        <input type="email" class="form-control" id="username" oninput="setChecked('username', false); clearInlineError('username')" placeholder="example@email.com">                                
+                                        <button type="button" class="btn btn-outline-secondary h-100" onclick="checkDuplicate('username')" >중복확인</button>
+                                    </div>
+                                    <div id="username-inline-error" class="text-danger small"></div> 
+                                </div>  
+                                
+                                <div class="mb-3">
+                                    <label for="nickname" class="form-label">닉네임</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="nickname" oninput="setChecked('nickname', false); clearInlineError('nickname')" placeholder="닉네임">
+                                        <button type="button" class="btn btn-outline-secondary h-100" onclick="checkDuplicate('nickname')" >중복확인</button>
+                                    </div>                    
+                                    <div id="nickname-inline-error" class="text-danger small"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">이름</label>
+                                    <input type="text" class="form-control" id="name" placeholder="이름">
+                                    <div id="name-inline-error" class="text-danger small"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">비밀번호</label>                                    
+                                    <input type="password" class="form-control" id="password" placeholder="비밀번호">
+                                    <div id="password-inline-error" class="text-danger small"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">비밀번호 확인</label>
+                                    <input type="password" class="form-control" id="passwordCheck" placeholder="비밀번호 확인">
+                                    <div id="passwordCheck-inline-error" class="text-danger small"></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">회원가입</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="text-muted small mt-3">로그인/회원가입은 서버 사용자 정보를 기준으로 처리됩니다.</div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            const checkedState = {
+                username: false,
+                nickname: false
+            };
+
+            function setChecked(type, value) {
+                checkedState[type] = value;
+            }
+
+            function isChecked(type) {
+                return checkedState[type] === true;
+            }
+
+            function setInlineError(type, message) {
+                const errorEl = document.getElementById(`${type}-inline-error`);
+                if (errorEl) {
+                    errorEl.textContent = message || "";
+                }
+            }
+
+            function clearInlineError(type) {
+                setInlineError(type, "");
+            }
+
+            async function validateFields(fields) {
+                const payload = {
+                    username: document.getElementById('username').value,
+                    nickname: document.getElementById('nickname').value,
+                    name: document.getElementById('name').value,
+                    password: document.getElementById('password').value,
+                    passwordCheck: document.getElementById('passwordCheck').value,
+                    role: document.getElementById('role').value
+                };
+
+                const query = fields && fields.length ? `?fields=${fields.join(',')}` : '';
+                const response = await fetch(`/api/users/validate${query}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    return {};
+                }
+
+                const errors = data.data || {};
+                if (fields && fields.length) {
+                    fields.forEach((field) => setInlineError(field, errors[field] || ''));
+                }
+                return errors;
+            }
+
+            // 중복검사
+            async function checkDuplicate(type) {
+                const input = document.getElementById(type);
+                const value = input.value;
+
+                const label = document.querySelector(`label[for="${type}"]`);
+                const labelText = type === 'username' ? '아이디' : '닉네임';
+
+                const validationErrors = await validateFields([type]);
+                if (validationErrors && validationErrors[type]) {
+                    setChecked(type, false);
+                    return false;
+                }
+
+                try {
+                    const url = type === 'username'
+                        ? `/api/users/check-username?username=${encodeURIComponent(value)}`
+                        : `/api/users/check-nickname?nickname=${encodeURIComponent(value)}`;
+                    const response = await fetch(url, { method: 'GET' });
+
+                    const data = await response.json();        
+
+                    if (data.success === false) {
+                        setInlineError(type, data.message || `${labelText} 중복 확인 중 오류가 발생했습니다.`);
+                        setChecked(type, false);
+                        return false;
+                    }
+
+                    const available = data.data === true;
+                    if (available) {
+                        setInlineError(type, `사용 가능한 ${labelText}입니다.`);
+                        input.classList.add('was-validated');
+                        input.classList.remove('needs-validation');
+                        setChecked(type, true);
+                        return true;
+                    }
+
+                    setInlineError(type, `이미 존재하는 ${labelText}입니다.`);
+                    input.classList.add('needs-validation');
+                    input.classList.remove('was-validated');
+                    setChecked(type, false);
+                    return false;
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    setInlineError(type, `${labelText} 중복 확인 중 오류가 발생했습니다.`);
+                    setChecked(type, false);
+                    return false;
+                }           
+            }
+
+            const signupFields = ['username', 'nickname', 'name', 'password', 'passwordCheck'];
+            signupFields.forEach((field) => {
+                const input = document.getElementById(field);
+                if (!input) return;
+                input.addEventListener('blur', () => {
+                    validateFields([field]);
+                });
+            });
+
+            document.getElementById('loginForm').addEventListener('submit', async function (event) {
+                event.preventDefault();
+                const fd = new FormData(event.target);
+                const payload = {
+                    username: fd.get('username'),
+                    password: fd.get('password'),
+                    rememberMe: fd.get('rememberMe') === 'on'
+                };
+
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    alert(data.message || '로그인에 실패했습니다.');
+                    return;
+                }
+
+                if (fd.get('rememberId') === 'on') {
+                    localStorage.setItem('rememberedUsername', payload.username || '');
+                } else {
+                    localStorage.removeItem('rememberedUsername');
+                }
+
+                if (data.data && typeof setAccessToken === 'function') {
+                    setAccessToken(data.data.accessToken);
+                    // refreshToken도 localStorage에 저장
+                    if (data.data.refreshToken) {
+                        localStorage.setItem('refreshToken', data.data.refreshToken);
+                    }
+                }
+
+                location.href = '/';
+            });
+
+            const roleInput = document.getElementById('role');
+            const userTypeStudentBtn = document.getElementById('userTypeStudent');
+            const userTypeTutorBtn = document.getElementById('userTypeTutor');
+
+            if (userTypeStudentBtn && userTypeTutorBtn && roleInput) {
+                userTypeStudentBtn.addEventListener('click', () => {
+                    roleInput.value = 'ROLE_USER';
+                    userTypeStudentBtn.classList.add('btn-primary');
+                    userTypeStudentBtn.classList.remove('btn-outline-primary');
+                    userTypeTutorBtn.classList.add('btn-outline-primary');
+                    userTypeTutorBtn.classList.remove('btn-primary');
+                });
+
+                userTypeTutorBtn.addEventListener('click', () => {
+                    roleInput.value = 'ROLE_TUTOR';
+                    userTypeTutorBtn.classList.add('btn-primary');
+                    userTypeTutorBtn.classList.remove('btn-outline-primary');
+                    userTypeStudentBtn.classList.add('btn-outline-primary');
+                    userTypeStudentBtn.classList.remove('btn-primary');
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const rememberedUsername = localStorage.getItem('rememberedUsername');
+                const loginUsernameInput = document.querySelector('#loginForm input[name="username"]');
+                const rememberIdInput = document.getElementById('rememberId');
+
+                if (loginUsernameInput && rememberedUsername) {
+                    loginUsernameInput.value = rememberedUsername;
+                }
+                if (rememberIdInput) {
+                    rememberIdInput.checked = !!rememberedUsername;
+                }
+
+                // 쿼리 파라미터(tab=signup)로 회원가입 탭 활성화
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('tab') === 'signup') {
+                    const signupTab = document.querySelector('[data-bs-target="#tabSignup"]');
+                    if (signupTab && window.bootstrap?.Tab) {
+                        const tab = new bootstrap.Tab(signupTab);
+                        tab.show();
+                    }
+                }
+            });
+
+            document.getElementById('signupForm').addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                if (!isChecked('username')) {
+                    setInlineError('username', '아이디 중복 확인을 해주세요');
+                    return;
+                }
+
+                if (!isChecked('nickname')) {
+                    setInlineError('nickname', '닉네임 중복 확인을 해주세요');
+                    return;
+                }
+
+                const errors = await validateFields(['username', 'nickname', 'name', 'password', 'passwordCheck']);
+                if (Object.keys(errors || {}).length > 0) {
+                    return;
+                }
+
+                const payload = {
+                    username: document.getElementById('username').value,
+                    nickname: document.getElementById('nickname').value,
+                    name: document.getElementById('name').value,
+                    password: document.getElementById('password').value,
+                    passwordCheck: document.getElementById('passwordCheck').value,
+                    role: document.getElementById('role').value
+                };
+
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    alert(data.message || '회원가입에 실패했습니다.');
+                    return;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                const loginResponse = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: payload.username, password: payload.password, rememberMe: false }),
+                    credentials: 'include'
+                });
+                
+                if (!loginResponse.ok) {
+                    alert('회원가입은 완료되었습니다. 로그인 페이지에서 다시 로그인해주세요.');
+                    location.reload();
+                    return;
+                }
+
+                const loginData = await loginResponse.json();
+                if (!loginData.success) {
+                    alert('회원가입은 완료되었습니다. 로그인 페이지에서 다시 로그인해주세요.');
+                    location.reload();
+                    return;
+                }
+
+                if (loginData.data && typeof setAccessToken === 'function') {
+                    setAccessToken(loginData.data.accessToken);
+                    // refreshToken도 localStorage에 저장
+                    if (loginData.data.refreshToken) {
+                        localStorage.setItem('refreshToken', loginData.data.refreshToken);
+                    }
+                }
+
+                const redirectUrl = payload.role === 'ROLE_TUTOR' ? '/tutor/register' : '/';
+                location.href = redirectUrl;
+            });
+        </script>
+    </div>
+    <!-- fragment end -->
+</div>
+
+<!-- OAuth2 Role Selection Modal -->
+        <div class="modal fade" id="roleSelectionModal" tabindex="-1" aria-labelledby="roleSelectionModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="roleSelectionModalLabel">역할 선택</h5>
+                    </div>
+                    <div class="modal-body">
+                        <p>환영합니다! 서비스를 이용하기 위해 역할을 선택해주세요.</p>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" onclick="selectRole('ROLE_USER')">학생으로 시작</button>
+                            <button type="button" class="btn btn-outline-primary" onclick="selectRole('ROLE_TUTOR')">튜터로 시작</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function loginWithGoogle() {
+                location.href = '/oauth2/authorization/google';
+            }
+
+            function loginWithNaver() {
+                location.href = '/oauth2/authorization/naver';
+            }
+
+            function loginWithKakao() {
+                location.href = '/oauth2/authorization/kakao';
+            }
+
+            function showSocialRoleSelectionModal() {
+                const modal = new bootstrap.Modal(document.getElementById('roleSelectionModal'));
+                modal.show();
+            }
+
+            async function selectRole(role) {
+                try {
+                    const response = await fetch('/api/auth/oauth/role', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({ role: role })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success || result.status === 'OK') {
+                        if (result.data && typeof setAccessToken === 'function') {
+                            setAccessToken(result.data.accessToken);
+                            if (result.data.refreshToken) {
+                                localStorage.setItem('refreshToken', result.data.refreshToken);
+                            }
+                        }
+
+                        const redirectUrl = (role === 'ROLE_TUTOR') ? '/tutor/register' : '/';
+                        window.location.href = redirectUrl;
+                    } else {
+                        alert('Social login failed: ' + (result.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Social login error:', error);
+                    alert('Social login error.');
+                } finally {
+                    bootstrap.Modal.getInstance(document.getElementById('roleSelectionModal')).hide();
+                }
+            }
+
+            async function handleOAuth2Success() {
+                try {
+                    const response = await fetch('/api/auth/oauth2/token', {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+                    const result = await response.json();
+                    if (result.success || result.status === 'OK') {
+                        if (result.data && typeof setAccessToken === 'function') {
+                            setAccessToken(result.data.accessToken);
+                            if (result.data.refreshToken) {
+                                localStorage.setItem('refreshToken', result.data.refreshToken);
+                            }
+                        }
+                        window.location.href = '/';
+                    } else {
+                        alert('OAuth2 token issue failed: ' + (result.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('OAuth2 token issue error:', error);
+                    alert('OAuth2 token issue error.');
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('needsRoleSelection') === 'true') {
+                    showSocialRoleSelectionModal();
+                }
+                if (params.get('oauth2') === 'success') {
+                    handleOAuth2Success();
+                }
+            });
+        </script>
+
+    </div>
+    <!-- fragment end -->
+</div>

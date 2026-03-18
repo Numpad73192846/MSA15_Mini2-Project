@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.MemberMyPageMapper">
+
+	<!-- ?뚯썝 湲곕낯 ?뺣낫 議고쉶 -->
+	<select id="selectMemberByUserId" resultType="com.aloha.teamproject.dto.MemberMyPage">
+		SELECT u.id AS userId, u.name, u.username AS email, u.nickname, u.profile_img AS profileImg
+		FROM users u
+		WHERE u.id = #{userId}
+	</select>
+
+	<!-- ?뚯썝 ?듦퀎 議고쉶 -->
+	<select id="selectMemberStats" resultType="com.aloha.teamproject.dto.MemberStats">
+		SELECT 
+			(SELECT COUNT(*) FROM booking b 
+			 JOIN lesson l ON b.lesson_id = l.id 
+			 JOIN tutor_availability ta ON b.availability_id = ta.id 
+			 WHERE b.user_id = #{userId} AND ta.start_at &gt;= NOW() 
+			   AND b.canceled_at IS NULL AND b.done_at IS NULL) AS upcomingLessons,
+			(SELECT COUNT(*) FROM booking b 
+			 WHERE b.user_id = #{userId}
+			   AND b.canceled_at IS NULL
+			   AND b.done_at IS NOT NULL) AS completedLessons,
+			(SELECT COUNT(*) FROM review r 
+			 JOIN booking b ON r.booking_id = b.id 
+			 WHERE b.user_id = #{userId}) AS totalReviews,
+			COALESCE((SELECT SUM(p.amount) FROM payment p 
+			 JOIN booking b ON p.booking_id = b.id 
+			 WHERE b.user_id = #{userId} AND p.status = 'PAID'), 0) AS totalSpent
+	</select>
+
+	<!-- ?ㅺ??ㅻ뒗 ?섏뾽 紐⑸줉 議고쉶 -->
+	<select id="selectUpcomingBookings" resultType="com.aloha.teamproject.dto.StudentBooking">
+		SELECT b.id AS bookingId, l.id AS lessonId, l.user_id AS tutorId, tp.id AS tutorProfileId, u.name AS tutorName, 
+			   l.title AS subject, ta.start_at AS startAt, ta.end_at AS endAt,
+			   CASE
+				   WHEN b.canceled_at IS NOT NULL THEN 'CANCELLED'
+				   WHEN b.done_at IS NOT NULL THEN 'COMPLETED'
+				   WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
+				   ELSE 'PENDING'
+			   END AS status, 
+			   (l.price * GREATEST(1, TIMESTAMPDIFF(MINUTE, ta.start_at, ta.end_at) / 30)) AS price,
+			   COALESCE(b.paid_at, p.paid_at) AS paidAt,
+			   COALESCE(
+			       NULLIF(TRIM(b.zoom_join_url), ''),
+			       NULLIF(TRIM(tp.default_zoom_url), '')
+			   ) AS zoomJoinUrl
+		FROM booking b
+		JOIN lesson l ON b.lesson_id = l.id
+		JOIN tutor_availability ta ON b.availability_id = ta.id
+		JOIN users u ON l.user_id = u.id
+		JOIN tutor_profile tp ON l.user_id = tp.user_id
+		LEFT JOIN (
+			SELECT booking_id, MAX(paid_at) AS paid_at
+			FROM payment
+			WHERE status = 'PAID'
+			GROUP BY booking_id
+		) p ON p.booking_id = b.id
+		WHERE b.user_id = #{userId}
+		  AND ta.start_at &gt;= NOW()
+		  AND b.canceled_at IS NULL
+		  AND b.done_at IS NULL
+		ORDER BY ta.start_at ASC
+	</select>
+
+	<!-- 吏???섏뾽 紐⑸줉 議고쉶 -->
+	<select id="selectPastBookings" resultType="com.aloha.teamproject.dto.StudentBooking">
+		SELECT b.id AS bookingId, l.id AS lessonId, l.user_id AS tutorId, tp.id AS tutorProfileId, u.name AS tutorName, 
+		       l.title AS subject, ta.start_at AS startAt, ta.end_at AS endAt,
+		       CASE
+		           WHEN b.canceled_at IS NOT NULL THEN 'CANCELLED'
+		           WHEN b.done_at IS NOT NULL THEN 'COMPLETED'
+		           WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
+		           ELSE 'PENDING'
+		       END AS status, 
+		       (l.price * GREATEST(1, TIMESTAMPDIFF(MINUTE, ta.start_at, ta.end_at) / 30)) AS price,
+		       COALESCE(b.paid_at, p.paid_at) AS paidAt,
+		       COALESCE(
+		           NULLIF(TRIM(b.zoom_join_url), ''),
+		           NULLIF(TRIM(tp.default_zoom_url), '')
+		       ) AS zoomJoinUrl,
+		       r.id AS reviewId
+		FROM booking b
+		JOIN lesson l ON b.lesson_id = l.id
+		JOIN tutor_availability ta ON b.availability_id = ta.id
+		JOIN users u ON l.user_id = u.id
+		JOIN tutor_profile tp ON l.user_id = tp.user_id
+		LEFT JOIN (
+			SELECT booking_id, MAX(paid_at) AS paid_at
+			FROM payment
+			WHERE status = 'PAID'
+			GROUP BY booking_id
+		) p ON p.booking_id = b.id
+		LEFT JOIN review r ON r.booking_id = b.id
+		WHERE b.user_id = #{userId}
+		  AND b.canceled_at IS NULL
+		  AND (ta.start_at &lt; NOW() OR b.done_at IS NOT NULL)
+		ORDER BY ta.start_at DESC
+	</select>
+
+	<!-- ?뚯썝???묒꽦??由щ럭 紐⑸줉 議고쉶 -->
+	<select id="selectStudentReviews" resultType="com.aloha.teamproject.dto.StudentReview">
+		SELECT r.id AS reviewId, l.user_id AS tutorId, tp.id AS tutorProfileId, u.name AS tutorName,
+		       r.rating, r.content, r.created_at AS createdAt
+		FROM review r
+		JOIN booking b ON r.booking_id = b.id
+		JOIN lesson l ON b.lesson_id = l.id
+		JOIN users u ON l.user_id = u.id
+		JOIN tutor_profile tp ON l.user_id = tp.user_id
+		WHERE b.user_id = #{userId}
+		ORDER BY r.created_at DESC
+	</select>
+
+	<!-- ?뚯썝??諛쏆? ?쒗꽣 硫붿떆吏 議고쉶 -->
+		<select id="selectTutorMessages" resultType="com.aloha.teamproject.dto.TutorMessage">
+		SELECT x.id, x.bookingId, x.tutorId, x.tutorName, x.subject, x.studentId,
+		       x.senderRole, x.content, x.createdAt
+		FROM (
+		    SELECT tm.id,
+		           tm.booking_id AS bookingId,
+		           tm.tutor_id AS tutorId,
+		           u.name AS tutorName,
+		           l.title AS subject,
+		           tm.student_id AS studentId,
+		           tm.sender_role AS senderRole,
+		           tm.content,
+		           tm.created_at AS createdAt,
+		           ROW_NUMBER() OVER (
+		               PARTITION BY tm.tutor_id
+		               ORDER BY tm.created_at DESC, tm.id DESC
+		           ) AS rn
+		    FROM tutor_message tm
+		    LEFT JOIN booking b ON tm.booking_id = b.id
+		    LEFT JOIN lesson l ON b.lesson_id = l.id
+		    JOIN users u ON tm.tutor_id = u.id
+		    WHERE tm.student_id = #{userId}
+		      AND tm.sender_role = 'TUTOR'
+		) x
+		WHERE x.rn = 1
+		ORDER BY x.createdAt DESC
+		LIMIT 20
+	</select>
+
+</mapper>

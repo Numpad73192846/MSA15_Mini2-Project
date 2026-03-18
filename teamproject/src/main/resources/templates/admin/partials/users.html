@@ -1,0 +1,102 @@
+<section class="admin-tab">
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card admin-card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <div class="panel-title">회원 관리</div>
+              <div class="muted small">상태 변경(활성/정지/비활성) 및 기본 정보 확인</div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap justify-content-end">
+              <select class="form-select form-select-sm select-pill" id="userRoleFilter" style="width:140px;">
+                <option value="ALL">전체 역할</option>
+                <option value="USER">USER</option>
+                <option value="TUTOR">TUTOR</option>
+                <option value="ADMIN">ADMIN</option>
+              </select>
+              <select class="form-select form-select-sm select-pill" id="userStatusFilter" style="width:140px;">
+                <option value="ALL">전체 상태</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="SUSPENDED">SUSPENDED</option>
+                <option value="INACTIVE">INACTIVE</option>
+              </select>
+              <input class="form-control form-control-sm pill-input" id="userSearch" placeholder="이름/닉네임 검색" style="width:180px;">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+              <tr>
+                <th style="width:22%;">이름(닉네임)</th>
+                <th style="width:18%;">아이디</th>
+                <th style="width:14%;">역할</th>
+                <th style="width:14%;">상태</th>
+                <th style="width:16%;">가입일</th>
+                <th style="width:16%;">관리</th>
+              </tr>
+              </thead>
+              <tbody id="userTbody"></tbody>
+            </table>
+          </div>
+
+          <div id="userEmpty" class="empty-hero d-none">
+            <div class="emoji">👤</div>
+            <div class="fw-semibold">조건에 맞는 회원이 없습니다.</div>
+            <div class="muted small">검색/필터를 변경해보세요.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card admin-card shadow-sm">
+        <div class="card-body">
+          <div class="panel-title mb-2">회원 상세</div>
+          <div class="muted small mb-2" id="userPanelHint">좌측 목록에서 회원을 선택하세요.</div>
+
+          <div id="userPanelBody" class="d-none">
+            <div class="fw-semibold" id="userName">-</div>
+            <div class="muted small" id="userId">-</div>
+
+            <div class="divider"></div>
+
+            <div class="d-flex justify-content-between mb-2">
+              <span class="muted small">역할</span>
+              <span class="fw-bold" id="userRole">-</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="muted small">상태</span>
+              <span class="fw-bold" id="userStatus">-</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="fw-bold mb-2">상태 변경</div>
+            <div class="d-flex gap-2 flex-wrap mb-3">
+              <button class="btn btn-outline-secondary btn-sm btn-pill px-3" id="btnUserInactive">비활성</button>
+              <button class="btn btn-outline-danger btn-sm btn-pill px-3" id="btnUserSuspend">정지</button>
+              <button class="btn btn-success btn-sm btn-pill px-3" id="btnUserActivate">활성</button>
+            </div>
+
+            <div class="fw-bold mb-2">권한 변경</div>
+            <div class="d-flex gap-2 flex-wrap mb-3">
+              <button class="btn btn-outline-secondary btn-sm btn-pill px-3" id="btnRoleUser">USER</button>
+              <button class="btn btn-outline-primary btn-sm btn-pill px-3" id="btnRoleTutor">TUTOR</button>
+              <button class="btn btn-outline-dark btn-sm btn-pill px-3" id="btnRoleAdmin">ADMIN</button>
+            </div>
+
+            <div class="divider"></div>
+            <button class="btn btn-danger btn-sm btn-pill px-3 py-2" id="btnUserDelete">회원 삭제</button>
+
+            <div class="divider"></div>
+
+            <div class="fw-bold mb-2">변경 사유(선택)</div>
+            <textarea class="form-control form-control-sm" id="userStatusReason" rows="3" placeholder="사유를 입력하세요(선택)"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

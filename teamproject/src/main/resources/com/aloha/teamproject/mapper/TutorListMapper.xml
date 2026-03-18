@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TutorListMapper">
+
+    <resultMap id="TutorListMap" type="com.aloha.teamproject.dto.TutorList">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="name" column="name"/>
+        <result property="nickname" column="nickname"/>
+        <result property="bio" column="bio"/>
+        <result property="selfIntro" column="self_intro"/>
+        <result property="ratingAvg" column="rating_avg"/>
+        <result property="reviewCount" column="review_count"/>
+        <result property="profileImg" column="profile_img"/>
+        <result property="videoUrl" column="video_url"/>
+        <result property="subjects" column="subjects"/>
+        <result property="price" column="price"/>
+        <result property="experience" column="experience"/>
+        <result property="careerTimeline" column="career_timeline"/>
+        <result property="educationSchools" column="education_schools"/>
+        <result property="educationDegrees" column="education_degrees"/>
+        <result property="educationTimeline" column="education_timeline"/>
+        <result property="educationDocuments" column="education_documents"/>
+        <result property="degreeDocuments" column="degree_documents"/>
+        <result property="certificates" column="certificates"/>
+    </resultMap>
+
+    <select id="selectAllTutors" resultMap="TutorListMap">
+        SELECT 
+            tp.id, 
+            tp.user_id, 
+            u.name,
+            u.nickname, 
+            tp.bio, 
+            tp.self_intro,
+            u.profile_img,            
+            COALESCE(
+                (SELECT ROUND(AVG(r.rating), 1) 
+                 FROM review r 
+                 JOIN booking b ON r.booking_id = b.id 
+                 JOIN lesson l ON b.lesson_id = l.id
+                 WHERE l.user_id = tp.user_id), 
+                0
+            ) AS rating_avg,
+            COALESCE(
+                (SELECT COUNT(*) 
+                 FROM review r 
+                 JOIN booking b ON r.booking_id = b.id 
+                 JOIN lesson l ON b.lesson_id = l.id
+                 WHERE l.user_id = tp.user_id), 
+                0
+            ) AS review_count,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ', ')
+                 FROM lesson l2
+                 JOIN subject s ON l2.subject_id = s.id
+                 JOIN subject_group sg ON s.group_id = sg.id
+                 JOIN language_field lf ON l2.field_id = lf.id
+                 WHERE l2.user_id = tp.user_id),
+                ''
+            ) AS subjects,
+            COALESCE(
+                (SELECT AVG(l3.price) 
+                 FROM lesson l3
+                 WHERE l3.user_id = tp.user_id),
+                0
+            ) AS price,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ')
+                 FROM tutor_career tc
+                 WHERE tc.user_id = tp.user_id),
+                ''
+            ) AS experience
+        FROM tutor_profile tp
+        JOIN users u ON tp.user_id = u.id
+        WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
+          AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
+        ORDER BY rating_avg DESC, review_count DESC
+    </select>
+
+    <select id="selectTutorById" resultMap="TutorListMap">
+        SELECT 
+            tp.id, 
+            tp.user_id, 
+            u.name,
+            u.nickname, 
+            tp.bio, 
+            tp.self_intro,
+            u.profile_img,
+            tp.video_url,
+            COALESCE(
+                (SELECT ROUND(AVG(r.rating), 1) 
+                 FROM review r 
+                 JOIN booking b ON r.booking_id = b.id 
+                 JOIN lesson l ON b.lesson_id = l.id
+                 WHERE l.user_id = tp.user_id), 
+                0
+            ) AS rating_avg,
+            COALESCE(
+                (SELECT COUNT(*) 
+                 FROM review r 
+                 JOIN booking b ON r.booking_id = b.id 
+                 JOIN lesson l ON b.lesson_id = l.id
+                 WHERE l.user_id = tp.user_id), 
+                0
+            ) AS review_count,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ', ')
+                 FROM lesson l2
+                 JOIN subject s ON l2.subject_id = s.id
+                 JOIN subject_group sg ON s.group_id = sg.id
+                 JOIN language_field lf ON l2.field_id = lf.id
+                 WHERE l2.user_id = tp.user_id),
+                ''
+            ) AS subjects,
+            COALESCE(
+                (SELECT AVG(l3.price) 
+                 FROM lesson l3
+                 WHERE l3.user_id = tp.user_id),
+                0
+            ) AS price,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ')
+                 FROM tutor_career tc
+                 WHERE tc.user_id = tp.user_id),
+                ''
+            ) AS experience,
+            COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT CONCAT(
+                            CASE
+                                WHEN tc.end_year IS NULL THEN CONCAT(tc.start_year, ' - 현재')
+                                ELSE CONCAT(tc.start_year, ' - ', tc.end_year)
+                            END,
+                            ':::',
+                            CONCAT(tc.company_name, ' - ', tc.job_role)
+                        )
+                        ORDER BY COALESCE(tc.end_year, 9999) DESC, tc.start_year DESC SEPARATOR ' ||| '
+                    )
+                 FROM tutor_career tc
+                 WHERE tc.user_id = tp.user_id),
+                ''
+            ) AS career_timeline,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT te.school_name ORDER BY te.graduated_year DESC, te.start_year DESC SEPARATOR ' | ')
+                 FROM tutor_education te
+                 WHERE te.user_id = tp.user_id
+                   AND te.school_name != '학위 정보'),
+                ''
+            ) AS education_schools,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT te.degree ORDER BY te.graduated_year DESC, te.start_year DESC SEPARATOR ' | ')
+                 FROM tutor_education te
+                 WHERE te.user_id = tp.user_id
+                   AND te.degree != '학위 미기입력'),
+                ''
+            ) AS education_degrees,
+            COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT CONCAT(
+                            CASE
+                                WHEN te.graduated_year IS NULL THEN CONCAT(te.start_year, ' - 현재')
+                                ELSE CONCAT(te.start_year, ' - ', te.graduated_year)
+                            END,
+                            ':::',
+                            CONCAT(te.school_name, ' - ', te.degree)
+                        )
+                        ORDER BY te.graduated_year DESC, te.start_year DESC SEPARATOR ' ||| '
+                    )
+                 FROM tutor_education te
+                 WHERE te.user_id = tp.user_id
+                   AND te.school_name != '학위 정보'
+                   AND te.degree != '학위 미기입력'),
+                ''
+            ) AS education_timeline,
+            COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT COALESCE(NULLIF(TRIM(td.original_name), ''), '학력 증명서')
+                        ORDER BY td.created_at DESC SEPARATOR ' | '
+                    )
+                 FROM tutor_document td
+                 WHERE td.user_id = tp.user_id
+                   AND td.doc_type = 'EDUCATION'),
+                ''
+            ) AS education_documents,
+            COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT COALESCE(NULLIF(TRIM(td.original_name), ''), '학위 증명서')
+                        ORDER BY td.created_at DESC SEPARATOR ' | '
+                    )
+                 FROM tutor_document td
+                 WHERE td.user_id = tp.user_id
+                   AND td.doc_type = 'DEGREE'),
+                ''
+            ) AS degree_documents,
+            COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT COALESCE(NULLIF(TRIM(td.original_name), ''), '자격증')
+                        ORDER BY td.created_at DESC SEPARATOR ' | '
+                    )
+                 FROM tutor_document td
+                 WHERE td.user_id = tp.user_id
+                   AND td.doc_type = 'CERTIFICATE_TEXT'),
+                ''
+            ) AS certificates
+        FROM tutor_profile tp
+        JOIN users u ON tp.user_id = u.id
+        WHERE tp.id = #{userId}
+          AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
+    </select>
+
+    <select id="selectTutorsBySubject" resultMap="TutorListMap">
+        SELECT 
+            tp.id, 
+            tp.user_id, 
+            u.name,
+            u.nickname, 
+            tp.bio, 
+            tp.self_intro,
+            COALESCE(ROUND(AVG(r.rating), 1), 0) AS rating_avg, 
+            COALESCE(COUNT(DISTINCT r.id), 0) AS review_count, 
+            u.profile_img,
+            GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ',') AS subjects,
+            AVG(l.price) AS price,
+            GROUP_CONCAT(DISTINCT CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ') AS experience
+        FROM tutor_profile tp
+        JOIN users u ON tp.user_id = u.id
+        LEFT JOIN review r ON r.booking_id IN ( SELECT b.id FROM booking b WHERE b.tutor_id = tp.user_id )
+        LEFT JOIN lesson l ON tp.user_id = l.user_id AND l.status = 'OPEN'
+        LEFT JOIN subject s ON l.subject_id = s.id
+        LEFT JOIN subject_group sg ON s.group_id = sg.id
+        LEFT JOIN language_field lf ON l.field_id = lf.id
+        LEFT JOIN tutor_career tc ON tp.user_id = tc.user_id
+        WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
+          AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
+          AND sg.name = #{subject}
+        GROUP BY tp.id, tp.user_id, u.name, u.nickname, tp.bio, tp.self_intro, tp.profile_img
+        ORDER BY rating_avg DESC, review_count DESC
+    </select>
+
+    <select id="selectTutorsByPrice" resultMap="TutorListMap">
+        SELECT 
+            tp.id, 
+            tp.user_id, 
+            u.name,
+            u.nickname, 
+            tp.bio, 
+            tp.self_intro,
+            COALESCE(ROUND(AVG(r.rating), 1), 0) AS rating_avg, 
+            COALESCE(COUNT(DISTINCT r.id), 0) AS review_count, 
+            u.profile_img,
+            GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ',') AS subjects,
+            AVG(l.price) AS price,
+            GROUP_CONCAT(DISTINCT CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ') AS experience
+        FROM tutor_profile tp
+        JOIN users u ON tp.user_id = u.id
+        LEFT JOIN review r ON r.booking_id IN ( SELECT b.id FROM booking b WHERE b.tutor_id = tp.user_id )
+        LEFT JOIN lesson l ON tp.user_id = l.user_id AND l.status = 'OPEN'
+        LEFT JOIN subject s ON l.subject_id = s.id
+        LEFT JOIN subject_group sg ON s.group_id = sg.id
+        LEFT JOIN language_field lf ON l.field_id = lf.id
+        LEFT JOIN tutor_career tc ON tp.user_id = tc.user_id
+        WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
+          AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
+          AND l.price &gt;= #{minPrice} 
+          AND l.price &lt;= #{maxPrice}
+        GROUP BY tp.id, tp.user_id, u.name, u.nickname, tp.bio, tp.self_intro, tp.profile_img
+        ORDER BY rating_avg DESC, review_count DESC
+    </select>
+
+    <select id="selectTutorsBySearchTerm" resultMap="TutorListMap">
+        SELECT 
+            tp.id, 
+            tp.user_id, 
+            u.name,
+            u.nickname, 
+            tp.bio, 
+            tp.self_intro,
+            u.profile_img,
+            COALESCE(
+                (SELECT AVG(r.rating) 
+                 FROM review r 
+                 JOIN booking b ON r.booking_id = b.id 
+                 JOIN lesson l ON b.lesson_id = l.id
+                 WHERE l.user_id = tp.user_id), 
+                0
+            ) AS rating_avg,
+            COALESCE(
+                (SELECT COUNT(*) 
+                 FROM review r 
+                 JOIN booking b ON r.booking_id = b.id 
+                 JOIN lesson l ON b.lesson_id = l.id
+                 WHERE l.user_id = tp.user_id), 
+                0
+            ) AS review_count,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ', ')
+                 FROM lesson l2
+                 JOIN subject s ON l2.subject_id = s.id
+                 JOIN subject_group sg ON s.group_id = sg.id
+                 JOIN language_field lf ON l2.field_id = lf.id
+                 WHERE l2.user_id = tp.user_id),
+                ''
+            ) AS subjects,
+            COALESCE(
+                (SELECT AVG(l3.price) 
+                 FROM lesson l3
+                 WHERE l3.user_id = tp.user_id),
+                0
+            ) AS price,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ')
+                 FROM tutor_career tc
+                 WHERE tc.user_id = tp.user_id),
+                ''
+            ) AS experience
+        FROM tutor_profile tp
+        JOIN users u ON tp.user_id = u.id
+        WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
+          AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
+          AND (u.nickname LIKE CONCAT('%', #{searchTerm}, '%') 
+               OR tp.bio LIKE CONCAT('%', #{searchTerm}, '%'))
+        ORDER BY rating_avg DESC, review_count DESC
+    </select>
+
+</mapper>

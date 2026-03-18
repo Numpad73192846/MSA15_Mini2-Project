@@ -1,0 +1,76 @@
+<section class="admin-tab">
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card admin-card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <div class="panel-title">수입 및 정산</div>
+              <div class="muted small">정산 대기 튜터를 선택 후 우측에서 송금(시뮬레이션) 실행</div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap justify-content-end">
+              <select class="form-select form-select-sm select-pill" id="settleFilter" style="width:140px;">
+                <option value="ALL">전체</option>
+                <option value="WAIT">정산 대기</option>
+                <option value="DONE">완료</option>
+              </select>
+              <input class="form-control form-control-sm pill-input" id="settleSearch" placeholder="튜터명 검색" style="width:180px;">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+              <tr>
+                <th style="width:26%;">튜터</th>
+                <th style="width:14%;">총 수입</th>
+                <th style="width:14%;">정산됨</th>
+                <th style="width:16%;">송금해야 함</th>
+                <th style="width:12%;">상태</th>
+              </tr>
+              </thead>
+              <tbody id="settleTbody"></tbody>
+            </table>
+          </div>
+
+          <div id="settleEmpty" class="empty-hero d-none">
+            <div class="emoji">💸</div>
+            <div class="fw-semibold">조건에 맞는 정산 항목이 없습니다.</div>
+            <div class="muted small">검색/필터를 변경해보세요.</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card admin-card shadow-sm">
+        <div class="card-body">
+          <div class="panel-title mb-2">정산 실행</div>
+          <div class="muted small mb-2" id="settlePanelHint">좌측 목록에서 튜터를 선택하세요.</div>
+
+          <div id="settlePanelBody" class="d-none">
+            <div class="fw-semibold" id="settleTutor">-</div>
+            <div class="muted small mb-2" id="settleMeta">-</div>
+
+            <div class="divider"></div>
+
+            <div class="d-flex justify-content-between">
+              <span class="muted small">송금해야 할 금액</span>
+              <span class="fw-bold" id="settleAmount">0원</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn btn-primary btn-sm btn-pill w-100" id="btnSettleRun">
+              자동 송금(시뮬레이션)
+            </button>
+            <div class="muted small mt-2">
+              * 실제 송금 API 연동 전에는 시뮬레이션 처리로 표시합니다.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

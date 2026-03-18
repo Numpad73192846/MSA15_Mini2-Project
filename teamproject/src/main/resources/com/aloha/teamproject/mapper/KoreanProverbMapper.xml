@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.KoreanProverbMapper">
+
+    <resultMap id="KoreanProverbMap" type="com.aloha.teamproject.dto.KoreanProverb">
+        <id property="no" column="no"/>
+        <result property="question" column="question"/>
+        <result property="answer" column="answer"/>
+        <result property="option1" column="option1"/>
+        <result property="option2" column="option2"/>
+        <result property="option3" column="option3"/>
+        <result property="option4" column="option4"/>
+        <result property="meaning" column="meaning"/>
+        <result property="difficulty" column="difficulty"/>
+        <result property="isActive" column="is_active"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 모든 활성화된 속담 조회 -->
+    <select id="selectAll" resultMap="KoreanProverbMap">
+        SELECT * FROM korean_proverb
+        WHERE is_active = 1
+        ORDER BY no
+    </select>
+
+    <!-- 난이도별 속담 조회 -->
+    <select id="selectByDifficulty" resultMap="KoreanProverbMap">
+        SELECT * FROM korean_proverb
+        WHERE is_active = 1 AND difficulty = #{difficulty}
+        ORDER BY no
+    </select>
+
+    <!-- 랜덤으로 N개의 속담 조회 -->
+    <select id="selectRandomProverbs" resultMap="KoreanProverbMap">
+        SELECT * FROM korean_proverb
+        WHERE is_active = 1
+        ORDER BY RAND()
+        LIMIT #{limit}
+    </select>
+
+    <!-- ID로 속담 조회 -->
+    <select id="selectById" resultMap="KoreanProverbMap">
+        SELECT * FROM korean_proverb
+        WHERE no = #{no} AND is_active = 1
+    </select>
+
+    <!-- 속담 추가 -->
+    <insert id="insert" parameterType="KoreanProverb">
+        INSERT INTO korean_proverb (
+            question, answer, option1, option2, option3, option4, 
+            meaning, difficulty, is_active
+        ) VALUES (
+            #{question}, #{answer}, #{option1}, #{option2}, #{option3}, #{option4},
+            #{meaning}, #{difficulty}, #{isActive}
+        )
+    </insert>
+
+    <!-- 속담 수정 -->
+    <update id="update" parameterType="KoreanProverb">
+        UPDATE korean_proverb
+        SET question = #{question},
+            answer = #{answer},
+            option1 = #{option1},
+            option2 = #{option2},
+            option3 = #{option3},
+            option4 = #{option4},
+            meaning = #{meaning},
+            difficulty = #{difficulty},
+            is_active = #{isActive}
+        WHERE no = #{no}
+    </update>
+
+    <!-- 속담 삭제 (소프트 삭제) -->
+    <update id="delete">
+        UPDATE korean_proverb
+        SET is_active = 0
+        WHERE no = #{no}
+    </update>
+
+</mapper>

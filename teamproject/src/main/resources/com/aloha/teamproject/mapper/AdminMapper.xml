@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aloha.teamproject.mapper.AdminMapper">
+
+    <select id="selectPendingDocuments" resultType="TutorDocument">
+        SELECT d.*, u.name as userName
+        FROM tutor_document d
+        JOIN users u ON d.user_id = u.id
+        WHERE d.reviewed_at IS NULL
+        ORDER BY d.created_at ASC
+    </select>
+
+    <update id="updateDocumentStatus">
+        UPDATE tutor_document
+        SET reviewed_by = #{adminId},
+            reviewed_at = NOW(),\
+            reject_reason = CASE
+                WHEN UPPER(#{status}) = 'APPROVED' THEN NULL
+                ELSE COALESCE(NULLIF(#{rejectReason}, ''), 'REJECTED')
+            END,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectTutorSettlements" resultType="TutorSettlement">
+        SELECT 
+            u.id as userId,
+            u.name as userName,
+            u.nickname,
+            COALESCE(SUM(CASE
+                WHEN p.status IN ('PAID', 'REMITTED') THEN p.amount * 0.9
+                ELSE 0
+            END), 0) as totalAmount,
+            COALESCE(SUM(CASE
+                WHEN p.status = 'REMITTED' THEN p.amount * 0.9
+                ELSE 0
+            END), 0) as remittedAmount,
+            COALESCE(SUM(CASE
+                WHEN p.status = 'PAID' THEN p.amount * 0.9
+                ELSE 0
+            END), 0) as balance,
+            CASE
+                WHEN COALESCE(SUM(CASE
+                    WHEN p.status = 'PAID' THEN p.amount * 0.9
+                    ELSE 0
+                END), 0) > 0 THEN 'PENDING'
+                ELSE 'COMPLETED'
+            END as status
+        FROM users u
+        JOIN user_auth ua ON u.id = ua.user_id
+        LEFT JOIN lesson l ON u.id = l.user_id
+        LEFT JOIN booking b ON l.id = b.lesson_id
+        LEFT JOIN payment p ON b.id = p.booking_id
+        WHERE ua.auth = 'ROLE_TUTOR'
+        GROUP BY u.id, u.name, u.nickname
+    </select>
+
+    <select id="selectDocuments" resultType="TutorDocument">
+        SELECT d.*,
+               u.name as userName,
+               u.nickname as userNickname,
+               CASE
+                    WHEN d.reviewed_at IS NOT NULL THEN
+                        CASE
+                            WHEN d.reject_reason IS NULL THEN 'APPROVED'
+                            ELSE 'REJECTED'
+                        END
+                    ELSE 'PENDING'
+               END as status
+        FROM tutor_document d
+        JOIN users u ON d.user_id = u.id
+        ORDER BY d.created_at DESC
+    </select>
+
+    <select id="selectUsers" resultType="AdminUser">
+        SELECT u.id,
+               u.username,
+               u.name,
+               u.nickname,
+               u.status,
+               u.created_at AS createdAt,
+               CASE
+                    WHEN SUM(CASE WHEN ua.auth = 'ROLE_ADMIN' THEN 1 ELSE 0 END) &gt; 0 THEN 'ADMIN'
+                    WHEN SUM(CASE WHEN ua.auth IN ('ROLE_TUTOR', 'ROLE_TUTOR_PENDING') THEN 1 ELSE 0 END) &gt; 0 THEN 'TUTOR'
+                    ELSE 'USER'
+               END AS role
+        FROM users u
+        JOIN user_auth ua ON u.id = ua.user_id
+        GROUP BY u.id, u.username, u.name, u.nickname, u.status, u.created_at
+        ORDER BY u.created_at DESC
+    </select>
+
+    <update id="updateUserStatus">
+        UPDATE users
+        SET status = #{status},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateUserRole">
+        UPDATE user_auth
+            SET auth = CASE
+                WHEN UPPER(#{role}) = 'ADMIN' THEN 'ROLE_ADMIN'
+                WHEN UPPER(#{role}) = 'TUTOR' THEN 'ROLE_TUTOR'
+                WHEN UPPER(#{role}) = 'USER' THEN 'ROLE_USER'
+                ELSE auth
+            END,
+        updated_at = NOW()
+        WHERE user_id = #{id}
+    </update>
+
+    <delete id="deleteUser">
+        DELETE FROM users
+        WHERE id = #{id}
+    </delete>
+
+    <update id="remitTutorSettlement">
+        UPDATE payment p
+        JOIN booking b ON p.booking_id = b.id
+        JOIN lesson l ON b.lesson_id = l.id
+        SET p.status = 'REMITTED',
+            p.updated_at = NOW()
+        WHERE l.user_id = #{tutorId}
+        AND p.status = 'PAID'
+    </update>
+
+</mapper>

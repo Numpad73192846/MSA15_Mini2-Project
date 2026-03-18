@@ -1,0 +1,810 @@
+﻿<section class="edit-section">
+  <div class="card edit-card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="step-section-title">스케줄 관리</div>
+      <div class="step-section-desc">탭 전환 중에도 임시 편집 상태를 유지한 뒤 저장 시 DB에 반영합니다.</div>
+
+      <div class="alert alert-info mb-4 small">
+        <i class="bi bi-info-circle me-1"></i>
+        기본 시간대와 캘린더 선택값은 임시로 세션에 저장됩니다. 마지막에 <strong>스케줄 저장</strong> 버튼을 누르면 DB에 반영됩니다.
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body p-4">
+          <h4 class="h6 fw-bold mb-3">기본 수업 가능 시간대</h4>
+          <p class="text-muted mb-3">요일별로 여러 구간을 설정할 수 있습니다. 예: 08:00~09:30, 20:00~23:30</p>
+          <div id="baseTimeRangeEditor"></div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+            <div class="tc-toolbar">
+              <button type="button" class="tc-iconbtn" id="btnPrevWeek" aria-label="이전 주">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <div class="tc-range" id="weekRangeLabel">-</div>
+              <button type="button" class="tc-iconbtn" id="btnNextWeek" aria-label="다음 주">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="weekly_calendar_wrap" id="tutorScheduleEditor">
+            <div class="weekly_head">
+              <ul class="dayHead flex">
+                <li class="flex"><div class="head_in"><p class="dayTit">일</p><p class="dayDate en">-</p></div></li>
+                <li class="flex"><div class="head_in"><p class="dayTit">월</p><p class="dayDate en">-</p></div></li>
+                <li class="flex"><div class="head_in"><p class="dayTit">화</p><p class="dayDate en">-</p></div></li>
+                <li class="flex"><div class="head_in"><p class="dayTit">수</p><p class="dayDate en">-</p></div></li>
+                <li class="flex"><div class="head_in"><p class="dayTit">목</p><p class="dayDate en">-</p></div></li>
+                <li class="flex"><div class="head_in"><p class="dayTit">금</p><p class="dayDate en">-</p></div></li>
+                <li class="flex"><div class="head_in"><p class="dayTit">토</p><p class="dayDate en">-</p></div></li>
+              </ul>
+            </div>
+            <div class="weekly_con">
+              <ul class="dayCon flex">
+                <li class="flex"><div class="con_in"></div></li>
+                <li class="flex"><div class="con_in"></div></li>
+                <li class="flex"><div class="con_in"></div></li>
+                <li class="flex"><div class="con_in"></div></li>
+                <li class="flex"><div class="con_in"></div></li>
+                <li class="flex"><div class="con_in"></div></li>
+                <li class="flex"><div class="con_in"></div></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <button type="button" class="btn btn-outline-primary" id="btnApplyPattern">
+              <i class="bi bi-arrow-repeat me-1"></i> 이번 주 설정을 9주까지 적용
+            </button>
+            <small class="text-muted ms-2">현재 주 선택 패턴을 앞으로 9주간 복제합니다.</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3 text-center">
+        <small class="text-muted">
+          <span class="badge bg-secondary">●</span> 선택 불가
+          <span class="badge bg-primary ms-2">●</span> 선택됨
+          <span class="badge bg-danger ms-2">●</span> 예약됨
+        </small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="d-flex justify-content-end gap-2">
+  <button type="button" class="btn btn-outline-danger px-4" id="btnResetScheduleAll">
+    <i class="bi bi-arrow-counterclockwise me-1"></i> 전체 초기화
+  </button>
+  <button type="button" class="btn btn-primary px-4" id="btnSaveSchedule">
+    <i class="bi bi-check-lg me-1"></i> 스케줄 저장
+  </button>
+</div>
+
+<script src="/js/tutor-calendar.js"></script>
+<script>
+  (() => {
+    const byId = (id) => document.getElementById(id);
+
+    if (!byId('tutorScheduleEditor')) {
+      return;
+    }
+
+    if (!document.querySelector('link[data-profile-edit-schedule-css="true"]')) {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = '/css/tutor-calendar.css';
+      css.setAttribute('data-profile-edit-schedule-css', 'true');
+      document.head.appendChild(css);
+    }
+
+    const DRAFT_KEY = 'tutorProfileEditScheduleDraft';
+    const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+    const dayEnumToIndex = {
+      SUN: 0, MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6,
+      일: 0, 월: 1, 화: 2, 수: 3, 목: 4, 금: 5, 토: 6
+    };
+    const indexToDayEnum = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+    const DEFAULT_BASE_TIME_RANGES = {
+      0: [],
+      1: [{ start: '09:00', end: '18:00' }],
+      2: [{ start: '09:00', end: '18:00' }],
+      3: [{ start: '09:00', end: '18:00' }],
+      4: [{ start: '09:00', end: '18:00' }],
+      5: [{ start: '09:00', end: '18:00' }],
+      6: []
+    };
+
+    let baseTimeRanges = JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+    let calendar = null;
+
+    const scheduleFetch = (url, options = {}) => {
+      if (typeof fetchWithAuth === 'function') {
+        return fetchWithAuth(url, options);
+      }
+      return fetch(url, options);
+    };
+
+    function normalizeRanges(raw) {
+      const fallback = JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+      if (!raw || typeof raw !== 'object') return fallback;
+
+      Object.keys(fallback).forEach((day) => {
+        const source = Array.isArray(raw[day]) ? raw[day] : [];
+        fallback[day] = source
+          .map((range) => ({ start: String(range.start || '').slice(0, 5), end: String(range.end || '').slice(0, 5) }))
+          .filter((range) => /^\d{2}:\d{2}$/.test(range.start) && /^\d{2}:\d{2}$/.test(range.end) && range.start < range.end);
+      });
+
+      return fallback;
+    }
+
+    function formatLocalDateTime(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      const hh = String(date.getHours()).padStart(2, '0');
+      const mm = String(date.getMinutes()).padStart(2, '0');
+      const ss = String(date.getSeconds()).padStart(2, '0');
+      return `${y}-${m}-${d}T${hh}:${mm}:${ss}`;
+    }
+
+    function getDateRangeForWeeks({ pastWeeks = 0, futureWeeks = 9 } = {}) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const day = today.getDay();
+      const safePastWeeks = Math.max(0, Number(pastWeeks) || 0);
+      const safeFutureWeeks = Math.max(0, Number(futureWeeks) || 0);
+
+      const sunday = new Date(today);
+      sunday.setDate(today.getDate() - day);
+
+      const start = new Date(sunday);
+      start.setDate(start.getDate() - (safePastWeeks * 7));
+      start.setHours(0, 0, 0, 0);
+
+      const maxWeekStart = new Date(sunday);
+      maxWeekStart.setDate(maxWeekStart.getDate() + (safeFutureWeeks * 7));
+
+      const end = new Date(maxWeekStart);
+      end.setDate(end.getDate() + 6);
+      end.setHours(23, 59, 59, 0);
+
+      return {
+        start: formatLocalDateTime(start),
+        end: formatLocalDateTime(end)
+      };
+    }
+
+    function getDateRangeForMaxWeeks(maxWeeks = 9) {
+      return getDateRangeForWeeks({ futureWeeks: maxWeeks });
+    }
+
+    function normalizeTimeToStep(rawTime, stepMinutes = 30) {
+      const matched = String(rawTime || '').match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+      if (!matched) return '';
+      const hour = Number(matched[1]);
+      const minute = Number(matched[2]);
+      const second = Number(matched[3] || '0');
+      if (!Number.isFinite(hour) || !Number.isFinite(minute) || !Number.isFinite(second)) return '';
+      if (minute % stepMinutes !== 0 || second !== 0) return '';
+      return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    }
+
+    function resolveDayIndex(rawDay) {
+      if (rawDay === null || rawDay === undefined) return undefined;
+
+      if (typeof rawDay === 'number' && Number.isFinite(rawDay)) {
+        if (rawDay >= 0 && rawDay <= 6) return rawDay;
+        if (rawDay >= 1 && rawDay <= 7) return rawDay % 7;
+      }
+
+      const source = String(rawDay).trim();
+      if (!source) return undefined;
+
+      const asNumber = Number(source);
+      if (Number.isFinite(asNumber)) {
+        if (asNumber >= 0 && asNumber <= 6) return asNumber;
+        if (asNumber >= 1 && asNumber <= 7) return asNumber % 7;
+      }
+
+      const normalized = source.toUpperCase();
+      const table = {
+        SUN: 0, SUNDAY: 0, '일': 0, '일요일': 0,
+        MON: 1, MONDAY: 1, '월': 1, '월요일': 1,
+        TUE: 2, TUESDAY: 2, TUES: 2, '화': 2, '화요일': 2,
+        WED: 3, WEDNESDAY: 3, '수': 3, '수요일': 3,
+        THU: 4, THURSDAY: 4, THUR: 4, THURS: 4, '목': 4, '목요일': 4,
+        FRI: 5, FRIDAY: 5, '금': 5, '금요일': 5,
+        SAT: 6, SATURDAY: 6, '토': 6, '토요일': 6
+      };
+
+      return table[normalized] ?? table[source];
+    }
+
+    function timeToMinutes(rawTime) {
+      const matched = String(rawTime || '').match(/^(\d{2}):(\d{2})$/);
+      if (!matched) return null;
+      const hh = Number(matched[1]);
+      const mm = Number(matched[2]);
+      if (!Number.isFinite(hh) || !Number.isFinite(mm)) return null;
+      return (hh * 60) + mm;
+    }
+
+    function minutesToTime(minutes) {
+      if (!Number.isFinite(minutes) || minutes < 0 || minutes > 24 * 60) return '';
+      const hh = Math.floor(minutes / 60);
+      const mm = minutes % 60;
+      return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+    }
+
+    function toLocalDateKey(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function expandAvailabilityToSlots(item, stepMinutes = 30) {
+      if (!item?.startAt) return [];
+      const start = new Date(item.startAt);
+      if (Number.isNaN(start.getTime())) return [];
+
+      const endParsed = item.endAt ? new Date(item.endAt) : null;
+      const end = endParsed && !Number.isNaN(endParsed.getTime()) && endParsed > start
+        ? endParsed
+        : new Date(start.getTime() + (stepMinutes * 60000));
+
+      const slots = [];
+      for (let cursor = new Date(start); cursor < end; cursor = new Date(cursor.getTime() + (stepMinutes * 60000))) {
+        const time = normalizeTimeToStep(
+          `${String(cursor.getHours()).padStart(2, '0')}:${String(cursor.getMinutes()).padStart(2, '0')}:00`,
+          stepMinutes
+        );
+        if (!time) continue;
+        slots.push({
+          date: toLocalDateKey(cursor),
+          time
+        });
+      }
+      return slots;
+    }
+
+    function deriveBaseRangesFromAvailability(apiData = [], stepMinutes = 30) {
+      const byDay = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+      apiData.forEach((row) => {
+        const date = String(row?.date || '');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Array.isArray(row?.slots)) return;
+        const dayIdx = new Date(`${date}T00:00:00`).getDay();
+        if (dayIdx < 0 || dayIdx > 6) return;
+        row.slots.forEach((slotTime) => {
+          const t = String(slotTime || '').slice(0, 5);
+          if (/^\d{2}:\d{2}$/.test(t)) {
+            byDay[dayIdx].push(t);
+          }
+        });
+      });
+
+      const fallback = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+      Object.keys(byDay).forEach((dayKey) => {
+        const daySlots = Array.from(new Set(byDay[dayKey]));
+        if (daySlots.length === 0) return;
+        const minuteList = daySlots
+          .map((t) => timeToMinutes(t))
+          .filter((v) => Number.isFinite(v))
+          .sort((a, b) => a - b);
+        if (minuteList.length === 0) return;
+
+        const startMin = minuteList[0];
+        const endMin = minuteList[minuteList.length - 1] + stepMinutes;
+        const start = minutesToTime(startMin);
+        const end = minutesToTime(endMin);
+        if (!start || !end || start >= end) return;
+        fallback[dayKey].push({ start, end });
+      });
+      return fallback;
+    }
+
+    function setLoading(isLoading) {
+      byId('btnSaveSchedule')?.toggleAttribute('disabled', isLoading);
+      byId('btnApplyPattern')?.toggleAttribute('disabled', isLoading);
+      byId('btnResetScheduleAll')?.toggleAttribute('disabled', isLoading);
+    }
+
+    function showError(message) {
+      let alertEl = byId('scheduleErrorAlert');
+      if (!alertEl) {
+        alertEl = document.createElement('div');
+        alertEl.id = 'scheduleErrorAlert';
+        alertEl.className = 'alert alert-danger my-2';
+        const target = document.querySelector('.edit-section .card-body') || document.body;
+        target.prepend(alertEl);
+      }
+
+      alertEl.textContent = message;
+      window.setTimeout(() => alertEl?.remove(), 4000);
+    }
+
+    function loadDraft() {
+      try {
+        const raw = sessionStorage.getItem(DRAFT_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return null;
+
+        return {
+          baseTimeRanges: normalizeRanges(parsed.baseTimeRanges),
+          selectedData: Array.isArray(parsed.selectedData) ? parsed.selectedData : [],
+          baseRangesTouched: parsed.baseRangesTouched === true,
+          slotsTouched: parsed.slotsTouched === true
+        };
+      } catch (e) {
+        console.warn('schedule draft parse failed', e);
+        return null;
+      }
+    }
+
+    function saveDraft({ baseRangesTouched = false, slotsTouched = false } = {}) {
+      if (!calendar) return;
+      const previous = loadDraft();
+      const payload = {
+        baseTimeRanges: normalizeRanges(baseTimeRanges),
+        selectedData: calendar.getSelectedData(),
+        baseRangesTouched: Boolean(baseRangesTouched || previous?.baseRangesTouched),
+        slotsTouched: Boolean(slotsTouched || previous?.slotsTouched)
+      };
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
+    }
+
+    function clearDraft() {
+      sessionStorage.removeItem(DRAFT_KEY);
+    }
+
+    function draftToCalendarData(selectedData = []) {
+      const map = new Map();
+      selectedData.forEach((item) => {
+        const date = String(item.date || '');
+        const time = String(item.time || '').slice(0, 5);
+        if (!date || !/^\d{2}:\d{2}$/.test(time)) return;
+        if (!map.has(date)) map.set(date, new Set());
+        map.get(date).add(time);
+      });
+
+      const rows = [];
+      map.forEach((times, date) => {
+        rows.push({ date, slots: Array.from(times) });
+      });
+      return rows;
+    }
+
+    function hasAnyRange(ranges = {}) {
+      return Object.values(ranges).some((dayRanges) => Array.isArray(dayRanges) && dayRanges.length > 0);
+    }
+
+    function mergeBookedData(apiData = [], draftSelectedData = [], draftSlotsTouched = false) {
+      const booked = apiData.filter((item) => item.booked);
+      if (!draftSlotsTouched) {
+        return apiData;
+      }
+      const selected = draftToCalendarData(draftSelectedData);
+      return [...selected, ...booked];
+    }
+
+    async function loadBaseTimeRangesFromApi() {
+      const response = await scheduleFetch('/api/tutors/me/time-ranges');
+      if (!response.ok) {
+        throw new Error('기본 시간대 조회에 실패했습니다.');
+      }
+
+      const result = await response.json();
+      if (!(result && result.success && Array.isArray(result.data))) {
+        throw new Error(result?.message || '기본 시간대 응답이 올바르지 않습니다.');
+      }
+
+      const ranges = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+      result.data.forEach((item) => {
+        const dayIdx = resolveDayIndex(item.dayOfWeek ?? item.day ?? item.weekDay);
+        if (dayIdx === undefined) return;
+        const start = String(item.startTime || item.startAt || '').slice(0, 5);
+        const end = String(item.endTime || item.endAt || '').slice(0, 5);
+        if (!/^\d{2}:\d{2}$/.test(start) || !/^\d{2}:\d{2}$/.test(end) || start >= end) return;
+        ranges[dayIdx].push({ start, end });
+      });
+
+      return ranges;
+    }
+
+    async function loadAvailabilityFromApi({ pastWeeks = 0, futureWeeks = 9 } = {}) {
+      const { start, end } = getDateRangeForWeeks({ pastWeeks, futureWeeks });
+      const response = await scheduleFetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+      if (!response.ok) {
+        throw new Error('가용 시간 조회에 실패했습니다.');
+      }
+
+      const result = await response.json();
+      if (!(result && result.success && Array.isArray(result.data))) {
+        throw new Error(result?.message || '가용 시간 응답이 올바르지 않습니다.');
+      }
+
+      const selectedMap = new Map();
+      const bookedMap = new Map();
+
+      result.data.forEach((item) => {
+        const status = String(item.status || '').toUpperCase();
+        const slots = expandAvailabilityToSlots(item, 30);
+
+        slots.forEach((slot) => {
+          if (status === 'BOOKED') {
+            if (!bookedMap.has(slot.date)) bookedMap.set(slot.date, new Set());
+            bookedMap.get(slot.date).add(slot.time);
+            return;
+          }
+
+          if (status && status !== 'OPEN') return;
+          if (!selectedMap.has(slot.date)) selectedMap.set(slot.date, new Set());
+          selectedMap.get(slot.date).add(slot.time);
+        });
+      });
+
+      const rows = [];
+      selectedMap.forEach((times, date) => rows.push({ date, slots: Array.from(times) }));
+      bookedMap.forEach((times, date) => rows.push({ date, slots: Array.from(times), booked: true }));
+      return rows;
+    }
+
+    async function saveBaseTimeRangesToApi() {
+      const rows = [];
+
+      Object.keys(baseTimeRanges).forEach((dayIdx) => {
+        const ranges = baseTimeRanges[dayIdx] || [];
+        ranges.forEach((range) => {
+          rows.push({
+            dayOfWeek: indexToDayEnum[Number(dayIdx)],
+            startTime: range.start,
+            endTime: range.end
+          });
+        });
+      });
+
+      const response = await scheduleFetch('/api/tutors/me/time-ranges', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(rows)
+      });
+
+      const result = await response.json();
+      if (!(response.ok && result.success)) {
+        throw new Error(result?.message || '기본 시간대 저장에 실패했습니다.');
+      }
+    }
+
+    async function saveAvailabilityToApi() {
+      if (!calendar) return;
+
+      const selectedData = calendar.getSelectedData();
+      const stepMinutes = Number(calendar.options?.timeStepMinutes) || 30;
+      const { start, end } = getDateRangeForMaxWeeks(520);
+
+      const availabilities = selectedData.map((item) => {
+        const startDate = new Date(`${item.date}T${item.time}:00`);
+        const endDate = new Date(startDate.getTime() + (stepMinutes * 60000));
+        return {
+          startAt: formatLocalDateTime(startDate),
+          endAt: formatLocalDateTime(endDate),
+          status: 'OPEN'
+        };
+      });
+
+      const response = await scheduleFetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(availabilities)
+      });
+
+      const result = await response.json();
+      if (!(response.ok && result.success)) {
+        throw new Error(result?.message || '가용 시간 저장에 실패했습니다.');
+      }
+    }
+
+    async function resetScheduleToApi() {
+      const timeRangeResponse = await scheduleFetch('/api/tutors/me/time-ranges', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([])
+      });
+      const timeRangeResult = await timeRangeResponse.json();
+      if (!(timeRangeResponse.ok && timeRangeResult.success)) {
+        throw new Error(timeRangeResult?.message || '기본 시간대 초기화에 실패했습니다.');
+      }
+
+      const { start, end } = getDateRangeForMaxWeeks(9);
+      const availabilityResponse = await scheduleFetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([])
+      });
+      const availabilityResult = await availabilityResponse.json();
+      if (!(availabilityResponse.ok && availabilityResult.success)) {
+        throw new Error(availabilityResult?.message || '가용 시간 초기화에 실패했습니다.');
+      }
+    }
+
+    function syncBaseRangesToCalendar({ baseRangesTouched = true } = {}) {
+      if (calendar) {
+        const normalized = normalizeRanges(baseTimeRanges);
+        calendar.options.baseTimeRanges = normalized;
+        calendar.options.renderOnlyInRange = hasAnyRange(normalized);
+        calendar.render();
+      }
+      saveDraft({ baseRangesTouched });
+    }
+
+    function addRange(dayIndex) {
+      if (!Array.isArray(baseTimeRanges[dayIndex])) {
+        baseTimeRanges[dayIndex] = [];
+      }
+      baseTimeRanges[dayIndex].push({ start: '08:00', end: '09:30' });
+      renderBaseTimeEditor();
+      syncBaseRangesToCalendar({ baseRangesTouched: true });
+    }
+
+    function removeRange(dayIndex, rangeIndex) {
+      if (!Array.isArray(baseTimeRanges[dayIndex])) return;
+      baseTimeRanges[dayIndex].splice(rangeIndex, 1);
+      renderBaseTimeEditor();
+      syncBaseRangesToCalendar({ baseRangesTouched: true });
+    }
+
+    function updateRange(dayIndex, rangeIndex, key, value) {
+      if (!Array.isArray(baseTimeRanges[dayIndex])) return;
+      if (!baseTimeRanges[dayIndex][rangeIndex]) return;
+      baseTimeRanges[dayIndex][rangeIndex][key] = String(value || '').slice(0, 5);
+      syncBaseRangesToCalendar({ baseRangesTouched: true });
+    }
+
+    function closeTimeDropdown(input) {
+      if (!input || typeof input.blur !== 'function') return;
+      window.setTimeout(() => {
+        input.blur();
+      }, 0);
+    }
+
+    function minutePartOfTime(value) {
+      return String(value || '').slice(3, 5);
+    }
+
+    function renderBaseTimeEditor() {
+      const container = byId('baseTimeRangeEditor');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      dayLabels.forEach((label, dayIndex) => {
+        const dayRow = document.createElement('div');
+        dayRow.className = 'border rounded p-3 mb-2';
+
+        const header = document.createElement('div');
+        header.className = 'd-flex justify-content-between align-items-center mb-2';
+        header.innerHTML = `
+          <div class="fw-semibold">${label}요일</div>
+          <button type="button" class="btn btn-sm btn-outline-primary">시간대 추가</button>
+        `;
+        header.querySelector('button')?.addEventListener('click', () => addRange(dayIndex));
+        dayRow.appendChild(header);
+
+        const ranges = Array.isArray(baseTimeRanges[dayIndex]) ? baseTimeRanges[dayIndex] : [];
+        if (ranges.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'text-muted small';
+          empty.textContent = '설정된 시간대 없음';
+          dayRow.appendChild(empty);
+          container.appendChild(dayRow);
+          return;
+        }
+
+        ranges.forEach((range, rangeIndex) => {
+          const row = document.createElement('div');
+          row.className = 'd-flex align-items-center gap-2 mb-2';
+          row.innerHTML = `
+            <input type="time" class="form-control form-control-sm" value="${range.start}" step="1800">
+            <span>~</span>
+            <input type="time" class="form-control form-control-sm" value="${range.end}" step="1800">
+            <button type="button" class="btn btn-sm btn-outline-danger" aria-label="시간대 삭제" title="시간대 삭제">
+              <i class="bi bi-x-lg"></i>
+              <span class="visually-hidden">삭제</span>
+            </button>
+          `;
+
+          const [startInput, endInput] = row.querySelectorAll('input');
+          const removeBtn = row.querySelector('button');
+
+          let previousStartValue = String(range.start || '');
+          let previousEndValue = String(range.end || '');
+
+          const handleStartInput = (e) => {
+            const nextValue = String(e.target.value || '');
+            updateRange(dayIndex, rangeIndex, 'start', nextValue);
+            if (minutePartOfTime(previousStartValue) !== minutePartOfTime(nextValue)) {
+              closeTimeDropdown(e.target);
+            }
+            previousStartValue = nextValue;
+          };
+          const handleEndInput = (e) => {
+            const nextValue = String(e.target.value || '');
+            updateRange(dayIndex, rangeIndex, 'end', nextValue);
+            if (minutePartOfTime(previousEndValue) !== minutePartOfTime(nextValue)) {
+              closeTimeDropdown(e.target);
+            }
+            previousEndValue = nextValue;
+          };
+
+          startInput?.addEventListener('input', handleStartInput);
+          startInput?.addEventListener('change', handleStartInput);
+          endInput?.addEventListener('input', handleEndInput);
+          endInput?.addEventListener('change', handleEndInput);
+          removeBtn?.addEventListener('click', () => removeRange(dayIndex, rangeIndex));
+
+          dayRow.appendChild(row);
+        });
+
+        container.appendChild(dayRow);
+      });
+    }
+
+    async function refreshScheduleCalendarOnly() {
+      const currentWeekStart = calendar?.state?.weekStart
+        ? new Date(calendar.state.weekStart)
+        : null;
+
+      const apiBaseRanges = await loadBaseTimeRangesFromApi();
+      const apiAvailability = await loadAvailabilityFromApi();
+
+      const normalizedApiBaseRanges = normalizeRanges(apiBaseRanges);
+      let derivedFromAvailability = normalizeRanges(deriveBaseRangesFromAvailability(apiAvailability, 30));
+      if (!hasAnyRange(normalizedApiBaseRanges) && !hasAnyRange(derivedFromAvailability)) {
+        try {
+          const extendedAvailability = await loadAvailabilityFromApi({ pastWeeks: 52, futureWeeks: 52 });
+          derivedFromAvailability = normalizeRanges(deriveBaseRangesFromAvailability(extendedAvailability, 30));
+        } catch (e) {
+          console.warn('Extended availability fallback failed', e);
+        }
+      }
+
+      baseTimeRanges = hasAnyRange(normalizedApiBaseRanges)
+        ? normalizedApiBaseRanges
+        : derivedFromAvailability;
+
+      renderBaseTimeEditor();
+
+      if (!calendar) return;
+      calendar.options.baseTimeRanges = baseTimeRanges;
+      calendar.options.renderOnlyInRange = hasAnyRange(baseTimeRanges);
+      calendar.setInitialData(apiAvailability);
+      if (currentWeekStart) {
+        calendar.state.weekStart = currentWeekStart;
+        calendar.render();
+      }
+    }
+
+    function bindScheduleEvents() {
+      byId('btnApplyPattern')?.addEventListener('click', () => {
+        if (!calendar) return;
+        if (!confirm('현재 주 패턴을 앞으로 9주간 적용하시겠습니까?')) return;
+
+        calendar.applyWeekPattern(9);
+        saveDraft({ slotsTouched: true });
+        alert('패턴이 적용되었습니다. 저장 버튼을 누르면 DB에 반영됩니다.');
+      });
+
+      byId('btnResetScheduleAll')?.addEventListener('click', async () => {
+        if (!confirm('스케줄을 전체 초기화하시겠습니까?\n예약된 수업은 유지됩니다.')) return;
+
+        setLoading(true);
+        try {
+          await resetScheduleToApi();
+          clearDraft();
+          await refreshScheduleCalendarOnly();
+          alert('스케줄이 전체 초기화되었습니다. 예약된 수업은 유지됩니다.');
+        } catch (error) {
+          console.error(error);
+          showError(error.message || '스케줄 초기화에 실패했습니다.');
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      byId('btnSaveSchedule')?.addEventListener('click', async () => {
+        if (!calendar) return;
+
+        setLoading(true);
+        try {
+          await saveBaseTimeRangesToApi();
+          await saveAvailabilityToApi();
+          clearDraft();
+          alert('스케줄이 저장되었습니다.');
+          if (typeof window.reloadProfileEditSection === 'function') {
+            window.reloadProfileEditSection('schedule');
+            return;
+          }
+          window.location.href = '/tutor/profile-edit?section=schedule';
+        } catch (error) {
+          console.error(error);
+          showError(error.message || '스케줄 저장에 실패했습니다.');
+        } finally {
+          setLoading(false);
+        }
+      });
+    }
+
+    async function initScheduleSection() {
+      setLoading(true);
+      try {
+        const draft = loadDraft();
+        const apiBaseRanges = await loadBaseTimeRangesFromApi();
+        const apiAvailability = await loadAvailabilityFromApi();
+
+        const normalizedApiBaseRanges = normalizeRanges(apiBaseRanges);
+        let derivedFromAvailability = normalizeRanges(deriveBaseRangesFromAvailability(apiAvailability, 30));
+        if (!hasAnyRange(normalizedApiBaseRanges) && !hasAnyRange(derivedFromAvailability)) {
+          try {
+            const extendedAvailability = await loadAvailabilityFromApi({ pastWeeks: 52, futureWeeks: 52 });
+            derivedFromAvailability = normalizeRanges(deriveBaseRangesFromAvailability(extendedAvailability, 30));
+          } catch (e) {
+            console.warn('Extended availability fallback failed', e);
+          }
+        }
+        const effectiveApiBaseRanges = hasAnyRange(normalizedApiBaseRanges)
+          ? normalizedApiBaseRanges
+          : derivedFromAvailability;
+        const normalizedDraftBaseRanges = draft?.baseTimeRanges
+          ? normalizeRanges(draft.baseTimeRanges)
+          : null;
+        const draftHasAnyBaseRange = Boolean(
+          normalizedDraftBaseRanges && hasAnyRange(normalizedDraftBaseRanges)
+        );
+        const useDraftBaseRanges = Boolean(
+          draft?.baseRangesTouched &&
+          normalizedDraftBaseRanges &&
+          (draftHasAnyBaseRange || !hasAnyRange(effectiveApiBaseRanges))
+        );
+
+        baseTimeRanges = useDraftBaseRanges
+          ? normalizedDraftBaseRanges
+          : effectiveApiBaseRanges;
+
+        const initialData = mergeBookedData(
+          apiAvailability,
+          draft?.selectedData || [],
+          draft?.slotsTouched === true
+        );
+
+        calendar = new TutorCalendar({
+          containerId: 'tutorScheduleEditor',
+          mode: 'edit',
+          baseTimeRanges,
+          renderOnlyInRange: hasAnyRange(baseTimeRanges),
+          focusFirstDataWeek: true,
+          timeStepMinutes: 30,
+          initialData,
+          onSlotClick: () => saveDraft({ slotsTouched: true })
+        });
+
+        renderBaseTimeEditor();
+        bindScheduleEvents();
+      } catch (error) {
+        console.error(error);
+        showError(error.message || '스케줄 정보를 불러오지 못했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    initScheduleSection();
+  })();
+</script>

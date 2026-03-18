@@ -1,0 +1,242 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <!-- 회사 소개 페이지 -->
+        <section class="about-section py-5">
+            <div class="container">
+                <!-- 페이지 제목 -->
+                <div class="text-center mb-5">
+                    <h1 class="display-5 fw-bold mb-3">튜터링고 소개</h1>
+                    <p class="text-muted">최고의 튜터와 함께하는 1:1 맞춤 학습 플랫폼</p>
+                </div>
+
+                <!-- 메인 소개 -->
+                <div class="row justify-content-center mb-5">
+                    <div class="col-lg-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-5">
+                                <div class="row align-items-center">
+                                    <div class="col-md-3 text-center mb-4 mb-md-0">
+                                        <img src="/img/guide/success.svg" alt="교육의 미래" style="width: 170px; height: 170px;">
+                                    </div>
+                                    <div class="col-md-9 text-center text-md-start">
+                                        <h2 class="h3 fw-bold mb-4">우리는 교육의 미래를 만들어갑니다</h2>
+                                        <p class="lead text-muted mb-0">
+                                            튜터링고는 누구나 원하는 분야의 전문가로부터 1:1 맞춤 교육을 받을 수 있는 
+                                            온·오프라인 튜터링 매칭 플랫폼입니다. 
+                                            검증된 튜터와 학생을 연결하여 최고의 학습 경험을 제공합니다.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 비전 & 미션 -->
+                <div class="row g-4 mb-5">
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body p-5">
+                                <div class="row align-items-center">
+                                    <div class="col-md-3 text-center mb-3 mb-md-0">
+                                        <img src="/img/guide/vision.svg" alt="비전" style="width: 80px; height: 80px;">
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h3 class="h4 fw-bold mb-3">비전</h3>
+                                        <p class="text-muted mb-0">
+                                            모든 사람이 자신의 목표를 달성하기 위해 필요한 지식과 기술을 
+                                            최적의 방법으로 배울 수 있는 세상을 만듭니다.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body p-5">
+                                <div class="row align-items-center">
+                                    <div class="col-md-3 text-center mb-3 mb-md-0">
+                                        <img src="/img/guide/mission.svg" alt="미션" style="width: 80px; height: 80px;">
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h3 class="h4 fw-bold mb-3">미션</h3>
+                                        <p class="text-muted mb-0">
+                                            검증된 튜터와 학생을 효과적으로 연결하여 
+                                            맞춤형 교육을 통한 성장의 기회를 제공하고, 
+                                            교육의 질을 높입니다.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 핵심 가치 -->
+                <div class="row justify-content-center mb-5">
+                    <div class="col-lg-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-5">
+                                <h3 class="h3 fw-bold text-center mb-5">핵심 가치</h3>
+                                
+                                <div class="row g-4">
+                                    <div class="col-md-4 text-center">
+                                        <div class="mb-3">
+                                            <i class="bi bi-shield-check text-success" style="font-size: 2.5rem;"></i>
+                                        </div>
+                                        <h4 class="h5 fw-bold mb-3">신뢰</h4>
+                                        <p class="text-muted small">
+                                            엄격한 검증 시스템을 통해 
+                                            신뢰할 수 있는 튜터만을 
+                                            제공합니다
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <div class="mb-3">
+                                            <i class="bi bi-people text-info" style="font-size: 2.5rem;"></i>
+                                        </div>
+                                        <h4 class="h5 fw-bold mb-3">소통</h4>
+                                        <p class="text-muted small">
+                                            튜터와 학생 간의 원활한 
+                                            소통을 지원하여 최적의 
+                                            학습 환경을 조성합니다
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <div class="mb-3">
+                                            <i class="bi bi-graph-up-arrow text-danger" style="font-size: 2.5rem;"></i>
+                                        </div>
+                                        <h4 class="h5 fw-bold mb-3">성장</h4>
+                                        <p class="text-muted small">
+                                            개인 맞춤형 교육을 통해 
+                                            학생과 튜터 모두의 
+                                            지속적인 성장을 추구합니다
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 서비스 특징 -->
+                <div class="row justify-content-center mb-5">
+                    <div class="col-lg-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-5">
+                                <h3 class="h3 fw-bold text-center mb-5">서비스 특징</h3>
+                                
+                                <div class="row g-4">
+                                    <div class="col-lg-6">
+                                        <div class="d-flex align-items-start">
+                                            <div class="flex-shrink-0 me-3">
+                                                <img src="/img/guide/good.svg" alt="쉬운 튜터 검색" style="width: 50px; height: 50px;">
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h4 class="h5 fw-bold mb-2">쉬운 튜터 검색</h4>
+                                                <p class="text-muted mb-0">
+                                                    과목, 지역, 가격대, 수업 방식 등 다양한 조건으로 
+                                                    나에게 딱 맞는 튜터를 빠르게 찾을 수 있습니다.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="d-flex align-items-start">
+                                            <div class="flex-shrink-0 me-3">
+                                                <img src="/img/guide/tea.svg" alt="검증된 튜터" style="width: 50px; height: 50px;">
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h4 class="h5 fw-bold mb-2">검증된 튜터</h4>
+                                                <p class="text-muted mb-0">
+                                                    학력, 경력, 자격증 등을 철저히 검증하여 
+                                                    신뢰할 수 있는 튜터만을 선별합니다.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="d-flex align-items-start">
+                                            <div class="flex-shrink-0 me-3">
+                                                <img src="/img/guide/tutor.svg" alt="유연한 스케줄" style="width: 50px; height: 50px;">
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h4 class="h5 fw-bold mb-2">유연한 스케줄</h4>
+                                                <p class="text-muted mb-0">
+                                                    원하는 시간과 장소를 자유롭게 선택하여 
+                                                    나만의 학습 일정을 만들 수 있습니다.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="d-flex align-items-start">
+                                            <div class="flex-shrink-0 me-3">
+                                                <img src="/img/guide/safe.svg" alt="안전한 결제" style="width: 50px; height: 50px;">
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h4 class="h5 fw-bold mb-2">안전한 결제</h4>
+                                                <p class="text-muted mb-0">
+                                                    다양한 결제 수단과 보안 시스템으로 
+                                                    안전하고 편리한 거래를 지원합니다.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 통계 -->
+                <div class="row justify-content-center mb-5">
+                    <div class="col-lg-12">
+                        <div class="card border-0 shadow-sm bg-primary text-white">
+                            <div class="card-body p-5">
+                                <h3 class="h3 fw-bold text-center mb-5">튜터링고와 함께한 성장</h3>
+                                <div class="row text-center">
+                                    <div class="col-md-3 mb-3 mb-md-0">
+                                        <div class="display-4 fw-bold mb-2">1,500+</div>
+                                        <div class="small">검증된 튜터</div>
+                                    </div>
+                                    <div class="col-md-3 mb-3 mb-md-0">
+                                        <div class="display-4 fw-bold mb-2">5,000+</div>
+                                        <div class="small">활동 회원</div>
+                                    </div>
+                                    <div class="col-md-3 mb-3 mb-md-0">
+                                        <div class="display-4 fw-bold mb-2">20,000+</div>
+                                        <div class="small">완료된 수업</div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="display-4 fw-bold mb-2">4.8</div>
+                                        <div class="small">평균 만족도</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="text-center">
+                    <h3 class="h3 fw-bold mb-4">지금 바로 시작하세요</h3>
+                    <p class="text-muted mb-4">튜터링고와 함께 당신의 목표를 이루어보세요</p>
+                    <div class="d-flex gap-3 justify-content-center">
+                        <button class="btn btn-primary btn-lg px-4" onclick="location.href='/tutors'" style="width: 150px; height: 48px;">
+                            튜터 찾기
+                        </button>
+                        <button class="btn btn-outline-secondary btn-lg px-4" onclick="history.back()" style="width: 150px; height: 48px;">
+                            돌아가기
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+</div>

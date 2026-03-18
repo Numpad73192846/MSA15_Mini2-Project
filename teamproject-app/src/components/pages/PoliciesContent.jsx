@@ -1,0 +1,143 @@
+﻿import { Link } from 'react-router-dom'
+import Layout from '../common/Layout'
+
+const sections = [
+	{
+		title: '제1조 (목적)',
+		paragraphs: [
+			'본 약관은 튜터링 플랫폼(이하 "서비스")이 제공하는 모든 서비스의 이용과 관련하여 회사와 이용자의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.',
+		],
+	},
+	{
+		title: '제2조 (용어의 정의)',
+		list: [
+			'"서비스"란 회사가 제공하는 튜터링 매칭 및 관련 서비스를 의미합니다.',
+			'"회원"이란 본 약관에 동의하고 회원가입을 완료한 자를 의미합니다.',
+			'"튜터"란 서비스를 통해 교육 서비스를 제공하는 회원을 의미합니다.',
+			'"학생"이란 서비스를 통해 교육 서비스를 이용하는 회원을 의미합니다.',
+		],
+	},
+	{
+		title: '제3조 (약관의 효력 및 변경)',
+		list: [
+			'본 약관은 서비스를 이용하고자 하는 모든 회원에 대하여 효력이 발생합니다.',
+			'회사는 필요한 경우 약관을 변경할 수 있으며, 변경된 약관은 공지사항을 통해 공지합니다.',
+			'회원이 변경된 약관에 동의하지 않는 경우 서비스 이용을 중단하고 탈퇴할 수 있습니다.',
+		],
+	},
+	{
+		title: '제4조 (회원가입)',
+		list: [
+			'회원가입은 이용자가 약관에 동의하고 회사가 정한 가입 양식에 따라 회원정보를 기입한 후 회사의 승인으로 완료됩니다.',
+			'회사는 다음 각 호에 해당하는 신청에 대해서는 승인을 거부할 수 있습니다.',
+		],
+		subList: ['타인의 명의를 도용하여 신청한 경우', '허위의 정보를 기재한 경우', '기타 회사가 정한 이용신청 요건이 미비된 경우'],
+	},
+	{
+		title: '제5조 (서비스 이용)',
+		list: [
+			'서비스는 연중무휴 1일 24시간 제공을 원칙으로 합니다.',
+			'회사는 시스템 점검, 보수 등의 사유로 서비스 제공을 일시적으로 중단할 수 있습니다.',
+			'회원은 서비스를 이용하여 불법적이거나 부적절한 행위를 해서는 안 됩니다.',
+		],
+	},
+	{
+		title: '제6조 (튜터링 서비스)',
+		list: [
+			'튜터와 학생 간의 수업 일정, 내용, 비용 등은 당사자 간 협의로 결정됩니다.',
+			'회사는 튜터링 매칭 플랫폼만을 제공하며, 실제 교육 서비스의 품질에 대한 책임은 튜터에게 있습니다.',
+			'서비스 이용 과정에서 발생한 분쟁은 당사자 간 원만히 해결하는 것을 원칙으로 합니다.',
+		],
+	},
+	{
+		title: '제7조 (결제 및 환불)',
+		list: [
+			'학생은 튜터링 서비스 이용에 대한 비용을 회사가 제공하는 결제 시스템을 통해 지불합니다.',
+			'환불 정책은 회사가 별도로 정한 환불 규정에 따릅니다.',
+			'튜터의 귀책사유로 수업이 진행되지 못한 경우 전액 환불이 가능합니다.',
+		],
+	},
+	{
+		title: '제8조 (개인정보 보호)',
+		paragraphs: [
+			'회사는 관련 법령이 정하는 바에 따라 회원의 개인정보를 보호하기 위해 노력하며, 개인정보의 보호 및 사용에 대해서는 별도의 개인정보 처리방침에 따릅니다.',
+		],
+	},
+	{
+		title: '제9조 (회원의 의무)',
+		list: [
+			'회원은 관계법령, 본 약관, 이용안내 및 주의사항 등을 준수해야 합니다.',
+			'회원은 타인의 명예를 손상시키거나 불이익을 주는 행위를 해서는 안 됩니다.',
+			'회원은 서비스의 안정적 운영을 방해하는 행위를 해서는 안 됩니다.',
+		],
+	},
+	{
+		title: '제10조 (면책조항)',
+		list: [
+			'회사는 천재지변, 전쟁, 기간통신사업자의 서비스 중지 등 불가항력으로 인해 서비스를 제공할 수 없는 경우 책임이 면제됩니다.',
+			'회사는 회원의 귀책사유로 인한 서비스 이용 장애에 대하여 책임을 지지 않습니다.',
+			'회사는 회원 간 또는 회원과 제3자 간에 발생한 분쟁에 대해 개입할 의무가 없습니다.',
+		],
+	},
+	{
+		title: '제11조 (분쟁해결)',
+		paragraphs: [
+			'서비스 이용과 관련하여 회사와 회원 간에 분쟁이 발생한 경우, 쌍방은 분쟁의 해결을 위해 성실히 협의합니다. 협의가 이루어지지 않을 경우 관할 법원은 회사의 본사 소재지를 관할하는 법원으로 합니다.',
+		],
+	},
+]
+
+const Policies = () => (
+	<Layout>
+		<section className='bg-slate-50 px-6 py-16'>
+			<div className='mx-auto max-w-5xl'>
+				<div className='mb-10 text-center'>
+					<h1 className='text-4xl font-extrabold text-slate-900 md:text-5xl'>이용약관</h1>
+					<p className='mt-3 text-slate-500'>튜터링 서비스 이용약관을 안내해 드립니다.</p>
+				</div>
+
+				<div className='rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-10'>
+					<div className='space-y-8'>
+						{sections.map((section) => (
+							<article key={section.title} className='border-b border-slate-100 pb-8 last:border-b-0 last:pb-0'>
+								<h2 className='text-2xl font-bold text-slate-900'>{section.title}</h2>
+								{section.paragraphs?.map((paragraph) => (
+									<p key={paragraph} className='mt-3 text-sm leading-8 text-slate-600 md:text-base'>
+										{paragraph}
+									</p>
+								))}
+								{section.list?.length ? (
+									<ol className='mt-3 list-decimal space-y-2 pl-6 text-sm leading-7 text-slate-600 md:text-base'>
+										{section.list.map((item) => (
+											<li key={item}>{item}</li>
+										))}
+									</ol>
+								) : null}
+								{section.subList?.length ? (
+									<ul className='mt-3 list-disc space-y-1 pl-10 text-sm leading-7 text-slate-600 md:text-base'>
+										{section.subList.map((item) => (
+											<li key={item}>{item}</li>
+										))}
+									</ul>
+								) : null}
+							</article>
+						))}
+					</div>
+
+					<div className='mt-10 border-t border-slate-200 pt-8 text-center'>
+						<p className='text-sm font-semibold text-slate-700'>부칙</p>
+						<p className='mt-1 text-sm text-slate-500'>본 약관은 2026년 2월 2일부터 시행됩니다.</p>
+					</div>
+				</div>
+
+				<div className='mt-6 text-center'>
+					<Link to='/guide' className='inline-flex rounded-xl border border-[#0d6efd] bg-white px-5 py-2.5 text-sm font-semibold text-[#0d6efd] hover:bg-blue-50'>
+						돌아가기
+					</Link>
+				</div>
+			</div>
+		</section>
+	</Layout>
+)
+
+export default Policies

@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin_layout}">
+<head>
+  <title>관리자 대시보드</title>
+
+  <th:block layout:fragment="extra-css">
+  <style>
+    /* ====== 너희 사이트 톤 유지(화이트 카드 + 라운드 + 블루 포인트) ====== */
+    body { background:#f8fafc; }
+    .admin-shell { display:flex; gap:24px; }
+    .admin-sidebar { width:260px; flex:0 0 260px; position:sticky; top:24px; height: calc(100vh - 48px); }
+    .admin-card { border-radius:16px; border:1px solid #e5e7eb; }
+    .admin-menu .list-group-item { border:0; border-radius:12px; padding:12px 14px; color:#334155; }
+    .admin-menu .list-group-item.active { background:#2563eb; color:#fff; }
+    .btn-pill { border-radius:999px; }
+    .kpi { border-radius:16px; border:1px solid #e5e7eb; padding: 18px 20px !important; }
+    .kpi .label { color:#64748b; font-size:.85rem; }
+    .kpi .value { font-weight:800; font-size:1.35rem; color:#0f172a; }
+    .badge-soft { font-weight:700; padding:6px 10px; border-radius:999px; font-size:.85rem; display:inline-block; }
+    .badge-wait { background:#fff7ed; color:#c2410c; }
+    .badge-done { background:#f1f5f9; color:#475569; }
+    .badge-prog { background:#eef2ff; color:#3730a3; }
+    .text-link { color:#2563eb; text-decoration:none; font-weight:700; }
+    .text-link:hover { text-decoration:underline; }
+    .muted { color:#64748b; }
+    .table thead th { color:#334155; font-weight:800; }
+    .table td { vertical-align:middle; }
+    .panel-title { font-weight:800; }
+    .empty-hero { padding:56px 12px; text-align:center; }
+    .empty-hero .emoji { font-size:34px; margin-bottom:6px; }
+    .check-item { display:flex; gap:10px; align-items:flex-start; }
+    .check-item input { margin-top:3px; }
+    .divider { height:1px; background:#e5e7eb; margin:14px 0; }
+    .pill-input { border-radius:999px; }
+    .select-pill { border-radius:999px; }
+    .row.g-3 { --bs-gutter-x: 1.25rem; --bs-gutter-y: 1.25rem; }
+    .ticket-thread {
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #f8fafc;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ticket-msg {
+      max-width: 92%;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      padding: 8px 10px;
+      font-size: 0.88rem;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .ticket-msg.user { align-self: flex-start; }
+    .ticket-msg.admin {
+      align-self: flex-end;
+      background: #eef2ff;
+      border-color: #c7d2fe;
+    }
+    .ticket-msg-meta {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.72rem;
+      color: #64748b;
+    }
+
+    @media (min-width: 1600px){
+        .admin-container{
+            max-width: 1800px; /* 더 넓게 */
+            padding-left: 40px;
+            padding-right: 40px;
+        }
+    }
+
+    .admin-shell { gap: 32px; }
+    .admin-card .card-body { padding: 20px; }
+    .admin-sidebar { width: 280px; flex: 0 0 280px; }
+
+
+    @media (max-width: 992px){
+      .admin-shell { flex-direction:column; }
+      .admin-sidebar { width:100%; position:static; height:auto; }
+    }
+
+  </style>
+  </th:block>
+</head>
+
+<body>
+<div layout:fragment="content">
+<div class="container-fluid admin-container py-4">
+
+  <!-- ====== 헤더 영역 ====== -->
+  <div class="d-flex justify-content-between align-items-end mb-3">
+    <div>
+      <h2 class="fw-bold mb-1">관리자 대시보드</h2>
+      <div class="muted small">Home / Admin / Dashboard</div>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary btn-sm btn-pill px-3" id="btnRefresh">새로고침</button>
+      <button id="navLogoutBtn" class="btn btn-sm btn-danger rounded-pill px-3 nav-action-btn">
+        로그아웃
+      </button>
+    </div>
+  </div>
+
+  <div class="admin-shell">
+
+    <!-- ====== 사이드바 ====== -->
+    <aside class="admin-sidebar">
+      <div class="card admin-card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <div class="fw-bold">관리 메뉴</div>
+              <div class="muted small">운영 도구</div>
+            </div>
+            <span class="badge text-bg-light">ADMIN</span>
+          </div>
+
+          <div class="list-group admin-menu">
+            <a class="list-group-item active" data-tab="dashboard" href="/admin?tab=dashboard">대시보드</a>
+            <a class="list-group-item" data-tab="doc" href="/admin?tab=doc">서류 검토</a>
+            <a class="list-group-item" data-tab="settlement" href="/admin?tab=settlement">수입 정산</a>
+            <a class="list-group-item" data-tab="users" href="/admin?tab=users">회원 관리</a>
+            <a class="list-group-item" data-tab="tickets" href="/admin?tab=tickets">문의/신고</a>
+            <a class="list-group-item" data-tab="settings" href="/admin?tab=settings">설정</a>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- 휭함 방지: 오늘 처리 필요 -->
+          <div class="muted small mb-2">오늘 처리 필요</div>
+          <div class="d-flex gap-2 flex-wrap">
+            <span class="badge-soft badge-wait" id="badgeDocWait">서류 대기 0</span>
+            <span class="badge-soft badge-wait" id="badgeSettleWait">정산 대기 0</span>
+            <span class="badge-soft badge-done" id="badgeDone">완료 0</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ====== 메인 ====== -->
+    <main class="flex-grow-1">
+
+      <!-- KPI (공통) -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-3">
+          <div class="p-3 kpi bg-white shadow-sm">
+            <div class="label">이번 달 총 거래</div>
+            <div class="value" id="kpiTotal">₩ 0</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 kpi bg-white shadow-sm">
+            <div class="label">정산 대기</div>
+            <div class="value" id="kpiSettleWait">0건</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 kpi bg-white shadow-sm">
+            <div class="label">서류 대기</div>
+            <div class="value" id="kpiDocWait">0건</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 kpi bg-white shadow-sm">
+            <div class="label">신규 가입</div>
+            <div class="value" id="kpiNewUsers">0명</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 탭 콘텐츠(비동기 로딩) ====== -->
+      <div id="adminTabContainer"></div>
+
+    </main>
+  </div>
+</div>
+</div><!-- end layout:fragment="content" -->
+
+<th:block layout:fragment="extra-scripts">
+<script>
+async function refreshAccessToken() {
+    try {
+        console.log("[RefreshToken] 토큰 갱신 시작");
+        const refreshToken = localStorage.getItem('refreshToken');
+        
+        const response = await fetch("/api/auth/refresh", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ refreshToken: refreshToken }),
+            credentials: "include"
+        });
+
+        if (!response.ok) {
+            console.log("[RefreshToken] 응답 실패:", response.status);
+            return false;
+        }
+
+        const data = await response.json();
+        console.log("[RefreshToken] 응답 데이터:", data);
+        
+        if (data && data.success && data.data && data.data.accessToken) {
+            setAccessToken(data.data.accessToken);
+            // refreshToken도 갱신된 경우 저장
+            if (data.data.refreshToken) {
+                localStorage.setItem('refreshToken', data.data.refreshToken);
+            }
+            console.log("[RefreshToken] 토큰 저장 성공");
+            return true;
+        }
+
+        console.log("[RefreshToken] 토큰 데이터 없음");
+        return false;
+    } catch (error) {
+        console.error("[RefreshToken] 에러:", error);
+        return false;
+    }
+}
+
+function clearTokens() {
+    accessTokenMemory = null;
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+}
+
+function setupLogoutButton() {
+    const logoutBtn = document.getElementById("navLogoutBtn");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", async () => {
+            const refreshToken = localStorage.getItem('refreshToken');
+            await fetch("/api/auth/logout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ refreshToken: refreshToken }),
+                credentials: "include"
+            });
+
+            clearTokens();
+            setNavState(false);
+            window.location.href = "/";
+        });
+    }
+}
+/* =========================
+   0) 데모 데이터(백엔드 붙일 때 여기만 교체)
+   ========================= */
+const DATA = {
+  kpi: { total: 195000, settleWait: 6, docWait: 0, newUsers: 3, done: 12 },
+
+  docs: [
+    // 확장자 PDF 중심 + 이미지도 대응
+    // { id, tutorName, nickname, type, fileName, ext, uploadedAt, status, url, log }
+    { id: "D1", tutorName:"김튜터", nickname:"수학마스터", type:"CERTIFICATE",
+      fileName:"certificate.pdf", ext:"pdf", uploadedAt:"2026-02-04", status:"PENDING",
+      url:"/files/sample/certificate.pdf", log:"-" },
+    { id: "D2", tutorName:"이튜터", nickname:"영어천재", type:"DEGREE",
+      fileName:"degree.png", ext:"png", uploadedAt:"2026-02-03", status:"PENDING",
+      url:"/files/sample/degree.png", log:"-" },
+  ],
+
+  settlements: [
+    { id:"S1", tutorName:"김튜터", nickname:"수학마스터", total:30000, settled:0, payable:30000, status:"WAIT" },
+    { id:"S2", tutorName:"조튜터", nickname:"토익강사", total:45000, settled:0, payable:45000, status:"WAIT" },
+    { id:"S3", tutorName:"윤튜터", nickname:"중국어전문", total:0, settled:0, payable:0, status:"DONE" },
+  ],
+
+  users: [
+    { id:"U1", name:"정성준", nickname:"성준", username:"admin@naver.com", role:"ADMIN", status:"ACTIVE", joinedAt:"2026-01-23" },
+    { id:"U2", name:"김민지", nickname:"민지", username:"minji@naver.com", role:"TUTOR", status:"ACTIVE", joinedAt:"2026-02-01" },
+    { id:"U3", name:"박철수", nickname:"철수", username:"chul@naver.com", role:"USER", status:"SUSPENDED", joinedAt:"2026-01-29" },
+  ],
+
+  tickets: [
+    { id:"T1", title:"결제 오류가 나요", writer:"박철수", category:"PAYMENT", status:"OPEN", createdAt:"2026-02-04",
+      content:"결제 버튼을 누르면 오류가 발생합니다. 확인 부탁드려요." },
+    { id:"T2", title:"튜터 신고합니다", writer:"김민지", category:"REPORT", status:"IN_PROGRESS", createdAt:"2026-02-03",
+      content:"수업 진행이 약속과 다릅니다. 검토 부탁드립니다." },
+  ]
+};
+
+const STATE = {
+  tickets: DATA.tickets.map(t => ({
+    id: t.id,
+    title: t.title,
+    userName: t.writer,
+    category: t.category,
+    status: t.status,
+    createdAt: t.createdAt,
+    lastMessage: t.content
+  })),
+  selectedTicketId: null,
+  selectedTicketMessages: [],
+  dashboardSummary: null,
+  docs: [],
+  users: []
+};
+
+/* =========================
+   문서 매핑/로딩
+   ========================= */
+function mapDoc(d) {
+  return {
+    id: d.id,
+    tutorName: d.userName,
+    nickname: d.userNickname,
+    type: d.docType,
+    fileName: d.originalName,
+    ext: (d.originalName || d.storeName || "").split(".").pop().toLowerCase() || "",
+    uploadedAt: d.createdAt ? String(d.createdAt).slice(0,10) : "-",
+    status: d.status || "PENDING",
+    url: d.filePath || "#",
+    log: d.rejectReason || "-"
+  }
+}
+
+async function loadDocumentsFromServer() {
+  const response = await fetchWithAdminAuth("/api/admin/documents");
+  const result = await response.json();
+
+  if ( !response.ok || !result?.success ) return;
+
+  STATE.docs = ( result.data || [] ).map(mapDoc);
+
+  renderDocs();
+  renderDashboard();
+}
+
+function mapSettlement(s){
+  const toNum = (v) => Number(v ?? 0);
+
+  const total = toNum(s.totalAmount);
+  const settled = toNum(s.remittedAmount);
+  const payable = toNum(s.balance);
+
+  const raw = String(s.status || "").toUpperCase();
+  let status = "DONE";
+  if (raw === "PENDING") status = "WAIT";
+  else if (raw === "COMPLETED") status = "DONE";
+  else status = payable > 0 ? "WAIT" : "DONE";
+
+  return {
+    id: String(s.userId),
+    tutorName: s.userName || "-",
+    nickname: s.nickname || "-",
+    total,
+    settled,
+    payable,
+    status
+  };
+}
+
+async function loadSettlementsFromServer(){
+  const response = await fetchWithAdminAuth("/api/admin/settlements");
+  const result = await response.json();
+
+  if (!response.ok || !result?.success) return;
+
+  DATA.settlements = (result.data || []).map(mapSettlement);
+  renderSettles();
+  renderDashboard();
+}
+
+function mapUser(u) {
+  return {
+    id: String(u.id),
+    name: u.name || "-",
+    nickname: u.nickname || "-",
+    username: u.username || "-",
+    role: String(u.role || "USER").toUpperCase(),
+    status: String(u.status || "ACTIVE").toUpperCase(),
+    joinedAt: u.createdAt ? String(u.createdAt).slice(0,10) : "-"
+  }
+}
+
+async function loadUsersFromServer() {
+  const response = await fetchWithAdminAuth("/api/admin/users");
+  const result = await response.json();
+
+  if ( !response.ok || !result?.success ) return;
+
+  STATE.users = ( result.data || [] ).map(mapUser);
+  renderUsers();
+}
+
+/* =========================
+   1) 공통 유틸
+   ========================= */
+const fmtWon = (n) => "₩ " + (n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+const fmtWonKR = (n) => (n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "원";
+
+function badgeStatus(type, value){
+  if(type === "doc"){
+    if(value === "PENDING") return `<span class="badge-soft badge-wait">대기</span>`;
+    if(value === "APPROVED") return `<span class="badge-soft badge-prog">승인</span>`;
+    return `<span class="badge-soft badge-done">반려</span>`;
+  }
+  if(type === "settle"){
+    if(value === "WAIT") return `<span class="badge-soft badge-wait">정산 대기</span>`;
+    return `<span class="badge-soft badge-done">완료</span>`;
+  }
+  if(type === "ticket"){
+    if(value === "OPEN") return `<span class="badge-soft badge-wait">접수</span>`;
+    if(value === "IN_PROGRESS") return `<span class="badge-soft badge-prog">처리중</span>`;
+    return `<span class="badge-soft badge-done">완료</span>`;
+  }
+  if(type === "user"){
+    if(value === "ACTIVE") return `<span class="badge-soft badge-prog">ACTIVE</span>`;
+    if(value === "SUSPENDED") return `<span class="badge-soft badge-wait">SUSPENDED</span>`;
+    return `<span class="badge-soft badge-done">INACTIVE</span>`;
+  }
+  return value;
+}
+
+function typeLabel(t){
+  return ({EDUCATION:"학력", DEGREE:"학위", CERTIFICATE:"자격증", OTHER:"기타"}[t] || t);
+}
+function catLabel(c){
+  return ({INQUIRY:"문의", REPORT:"신고", PAYMENT:"결제", ACCOUNT:"계정"}[c] || c);
+}
+
+/* =========================
+   2) 탭 전환(비동기 로딩)
+   ========================= */
+const tabs = ["dashboard","doc","settlement","users","tickets","settings"];
+const tabContainer = document.getElementById("adminTabContainer");
+
+function bindDataGo(root=document){
+  root.querySelectorAll("[data-go]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      showTab(btn.getAttribute("data-go"));
+    });
+  });
+}
+
+async function showTab(key){
+  const safeKey = tabs.includes(key) ? key : "dashboard";
+
+  document.querySelectorAll(".admin-menu [data-tab]").forEach(a => {
+    a.classList.toggle("active", a.getAttribute("data-tab") === safeKey);
+  });
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("tab", safeKey);
+  url.hash = "";
+  history.replaceState(null, "", url.toString());
+
+  if (!tabContainer) return;
+  try {
+    const res = await fetch(`/admin/partial/${safeKey}`);
+    if (!res.ok) throw new Error("tab load failed");
+    const html = await res.text();
+    tabContainer.innerHTML = html;
+    bindDataGo(tabContainer);
+    initTab(safeKey);
+  } catch (e) {
+    tabContainer.innerHTML = `
+      <div class="card admin-card shadow-sm">
+        <div class="card-body">
+          <div class="panel-title mb-1">불러오기 실패</div>
+          <div class="muted small">잠시 후 다시 시도해주세요.</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+async function fetchWithAdminAuth(url, options = {}) {
+  const headers = {
+    ...(options.headers || {}),
+    ...buildAuthHeaders()
+  };
+
+  const config = {
+    credentials: "include",
+    ...options,
+    headers
+  };
+
+  let response = await fetch(url, config);
+  if (response.status !== 401) {
+    return response;
+  }
+
+  const refreshed = await refreshAccessToken();
+  if (!refreshed) {
+    return response;
+  }
+
+  const retryConfig = {
+    ...config,
+    headers: {
+      ...(options.headers || {}),
+      ...buildAuthHeaders()
+    }
+  };
+
+  return fetch(url, retryConfig);
+}
+
+function initTab(key){
+  if (key === "dashboard") return initDashboardTab();
+  if (key === "doc") return initDocTab();
+  if (key === "settlement") return initSettlementTab();
+  if (key === "users") return initUsersTab();
+  if (key === "tickets") return initTicketsTab();
+  if (key === "settings") return initSettingsTab();
+}
+
+document.querySelectorAll(".admin-menu [data-tab]").forEach(a => {
+  a.addEventListener("click", (e) => {
+    e.preventDefault();
+    showTab(a.getAttribute("data-tab"));
+  });
+});
+
+document.getElementById("btnRefresh")?.addEventListener("click", () => location.reload());
+
+/* =========================
+   3) KPI/배지 렌더
+   ========================= */
+function renderKPI(){
+  const fallback = DATA.kpi;
+  const summary = STATE.dashboardSummary || {};
+  const k = {
+    total: summary.totalAmount ?? fallback.total,
+    settleWait: summary.settleWaitCount ?? fallback.settleWait,
+    docWait: summary.docWaitCount ?? fallback.docWait,
+    newUsers: summary.newUsersCount ?? fallback.newUsers,
+    done: summary.doneCount ?? fallback.done
+  };
+
+  document.getElementById("kpiTotal").textContent = fmtWon(k.total);
+  document.getElementById("kpiSettleWait").textContent = `${k.settleWait}건`;
+  document.getElementById("kpiDocWait").textContent = `${k.docWait}건`;
+  document.getElementById("kpiNewUsers").textContent = `${k.newUsers}명`;
+
+  document.getElementById("badgeDocWait").textContent = `서류 대기 ${k.docWait}`;
+  document.getElementById("badgeSettleWait").textContent = `정산 대기 ${k.settleWait}`;
+  document.getElementById("badgeDone").textContent = `완료 ${k.done}`;
+}
+
+/* =========================
+   4) 대시보드(요약 테이블)
+   ========================= */
+function renderDashboard(){
+  const dashDoc = document.getElementById("dashDocTbody");
+  if (!dashDoc) return;
+
+  const docRows = STATE.docs.slice(0,5).map(d => `
+    <tr>
+      <td>${d.tutorName} <span class="muted small">(${d.nickname})</span></td>
+      <td>${typeLabel(d.type)}</td>
+      <td class="muted">${d.uploadedAt}</td>
+      <td>${badgeStatus("doc", d.status)}</td>
+    </tr>
+  `).join("");
+  dashDoc.innerHTML = docRows || `<tr><td colspan="4" class="muted text-center py-3">데이터 없음</td></tr>`;
+
+  const settleRows = DATA.settlements
+    .filter(s => s.status==="WAIT" && s.payable>0)
+    .slice(0,5)
+    .map(s => `
+      <tr>
+        <td>${s.tutorName} <span class="muted small">(${s.nickname})</span></td>
+        <td class="text-end"><a href="#" class="text-link" data-go="settlement">${fmtWonKR(s.payable)}</a></td>
+      </tr>
+    `).join("");
+  document.getElementById("dashSettleTbody").innerHTML = settleRows || `<tr><td colspan="2" class="muted text-center py-3">대기 없음</td></tr>`;
+
+  const recentTickets = Array.isArray(STATE.dashboardSummary?.recentInquiries)
+    ? STATE.dashboardSummary.recentInquiries
+    : STATE.tickets;
+
+  const ticketRows = recentTickets.slice(0,5).map(t => `
+    <tr>
+      <td class="text-truncate" style="max-width:220px;">
+        <a href="#" class="text-link" data-go="tickets">${t.title}</a>
+      </td>
+      <td>${badgeStatus("ticket", t.status)}</td>
+    </tr>
+  `).join("");
+  document.getElementById("dashTicketTbody").innerHTML = ticketRows || `<tr><td colspan="2" class="muted text-center py-3">최근 문의 없음</td></tr>`;
+}
+
+async function loadAdminDashboardSummary(){
+  try {
+    const response = await fetchWithAdminAuth("/api/admin/inquiries/summary");
+    const result = await response.json();
+    if (!response.ok || !result?.success || !result?.data) {
+      return;
+    }
+    STATE.dashboardSummary = result.data;
+    renderKPI();
+    renderDashboard();
+  } catch (e) {
+    console.error("Failed to load dashboard summary", e);
+  }
+}
+
+/* =========================
+   5) 서류 검토(좌 목록 + 우 패널)
+   ========================= */
+let selectedDocId = null;
+
+function filterDocs(){
+  const status = document.getElementById("docFilterStatus").value;
+  const type = document.getElementById("docFilterType").value;
+  const q = document.getElementById("docSearch").value.trim().toLowerCase();
+
+  return STATE.docs.filter(d => {
+    const okStatus = (status==="ALL") || (d.status===status);
+    const okType = (type==="ALL") || (d.type===type);
+    const okQ = !q || (d.tutorName || "").toLowerCase().includes(q) || (d.nickname || "").toLowerCase().includes(q) || (d.fileName || "").toLowerCase().includes(q);
+    return okStatus && okType && okQ;
+  });
+}
+
+function renderDocs(){
+  const tbody = document.getElementById("docTbody");
+  if (!tbody) return;
+  const list = filterDocs();
+  tbody.innerHTML = list.map(d => `
+    <tr data-doc-row="${d.id}" style="cursor:pointer;">
+      <td>
+        <div class="fw-semibold">${d.tutorName}</div>
+        <div class="muted small">(${d.nickname})</div>
+      </td>
+      <td>${typeLabel(d.type)}</td>
+      <td>
+        <a class="text-link" href="${d.url}" target="_blank">${d.fileName}</a>
+        <span class="muted small">.${d.ext}</span>
+      </td>
+      <td class="muted">${d.uploadedAt}</td>
+      <td>${badgeStatus("doc", d.status)}</td>
+    </tr>
+  `).join("");
+
+  document.getElementById("docEmpty")?.classList.toggle("d-none", list.length !== 0);
+  document.querySelectorAll("[data-doc-row]").forEach(tr => {
+    tr.addEventListener("click", () => selectDoc(tr.getAttribute("data-doc-row")));
+  });
+}
+
+function selectDoc(id){
+  selectedDocId = String(id);
+  const d = STATE.docs.find(x => String(x.id) === selectedDocId);
+  if(!d) return;
+
+  document.getElementById("docPanelHint").classList.add("d-none");
+  document.getElementById("docPanelBody").classList.remove("d-none");
+  document.getElementById("docPanelStatus").textContent = ({PENDING:"대기", APPROVED:"승인", REJECTED:"반려"}[d.status] || d.status);
+
+  document.getElementById("docPanelTutor").textContent = `${d.tutorName} (${d.nickname})`;
+  document.getElementById("docPanelMeta").textContent = `${typeLabel(d.type)} · 업로드 ${d.uploadedAt}`;
+
+  document.getElementById("docBtnPreview").href = d.url;
+  document.getElementById("docBtnDownload").href = d.url;
+
+  document.getElementById("docPanelLog").textContent = d.log || "-";
+
+  // 체크/반려 UI 초기화
+  document.getElementById("chkIdentity").checked = false;
+  document.getElementById("chkLegible").checked = false;
+  document.getElementById("chkRequired").checked = false;
+  document.getElementById("rejectBox").classList.add("d-none");
+  document.getElementById("rejectReason").value = "";
+}
+
+function initDocTab(){
+  const statusEl = document.getElementById("docFilterStatus");
+  if (!statusEl) return;
+  statusEl.addEventListener("change", renderDocs);
+  document.getElementById("docFilterType")?.addEventListener("change", renderDocs);
+  document.getElementById("docSearch")?.addEventListener("input", renderDocs);
+  document.getElementById("docReset")?.addEventListener("click", () => {
+    document.getElementById("docFilterStatus").value = "ALL";
+    document.getElementById("docFilterType").value = "ALL";
+    document.getElementById("docSearch").value = "";
+    loadDocumentsFromServer();
+  });
+
+  document.getElementById("btnReject")?.addEventListener("click", () => {
+    if(!selectedDocId) return alert("서류를 선택하세요.");
+    document.getElementById("rejectBox").classList.toggle("d-none");
+  });
+
+  document.getElementById("btnApprove")?.addEventListener("click", async () => {
+    
+    if(!selectedDocId) return alert("서류를 선택하세요.");
+    
+    const response = await fetchWithAdminAuth("/api/admin/documents/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: selectedDocId })
+    });
+
+    const result = await response.json();
+
+    if ( !response.ok || !result?.success ) {
+      return alert("서류 승인에 실패했습니다. 다시 시도해주세요.");
+    }
+
+    await loadDocumentsFromServer();
+    await loadAdminDashboardSummary();
+    selectDoc(selectedDocId);
+  });
+
+  document.getElementById("btnRejectConfirm")?.addEventListener("click", async () => {
+    if(!selectedDocId) return alert("서류를 선택해 주세요");
+
+    const reason = document.getElementById("rejectReason").value.trim();
+
+    if(!reason) return alert("반려 사유를 입력해 주세요");
+
+    const res = await fetchWithAdminAuth("/api/admin/documents/reject", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: selectedDocId, reason })
+    });
+    const result = await res.json();
+    if (!res.ok || !result?.success) {
+      return alert(result?.message || "반려 처리 실패");
+    }
+
+    document.getElementById("rejectBox").classList.add("d-none");
+    document.getElementById("rejectReason").value = "";
+
+    await loadDocumentsFromServer();
+    await loadAdminDashboardSummary();
+    selectDoc(selectedDocId);
+  });
+
+  loadDocumentsFromServer();
+}
+
+/* =========================
+   6) 정산(좌 목록 + 우 실행)
+   ========================= */
+let selectedSettleId = null;
+
+function filterSettles(){
+  const f = document.getElementById("settleFilter").value;
+  const q = document.getElementById("settleSearch").value.trim().toLowerCase();
+
+  return DATA.settlements.filter(s => {
+    const okF = (f==="ALL") || (f==="WAIT" && s.status==="WAIT") || (f==="DONE" && s.status==="DONE");
+    const okQ = !q || s.tutorName.toLowerCase().includes(q) || s.nickname.toLowerCase().includes(q);
+    return okF && okQ;
+  });
+}
+
+function renderSettles(){
+  const tbody = document.getElementById("settleTbody");
+  if (!tbody) return;
+  const list = filterSettles();
+  tbody.innerHTML = list.map(s => `
+    <tr data-settle-row="${s.id}" style="cursor:pointer;">
+      <td>
+        <div class="fw-semibold">${s.tutorName}</div>
+        <div class="muted small">(${s.nickname})</div>
+      </td>
+      <td>${fmtWonKR(s.total)}</td>
+      <td class="muted">${fmtWonKR(s.settled)}</td>
+      <td><a href="#" class="text-link">${fmtWonKR(s.payable)}</a></td>
+      <td>${badgeStatus("settle", s.status)}</td>
+    </tr>
+  `).join("");
+
+  document.getElementById("settleEmpty")?.classList.toggle("d-none", list.length !== 0);
+
+  document.querySelectorAll("[data-settle-row]").forEach(tr => {
+    tr.addEventListener("click", () => selectSettle(tr.getAttribute("data-settle-row")));
+  });
+}
+
+function selectSettle(id){
+  selectedSettleId = id;
+  const s = DATA.settlements.find(x => x.id===id);
+  if(!s) return;
+
+  document.getElementById("settlePanelHint").classList.add("d-none");
+  document.getElementById("settlePanelBody").classList.remove("d-none");
+  document.getElementById("settleTutor").textContent = `${s.tutorName} (${s.nickname})`;
+  document.getElementById("settleMeta").textContent = `${badgeStatus("settle", s.status).replaceAll(/<[^>]*>/g,'')} · 총 ${fmtWonKR(s.total)}`;
+  document.getElementById("settleAmount").textContent = fmtWonKR(s.payable);
+
+  document.getElementById("btnSettleRun").disabled = !(s.status==="WAIT" && s.payable>0);
+}
+
+function initSettlementTab(){
+  if (!document.getElementById("settleFilter")) return;
+  document.getElementById("settleFilter")?.addEventListener("change", renderSettles);
+  document.getElementById("settleSearch")?.addEventListener("input", renderSettles);
+
+  document.getElementById("btnSettleRun")?.addEventListener("click", async () => {
+    if(!selectedSettleId) return alert("정산 항목을 선택하세요.");
+
+    const s = DATA.settlements.find(x => x.id===selectedSettleId);
+    if(!s || s.status!=="WAIT" || s.payable<=0) return;
+
+    const response = await fetchWithAdminAuth("/api/admin/settlements/remit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tutorId: selectedSettleId })
+    });
+
+    const result = await response.json();
+
+    if ( !response.ok || !result?.success ) {
+      return alert( result?.message || "정산 실행에 실패했습니다. 다시 시도해주세요." );
+    }
+
+    const update = Number(result?.data?.updated ?? 0);
+
+    if ( update <= 0 ) {
+       return alert("정산할 금액이 없습니다.");
+    }
+
+    await loadSettlementsFromServer();
+    await loadAdminDashboardSummary();
+    selectSettle(selectedSettleId);
+
+  });
+
+  loadSettlementsFromServer();
+}
+
+/* =========================
+   7) 회원 관리(좌 목록 + 우 상세)
+   ========================= */
+let selectedUserId = null;
+
+function filterUsers(){
+  const r = document.getElementById("userRoleFilter").value;
+  const st = document.getElementById("userStatusFilter").value;
+  const q = document.getElementById("userSearch").value.trim().toLowerCase();
+
+  return STATE.users.filter(u => {
+    const okR = (r==="ALL") || (u.role===r);
+    const okS = (st==="ALL") || (u.status===st);
+    const okQ = !q || u.name.toLowerCase().includes(q) || u.nickname.toLowerCase().includes(q);
+    return okR && okS && okQ;
+  });
+}
+
+function renderUsers(){
+  const tbody = document.getElementById("userTbody");
+  if (!tbody) return;
+  const list = filterUsers();
+  tbody.innerHTML = list.map(u => `
+    <tr data-user-row="${u.id}" style="cursor:pointer;">
+      <td>
+        <div class="fw-semibold">${u.name}</div>
+        <div class="muted small">(${u.nickname})</div>
+      </td>
+      <td class="muted">${u.username}</td>
+      <td><span class="badge text-bg-light">${u.role}</span></td>
+      <td>${badgeStatus("user", u.status)}</td>
+      <td class="muted">${u.joinedAt}</td>
+      <td><a href="#" class="text-link">상세</a></td>
+    </tr>
+  `).join("");
+
+  document.getElementById("userEmpty")?.classList.toggle("d-none", list.length !== 0);
+
+  document.querySelectorAll("[data-user-row]").forEach(tr => {
+    tr.addEventListener("click", () => selectUser(tr.getAttribute("data-user-row")));
+  });
+}
+
+function selectUser(id){
+  selectedUserId = id;
+  const u = STATE.users.find(x => x.id===id);
+  if(!u) return;
+
+  document.getElementById("userPanelHint").classList.add("d-none");
+  document.getElementById("userPanelBody").classList.remove("d-none");
+
+  document.getElementById("userName").textContent = `${u.name} (${u.nickname})`;
+  document.getElementById("userId").textContent = u.username;
+  document.getElementById("userRole").textContent = u.role;
+  document.getElementById("userStatus").textContent = u.status;
+}
+
+function initUsersTab(){
+  if (!document.getElementById("userRoleFilter")) return;
+  ["userRoleFilter","userStatusFilter"].forEach(id => document.getElementById(id)?.addEventListener("change", renderUsers));
+  document.getElementById("userSearch")?.addEventListener("input", renderUsers);
+
+  document.getElementById("btnUserInactive")?.addEventListener("click", () => changeUserStatus("INACTIVE"));
+  document.getElementById("btnUserSuspend")?.addEventListener("click", () => changeUserStatus("SUSPENDED"));
+  document.getElementById("btnUserActivate")?.addEventListener("click", () => changeUserStatus("ACTIVE"));
+
+  document.getElementById("btnRoleUser")?.addEventListener("click", () => changeUserRole("USER"));
+  document.getElementById("btnRoleTutor")?.addEventListener("click", () => changeUserRole("TUTOR"));
+  document.getElementById("btnRoleAdmin")?.addEventListener("click", () => changeUserRole("ADMIN"));
+
+  document.getElementById("btnUserDelete")?.addEventListener("click", () => deleteUser());
+
+  loadUsersFromServer();
+}
+
+async function changeUserStatus(toStatus){
+  if(!selectedUserId) return alert("회원을 선택하세요.");
+
+  const response = await fetchWithAdminAuth( `/api/admin/users/${encodeURIComponent(selectedUserId)}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: toStatus })
+  });
+
+  const result = await response.json();
+
+  if ( !response.ok || !result?.success ) return alert( result?.message || "회원 상태 변경에 실패했습니다. 다시 시도해주세요." );
+
+  await loadUsersFromServer();
+  selectUser(selectedUserId);
+
+}
+
+async function changeUserRole(toRole){
+  if(!selectedUserId) return alert("회원을 선택하세요.");
+
+  const response = await fetchWithAdminAuth( `/api/admin/users/${encodeURIComponent(selectedUserId)}/role`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ role: toRole })
+  });
+
+  const result = await response.json();
+
+  if ( !response.ok || !result?.success ) return alert( result?.message || "회원 권한 변경에 실패했습니다. 다시 시도해주세요." );
+
+  await loadUsersFromServer();
+  selectUser(selectedUserId);
+
+}
+
+async function deleteUser() {
+  if(!selectedUserId) return alert("회원을 선택하세요.");
+
+  if(!confirm("정말로 회원을 삭제하시겠습니까? 삭제된 회원의 정보는 복구할 수 없습니다.")) {
+    return;
+  }
+
+  const response = await fetchWithAdminAuth( `/api/admin/users/${encodeURIComponent(selectedUserId)}`, {
+    method: "DELETE"
+  });
+
+  const result = await response.json();
+
+  if ( !response.ok || !result?.success ) return alert( result?.message || "회원 삭제에 실패했습니다. 다시 시도해주세요." );
+
+  selectedUserId = null;
+  document.getElementById("userPanelBody").classList.add("d-none");
+  document.getElementById("userPanelHint").classList.remove("d-none");
+
+  await loadUsersFromServer();
+  await loadAdminDashboardSummary();
+}
+
+
+/* =========================
+   8) 문의/신고(좌 목록 + 우 처리)
+   ========================= */
+function escapeHtml(value){
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function formatDateTime(value){
+  if (!value) return "-";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString("ko-KR", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function filterTickets(){
+  const st = document.getElementById("ticketStatusFilter")?.value || "ALL";
+  const cat = document.getElementById("ticketCatFilter")?.value || "ALL";
+  const q = (document.getElementById("ticketSearch")?.value || "").trim().toLowerCase();
+
+  return STATE.tickets.filter(t => {
+    const okS = (st === "ALL") || (t.status === st);
+    const okC = (cat === "ALL") || (t.category === cat);
+    const writer = (t.userName || t.userNickname || "").toLowerCase();
+    const okQ = !q || (t.title || "").toLowerCase().includes(q) || writer.includes(q);
+    return okS && okC && okQ;
+  });
+}
+
+function renderTickets(){
+  const tbody = document.getElementById("ticketTbody");
+  if (!tbody) return;
+
+  const list = filterTickets();
+  tbody.innerHTML = list.map(t => `
+    <tr data-ticket-row="${t.id}" style="cursor:pointer;">
+      <td class="fw-semibold">${escapeHtml(t.title)}</td>
+      <td class="muted">${escapeHtml(t.userName || t.userNickname || "-")}</td>
+      <td>${catLabel(t.category)}</td>
+      <td>${badgeStatus("ticket", t.status)}</td>
+      <td class="muted">${formatDateTime(t.createdAt)}</td>
+    </tr>
+  `).join("");
+
+  document.getElementById("ticketEmpty")?.classList.toggle("d-none", list.length !== 0);
+
+  document.querySelectorAll("[data-ticket-row]").forEach(tr => {
+    tr.addEventListener("click", () => selectTicket(tr.getAttribute("data-ticket-row")));
+  });
+}
+
+function renderTicketThread(messages){
+  const container = document.getElementById("ticketThread");
+  if (!container) return;
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    container.innerHTML = '<div class="text-center text-muted small py-3">메시지 내역이 없습니다.</div>';
+    return;
+  }
+
+  container.innerHTML = messages.map(m => {
+    const roleClass = m.senderRole === "ADMIN" ? "admin" : "user";
+    const sender = escapeHtml(m.senderName || (m.senderRole === "ADMIN" ? "관리자" : "회원"));
+    return `
+      <div class="ticket-msg ${roleClass}">
+        <div>${escapeHtml(m.content || "")}</div>
+        <span class="ticket-msg-meta">${sender} · ${formatDateTime(m.createdAt)}</span>
+      </div>
+    `;
+  }).join("");
+
+  container.scrollTop = container.scrollHeight;
+}
+
+async function loadTicketsFromServer(){
+  try {
+    const response = await fetchWithAdminAuth("/api/admin/inquiries");
+    const result = await response.json();
+    if (!response.ok || !result?.success || !Array.isArray(result?.data)) {
+      return;
+    }
+    STATE.tickets = result.data;
+    renderTickets();
+    renderDashboard();
+  } catch (e) {
+    console.error("Failed to load inquiries", e);
+  }
+}
+
+async function loadTicketMessages(inquiryId){
+  try {
+    const response = await fetchWithAdminAuth(`/api/admin/inquiries/${encodeURIComponent(inquiryId)}/messages`);
+    const result = await response.json();
+    if (!response.ok || !result?.success || !Array.isArray(result?.data)) {
+      renderTicketThread([]);
+      return;
+    }
+    STATE.selectedTicketMessages = result.data;
+    renderTicketThread(STATE.selectedTicketMessages);
+  } catch (e) {
+    console.error("Failed to load inquiry messages", e);
+    renderTicketThread([]);
+  }
+}
+
+async function selectTicket(id){
+  STATE.selectedTicketId = id;
+  const t = STATE.tickets.find(x => x.id === id);
+  if (!t) return;
+
+  document.getElementById("ticketPanelHint").classList.add("d-none");
+  document.getElementById("ticketPanelBody").classList.remove("d-none");
+  document.getElementById("ticketTitle").textContent = t.title || "-";
+  document.getElementById("ticketMeta").textContent =
+    `${t.userName || t.userNickname || "-"} · ${catLabel(t.category)} · ${formatDateTime(t.createdAt)}`;
+  document.getElementById("ticketContent").textContent = t.lastMessage || "-";
+  document.getElementById("ticketReply").value = "";
+
+  await loadTicketMessages(id);
+}
+
+async function initTicketsTab(){
+  if (!document.getElementById("ticketStatusFilter")) return;
+
+  ["ticketStatusFilter", "ticketCatFilter"].forEach(id => {
+    document.getElementById(id)?.addEventListener("change", renderTickets);
+  });
+  document.getElementById("ticketSearch")?.addEventListener("input", renderTickets);
+
+  document.getElementById("btnTicketProgress")?.addEventListener("click", async () => {
+    await changeTicketStatus("IN_PROGRESS");
+  });
+
+  document.getElementById("btnTicketDone")?.addEventListener("click", async () => {
+    await changeTicketStatus("DONE");
+  });
+
+  document.getElementById("btnTicketSave")?.addEventListener("click", async () => {
+    if (!STATE.selectedTicketId) {
+      alert("티켓을 선택하세요.");
+      return;
+    }
+
+    const reply = document.getElementById("ticketReply").value.trim();
+    if (!reply) {
+      alert("답변을 입력하세요.");
+      return;
+    }
+
+    const response = await fetchWithAdminAuth(
+      `/api/admin/inquiries/${encodeURIComponent(STATE.selectedTicketId)}/messages`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: reply })
+      }
+    );
+    const result = await response.json();
+    if (!response.ok || !result?.success) {
+      alert(result?.message || "답변 전송에 실패했습니다.");
+      return;
+    }
+
+    document.getElementById("ticketReply").value = "";
+    await loadTicketsFromServer();
+    await loadTicketMessages(STATE.selectedTicketId);
+    await loadAdminDashboardSummary();
+  });
+
+  await loadTicketsFromServer();
+}
+
+async function changeTicketStatus(to){
+  if (!STATE.selectedTicketId) {
+    alert("티켓을 선택하세요.");
+    return;
+  }
+
+  const response = await fetchWithAdminAuth(
+    `/api/admin/inquiries/${encodeURIComponent(STATE.selectedTicketId)}/status`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: to })
+    }
+  );
+  const result = await response.json();
+  if (!response.ok || !result?.success) {
+    alert(result?.message || "상태 변경에 실패했습니다.");
+    return;
+  }
+
+  await loadTicketsFromServer();
+  await selectTicket(STATE.selectedTicketId);
+  await loadAdminDashboardSummary();
+}
+
+function initDashboardTab(){
+  loadSettlementsFromServer();
+  loadAdminDashboardSummary();
+}
+
+function initSettingsTab(){
+}
+
+/* =========================
+   9) 초기 렌더
+   ========================= */
+renderKPI();
+loadAdminDashboardSummary();
+loadTicketsFromServer();
+
+const initial = new URLSearchParams(location.search).get("tab") || "dashboard";
+showTab(tabs.includes(initial) ? initial : "dashboard");
+
+setupLogoutButton();
+</script>
+</th:block>
+
+</body>
+</html>

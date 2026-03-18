@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TutorMessageMapper">
+
+    <insert id="insert">
+        INSERT INTO tutor_message (
+            id, booking_id, tutor_id, student_id, sender_role, content
+        ) VALUES (
+            UUID(), #{bookingId}, #{tutorId}, #{studentId}, #{senderRole}, #{content}
+        )
+    </insert>
+
+    <select id="countTutorStudentBookingRelation" resultType="int">
+        SELECT COUNT(*)
+        FROM booking b
+        JOIN lesson l ON b.lesson_id = l.id
+        WHERE l.user_id = #{tutorId}
+          AND b.user_id = #{studentId}
+          AND b.id = #{bookingId}
+          AND b.canceled_at IS NULL
+    </select>
+
+    <select id="countConfirmedPaidRelation" resultType="int">
+        SELECT COUNT(*)
+        FROM booking b
+        JOIN lesson l ON b.lesson_id = l.id
+        LEFT JOIN (
+            SELECT booking_id, MAX(paid_at) AS paid_at
+            FROM payment
+            WHERE status = 'PAID'
+            GROUP BY booking_id
+        ) p ON p.booking_id = b.id
+        WHERE l.user_id = #{tutorId}
+          AND b.user_id = #{studentId}
+          AND b.id = #{bookingId}
+          AND b.canceled_at IS NULL
+          AND b.confirmed_at IS NOT NULL
+          AND COALESCE(b.paid_at, p.paid_at) IS NOT NULL
+    </select>
+
+    <select id="countStudentWritableRelation" resultType="int">
+        SELECT COUNT(*)
+        FROM booking b
+        JOIN lesson l ON b.lesson_id = l.id
+        JOIN tutor_availability ta ON b.availability_id = ta.id
+        LEFT JOIN (
+            SELECT booking_id, MAX(paid_at) AS paid_at
+            FROM payment
+            WHERE status = 'PAID'
+            GROUP BY booking_id
+        ) p ON p.booking_id = b.id
+        WHERE l.user_id = #{tutorId}
+          AND b.user_id = #{studentId}
+          AND b.id = #{bookingId}
+          AND b.canceled_at IS NULL
+          AND b.confirmed_at IS NOT NULL
+          AND COALESCE(b.paid_at, p.paid_at) IS NOT NULL
+          AND ta.end_at >= NOW()
+    </select>
+
+    <select id="selectStudentRepliesByTutorId" resultType="com.aloha.teamproject.dto.TutorMessage">
+        SELECT tm.id, tm.booking_id AS bookingId, tm.tutor_id AS tutorId, tm.student_id AS studentId, tm.sender_role AS senderRole,
+               tm.content, tm.created_at AS createdAt, u.name AS studentName
+        FROM tutor_message tm
+        JOIN users u ON tm.student_id = u.id
+        JOIN (
+            SELECT booking_id, MAX(created_at) AS latest_created_at
+            FROM tutor_message
+            WHERE tutor_id = #{tutorId}
+              AND sender_role = 'STUDENT'
+            GROUP BY booking_id
+        ) latest ON latest.booking_id = tm.booking_id AND latest.latest_created_at = tm.created_at
+        WHERE tm.tutor_id = #{tutorId}
+          AND tm.sender_role = 'STUDENT'
+        ORDER BY tm.created_at DESC
+        LIMIT 20
+    </select>
+
+    <select id="selectThreadByTutorAndStudent" resultType="com.aloha.teamproject.dto.TutorMessage">
+        SELECT tm.id,
+               tm.booking_id AS bookingId,
+               tm.tutor_id AS tutorId,
+               tu.name AS tutorName,
+               tm.student_id AS studentId,
+               su.name AS studentName,
+               tm.sender_role AS senderRole,
+               tm.content,
+               tm.created_at AS createdAt
+        FROM tutor_message tm
+        JOIN users tu ON tm.tutor_id = tu.id
+        JOIN users su ON tm.student_id = su.id
+        WHERE tm.tutor_id = #{tutorId}
+          AND tm.student_id = #{studentId}
+          AND tm.booking_id = #{bookingId}
+        ORDER BY tm.created_at ASC
+        LIMIT 200
+    </select>
+
+</mapper>

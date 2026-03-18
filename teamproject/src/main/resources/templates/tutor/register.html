@@ -1,0 +1,360 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" href="/css/tutor-register-admin.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </th:block>
+
+    <div layout:fragment="content">
+        <div class="container py-5" style="max-width: 720px;">
+            <div class="mb-4 text-center tutor-step-header">
+                <h2 class="h4 fw-bold">튜터 회원가입 (1/4단계)</h2>
+                <p class="text-muted mb-0">기본 정보를 입력해 주세요.</p>
+            </div>
+
+            <div class="progress mb-4" style="height: 8px;">
+                <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form id="tutorProfileForm">
+                        <div class="mb-4">
+                            <h5 class="fw-bold">1. 기본 정보</h5>
+                            <p class="text-muted small mb-3">연락처를 입력해 주세요. 이름은 자동으로 입력됩니다.</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">이름</label>
+                                    <input type="text" class="form-control bg-light" id="basicName" disabled>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">연락처</label>
+                                    <input type="text" class="form-control" id="basicPhone" placeholder="010-0000-0000" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="fw-bold">2. 계좌 정보</h5>
+                            <p class="text-muted small mb-3">정산을 위한 계좌 정보를 입력해 주세요.</p>
+                            <div class="admin-box">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">은행명</label>
+                                        <select class="form-select" id="basicBankName" required>
+                                            <option value="">은행을 선택하세요</option>
+                                            <option value="국민은행">국민은행</option>
+                                            <option value="우리은행">우리은행</option>
+                                            <option value="신한은행">신한은행</option>
+                                            <option value="하나은행">하나은행</option>
+                                            <option value="카카오뱅크">카카오뱅크</option>
+                                            <option value="NH농협">NH농협</option>
+                                            <option value="기업은행">기업은행</option>
+                                            <option value="대구은행">대구은행</option>
+                                            <option value="부산은행">부산은행</option>
+                                            <option value="광주은행">광주은행</option>
+                                            <option value="전북은행">전북은행</option>
+                                            <option value="제주은행">제주은행</option>
+                                            <option value="수협">수협</option>
+                                            <option value="산업은행">산업은행</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">계좌번호</label>
+                                        <input type="text" class="form-control" id="basicAccountNumber" placeholder="계좌번호 입력" required>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label">예금주명</label>
+                                        <input type="text" class="form-control" id="basicAccountHolder" placeholder="예금주명 입력" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="fw-bold">3. 프로필 사진</h5>
+                            <p class="text-muted small mb-3">학생들에게 보여질 프로필 사진을 업로드하세요.</p>
+                            <div class="border rounded-3 p-3 bg-light">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                    <div>
+                                        <div class="fw-semibold">파일 업로드</div>
+                                        <div class="small text-muted">JPG, PNG 가능 · 최대 5MB</div>
+                                    </div>
+                                    <label class="btn btn-outline-primary btn-sm mb-0">
+                                        파일 선택
+                                        <input type="file" class="d-none" id="profileImg" accept="image/*">
+                                    </label>
+                                </div>
+                                <div id="profileImgCard" class="card mt-3" style="display:none;">
+                                    <div class="row g-0 align-items-center">
+                                        <div class="col-md-4 text-center p-2">
+                                             <img id="profileImgPreview" class="rounded mw-100" style="max-height: 150px;" alt="프로필 미리보기" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="card-body">
+                                                <div id="profileImgActions" class="d-flex gap-2">
+                                                    <button type="button" id="profileImgEditBtn" class="btn btn-sm btn-outline-secondary">수정</button>
+                                                    <button type="button" id="profileImgDeleteBtn" class="btn btn-sm btn-outline-danger">삭제</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="fw-bold">4. 한 줄 소개</h5>
+                            <p class="text-muted small mb-3">튜터님의 강점을 한 줄로 표현해 주세요.</p>
+                            <input type="text" class="form-control" id="headline" placeholder="예) 영어 회화 전문 10년 경력, TOEIC 만점 강사" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="fw-bold">5. 소개</h5>
+                            <p class="text-muted small mb-3">튜터님에 대해 자세히 소개해 주세요.</p>
+                            <textarea class="form-control" id="bio" rows="5" placeholder="예)&#10;안녕하세요! 영어 회화 전문 튜터 김튜터입니다.&#10;미국에서 10년간 거주하며 현지 경험을 쌓았고, 귀국 후 영어 강의를 시작했습니다.&#10;학생 개개인의 수준과 목표에 맞춰 맞춤형 수업을 제공합니다." required></textarea>
+                        </div>
+                        
+                         <div class="mb-4">
+                            <h5 class="fw-bold">6. 강의 스타일</h5>
+                            <p class="text-muted small mb-3">어떤 방식으로 수업을 진행하시나요?</p>
+                            <textarea class="form-control" id="selfIntro" rows="5" placeholder="예)&#10;&#10;✔ 교육 철학: 학생 중심의 맞춤형 교육&#10;✔ 강점: 실생활 회화 중심, 즉각적인 피드백&#10;✔ 제공 가치: 자신감 있는 영어 구사 능력 향상" required></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="fw-bold">7. 소개 영상 (선택)</h5>
+                            <p class="text-muted small mb-3">유튜브 소개 영상이 있다면 링크를 입력하세요.</p>
+                            <input type="url" class="form-control" id="videoUrl" placeholder="https://youtube.com/watch?v=...">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">다음 단계로</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 엘리먼트 변수 모음
+            const EL = {
+                profileImg: document.getElementById('profileImg'),
+                profileImgPreview: document.getElementById('profileImgPreview'),
+                profileImgCard: document.getElementById('profileImgCard'),
+                profileImgEditBtn: document.getElementById('profileImgEditBtn'),
+                profileImgDeleteBtn: document.getElementById('profileImgDeleteBtn'),
+
+                basicName: document.getElementById('basicName'),
+                basicPhone: document.getElementById('basicPhone'),
+                basicBankName: document.getElementById('basicBankName'),
+                basicAccountNumber: document.getElementById('basicAccountNumber'),
+                basicAccountHolder: document.getElementById('basicAccountHolder'),
+                headline: document.getElementById('headline'),
+                bio: document.getElementById('bio'),
+                selfIntro: document.getElementById('selfIntro'),
+                videoUrl: document.getElementById('videoUrl'),
+
+                tutorProfileForm: document.getElementById('tutorProfileForm')
+            };
+
+            function getMemoryAccessToken() {
+                return typeof getAccessToken === 'function' ? getAccessToken() : null;
+            }
+
+            function setMemoryAccessToken(token) {
+                if (typeof setAccessToken === 'function') {
+                    setAccessToken(token);
+                }
+            }
+
+            function buildAuthHeaders() {
+                const accessToken = getMemoryAccessToken();
+                return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+            }
+
+            async function fetchMe() {
+                let response = await fetch('/api/users/me', {
+                    headers: buildAuthHeaders()
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    return data && data.success ? data.data : null;
+                }
+
+                const refreshResponse = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken: localStorage.getItem('refreshToken') })
+                });
+                if (!refreshResponse.ok) {
+                    return null;
+                }
+                const refreshData = await refreshResponse.json();
+                if (refreshData && refreshData.success && refreshData.data && refreshData.data.accessToken) {
+                    setMemoryAccessToken(refreshData.data.accessToken);
+
+                    if (refreshData.data.refreshToken) {
+                        localStorage.setItem('refreshToken', refreshData.data.refreshToken);
+                    }
+                }
+
+                response = await fetch('/api/users/me', {
+                    headers: buildAuthHeaders()
+                });
+                if (!response.ok) {
+                    return null;
+                }
+                const data = await response.json();
+                return data && data.success ? data.data : null;
+            }
+
+            function isTutor(authList) {
+                if (!Array.isArray(authList)) {
+                    return false;
+                }
+                return authList.some((a) =>
+                    a.auth === 'ROLE_TUTOR' ||
+                    a.auth === 'ROLE_TUTOR_PENDING' ||
+                    a === 'ROLE_TUTOR' ||
+                    a === 'ROLE_TUTOR_PENDING'
+                );
+            }
+
+            function fileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+            }
+
+            document.addEventListener('DOMContentLoaded', async () => {
+                const me = await fetchMe();
+                
+                if (!me) {
+                    alert('사용자 정보를 가져올 수 없습니다.');
+                    location.href = '/';
+                    return;
+                }
+
+                // 사용자 이름 자동 채우기 (읽기 전용)
+                if (me.name) {
+                    document.getElementById('basicName').value = me.name;
+                }               
+
+                // 이전에 저장된 데이터 불러오기
+                const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep1') || '{}');
+                if (savedData.basicName) document.getElementById('basicName').value = savedData.basicName;
+                if (savedData.basicPhone) document.getElementById('basicPhone').value = savedData.basicPhone;
+                if (savedData.basicBankName) {
+                    const bankSelect = document.getElementById('basicBankName');
+                    if (bankSelect) bankSelect.value = savedData.basicBankName;
+                }
+                if (savedData.basicAccountNumber) document.getElementById('basicAccountNumber').value = savedData.basicAccountNumber;
+                if (savedData.basicAccountHolder) document.getElementById('basicAccountHolder').value = savedData.basicAccountHolder;
+                if (savedData.headline) document.getElementById('headline').value = savedData.headline;
+                if (savedData.bio) document.getElementById('bio').value = savedData.bio;
+                if (savedData.selfIntro) document.getElementById('selfIntro').value = savedData.selfIntro;
+                if (savedData.videoUrl) document.getElementById('videoUrl').value = savedData.videoUrl;
+                
+                // 프로필 이미지 복원
+                if (savedData.profileImg) {
+                    EL.profileImgPreview.src = savedData.profileImg;
+                    EL.profileImgCard.style.display = 'block';
+                }
+            });
+
+
+            EL.profileImg.addEventListener('change', async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                try {
+                    const base64 = await fileToBase64(file);
+                    EL.profileImgPreview.src = base64;
+                    EL.profileImgCard.style.display = 'block';
+                    const saved = JSON.parse(sessionStorage.getItem('tutorRegisterStep1') || '{}');
+                    saved.profileImg = base64;
+                    sessionStorage.setItem('tutorRegisterStep1', JSON.stringify(saved));
+                } catch (e) {
+                    console.error('이미지 처리 실패', e);
+                }
+            });
+
+            EL.profileImgEditBtn.addEventListener('click', () => {
+                EL.profileImg.click();
+            });
+
+            EL.profileImgDeleteBtn.addEventListener('click', () => {
+                EL.profileImgCard.style.display = 'none';
+                EL.profileImg.value = null;
+                const saved = JSON.parse(sessionStorage.getItem('tutorRegisterStep1') || '{}');
+                if (saved.profileImg) delete saved.profileImg;
+                sessionStorage.setItem('tutorRegisterStep1', JSON.stringify(saved));
+            });
+
+            EL.basicBankName.addEventListener('change', (event) => {
+                const saved = JSON.parse(sessionStorage.getItem('tutorRegisterStep1') || '{}');
+                saved.basicBankName = event.target.value;
+                sessionStorage.setItem('tutorRegisterStep1', JSON.stringify(saved));
+            });
+
+            EL.tutorProfileForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const basicName = EL.basicName.value.trim();
+                const basicPhone = EL.basicPhone.value.trim();
+                const basicBankName = EL.basicBankName.value.trim();
+                const basicAccountNumber = EL.basicAccountNumber.value.trim();
+                const basicAccountHolder = EL.basicAccountHolder.value.trim();
+                const headline = EL.headline.value.trim();
+                const bio = EL.bio.value.trim();
+                const selfIntro = EL.selfIntro.value.trim();
+                const videoUrl = EL.videoUrl.value.trim();
+
+                if (!basicName || !basicPhone || !basicBankName || !basicAccountNumber || !basicAccountHolder || !headline || !bio || !selfIntro) {
+                    alert('필수 항목을 모두 입력해주세요.');
+                    return;
+                }
+
+                const step1Data = {
+                    basicName: basicName,
+                    basicPhone: basicPhone,
+                    basicBankName: basicBankName,
+                    basicAccountNumber: basicAccountNumber,
+                    basicAccountHolder: basicAccountHolder,
+                    headline: headline,
+                    bio: bio,
+                    selfIntro: selfIntro,
+                    videoUrl: videoUrl
+                };
+
+                const profileImgFile = EL.profileImg.files[0];                
+
+                try {
+                    if (profileImgFile) {
+                        step1Data.profileImg = await fileToBase64(profileImgFile);
+                    }
+                } catch (error) {
+                    console.error('파일 처리 중 오류:', error);
+                    alert('파일 처리 중 오류가 발생했습니다.');
+                    return;
+                }
+
+                const existing = JSON.parse(sessionStorage.getItem('tutorRegisterStep1') || '{}');
+                if (!step1Data.profileImg && existing.profileImg) {
+                    step1Data.profileImg = existing.profileImg;
+                }
+
+                sessionStorage.setItem('tutorRegisterStep1', JSON.stringify(step1Data));
+                window.location.href = '/tutor/register1';
+            });
+        </script>
+    </div>
+</div>

@@ -1,0 +1,130 @@
+<section class="admin-tab">
+  <div class="row g-3">
+    <!-- 좌: 목록 -->
+    <div class="col-lg-8">
+      <div class="card admin-card shadow-sm">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <div class="panel-title">튜터 인증 서류</div>
+              <div class="muted small">목록에서 선택 → 우측에서 미리보기/검증 후 승인 또는 반려</div>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap justify-content-end">
+              <select class="form-select form-select-sm select-pill" id="docFilterStatus" style="width:140px;">
+                <option value="ALL">전체 상태</option>
+                <option value="PENDING">대기</option>
+                <option value="APPROVED">승인</option>
+                <option value="REJECTED">반려</option>
+              </select>
+              <select class="form-select form-select-sm select-pill" id="docFilterType" style="width:140px;">
+                <option value="ALL">전체 유형</option>
+                <option value="EDUCATION">학력</option>
+                <option value="DEGREE">학위</option>
+                <option value="CERTIFICATE">자격증</option>
+                <option value="OTHER">기타</option>
+              </select>
+              <input class="form-control form-control-sm pill-input" id="docSearch" placeholder="튜터명 검색" style="width:180px;">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+              <tr>
+                <th style="width:26%;">튜터</th>
+                <th style="width:18%;">서류 유형</th>
+                <th>파일</th>
+                <th style="width:14%;">업로드일</th>
+                <th style="width:12%;">상태</th>
+              </tr>
+              </thead>
+              <tbody id="docTbody"></tbody>
+            </table>
+          </div>
+
+          <div id="docEmpty" class="empty-hero d-none">
+            <div class="emoji">📄</div>
+            <div class="fw-semibold">조건에 맞는 서류가 없습니다.</div>
+            <div class="muted small mb-3">필터를 변경하거나 검색어를 지워보세요.</div>
+            <button class="btn btn-outline-primary btn-sm btn-pill px-3" id="docReset">필터 초기화</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 우: 검토 패널 -->
+    <div class="col-lg-4">
+      <div class="card admin-card shadow-sm mb-3">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="panel-title">검토 패널</div>
+            <span class="badge text-bg-light" id="docPanelStatus">선택 없음</span>
+          </div>
+          <div class="muted small mb-2" id="docPanelHint">좌측 목록에서 서류를 선택하세요.</div>
+
+          <div id="docPanelBody" class="d-none">
+            <div class="fw-semibold" id="docPanelTutor">-</div>
+            <div class="muted small mb-2" id="docPanelMeta">-</div>
+
+            <div class="d-flex gap-2 mb-3">
+              <a class="btn btn-outline-primary btn-sm btn-pill px-3" target="_blank" id="docBtnPreview">미리보기</a>
+              <a class="btn btn-outline-secondary btn-sm btn-pill px-3" target="_blank" id="docBtnDownload">다운로드</a>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="fw-bold mb-2">검증 체크리스트</div>
+            <div class="vstack gap-2 mb-3">
+              <label class="check-item">
+                <input type="checkbox" id="chkIdentity">
+                <span class="small">계정 정보와 제출자 정보가 일치함</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" id="chkLegible">
+                <span class="small">문서가 선명하고 주요 항목을 확인할 수 있음</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" id="chkRequired">
+                <span class="small">필수 항목(기관/발급일/명칭 등)이 포함됨</span>
+              </label>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="fw-bold mb-2">처리</div>
+            <div class="d-flex gap-2 mb-2">
+              <button class="btn btn-success btn-sm btn-pill px-3" id="btnApprove">승인</button>
+              <button class="btn btn-outline-danger btn-sm btn-pill px-3" id="btnReject">반려</button>
+            </div>
+
+            <div id="rejectBox" class="d-none">
+              <textarea class="form-control form-control-sm" id="rejectReason" rows="3" placeholder="반려 사유를 입력하세요 (예: 식별 불가, 발급기관 누락 등)"></textarea>
+              <div class="d-flex justify-content-end mt-2">
+                <button class="btn btn-danger btn-sm btn-pill px-3" id="btnRejectConfirm">반려 확정</button>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="fw-bold mb-2">최근 처리 내역(예시)</div>
+            <div class="muted small" id="docPanelLog">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card admin-card shadow-sm">
+        <div class="card-body">
+          <div class="panel-title mb-2">처리 가이드</div>
+          <ul class="muted small mb-0">
+            <li>미리보기로 내용 식별 가능 여부를 우선 확인</li>
+            <li>필수 항목이 누락되면 반려 사유를 명확히 작성</li>
+            <li>승인 시 튜터 인증 상태를 업데이트(백엔드)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

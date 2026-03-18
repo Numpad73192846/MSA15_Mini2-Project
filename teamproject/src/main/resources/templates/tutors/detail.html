@@ -1,0 +1,1146 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+<head>
+    <title>튜터 상세</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" href="/css/tutor-calendar.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <style>
+            .tutor-info-tabs {
+                display: flex;
+                width: 100%;
+                margin-bottom: 0;
+                border: 1px solid #dbe4f0;
+                border-bottom: none;
+                border-radius: 14px 14px 0 0;
+                overflow: hidden;
+                background: linear-gradient(180deg, #f8fbff 0%, #f1f5f9 100%);
+            }
+
+            .tutor-info-tabs .nav-item {
+                flex: 1 1 0;
+                min-width: 0;
+            }
+
+            .tutor-info-tabs .nav-link {
+                width: 100%;
+                border-radius: 0;
+                border: 0;
+                border-right: 1px solid #dbe4f0;
+                background: transparent;
+                color: #475569;
+                font-weight: 700;
+                font-size: .95rem;
+                letter-spacing: -0.2px;
+                padding: .85rem .75rem;
+                text-align: center;
+                transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
+            }
+
+            .tutor-info-tabs .nav-item:last-child .nav-link {
+                border-right: none;
+            }
+
+            .tutor-info-tabs .nav-link:hover {
+                background: #eef4ff;
+                color: #1e3a8a;
+            }
+
+            .tutor-info-tabs .nav-link.active {
+                background: #fff;
+                color: #1d4ed8;
+                box-shadow: inset 0 -3px 0 #2563eb;
+            }
+
+            .tutor-info-tab-content {
+                border: 1px solid #dbe4f0;
+                border-top: none;
+                border-radius: 0 0 14px 14px;
+                background: #fff;
+                padding: 1.15rem 1.1rem;
+                min-height: 164px;
+            }
+
+            .tutor-info-tab-content .tab-pane {
+                color: #334155;
+                line-height: 1.7;
+            }
+
+            .timeline-list {
+                display: flex;
+                flex-direction: column;
+                gap: .45rem;
+                margin-top: .1rem;
+            }
+
+            .timeline-item {
+                display: grid;
+                grid-template-columns: 104px 1fr;
+                gap: .8rem;
+                align-items: start;
+                padding: .08rem 0;
+            }
+
+            .timeline-item+.timeline-item {
+                margin-top: .1rem;
+            }
+
+            .timeline-year {
+                font-size: .85rem;
+                font-weight: 700;
+                color: #64748b;
+                white-space: nowrap;
+                line-height: 1.7;
+            }
+
+            .timeline-text {
+                color: #0f172a;
+                font-size: .95rem;
+                font-weight: 500;
+                line-height: 1.65;
+            }
+
+            @media (max-width: 576px) {
+                .tutor-info-tabs .nav-link {
+                    font-size: .85rem;
+                    padding: .7rem .4rem;
+                }
+
+                .tutor-info-tab-content {
+                    padding: .95rem .85rem;
+                    border-radius: 0 0 12px 12px;
+                }
+
+                .timeline-item {
+                    grid-template-columns: 82px 1fr;
+                    gap: .55rem;
+                }
+
+                .timeline-year {
+                    font-size: .78rem;
+                }
+
+                .timeline-text {
+                    font-size: .9rem;
+                }
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="container py-5">
+            <button type="button" class="btn btn-outline-primary rounded-pill px-4 py-2 mb-3"
+                onclick="location.href='/tutors'">
+                <i class="bi bi-arrow-left me-2"></i>목록으로
+            </button>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="d-flex gap-3 align-items-start">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white overflow-hidden"
+                                    style="width:96px;height:96px;font-size:32px;flex:0 0 auto;"
+                                    th:with="hasImg=${!#strings.isEmpty(tutor.profileImg)}"
+                                    th:classappend="${hasImg} ? '' : ' bg-primary'">
+                                    <img th:if="${hasImg}" th:src="${tutor.profileImg}" alt="프로필 이미지"
+                                        class="w-100 h-100 object-fit-cover">
+                                    <span th:unless="${hasImg}"
+                                        th:text="${#strings.substring(tutor.nickname,0,1)}">김</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h1 class="h3 fw-bold mb-1" th:text="${tutor.nickname}">튜터명</h1>
+                                            <div class="text-muted mb-2" th:if="${reviewCount > 0}">
+                                                <span class="me-1">⭐</span>
+                                                <span class="fw-semibold" th:text="${avgRating}">4.9</span>
+                                                <span class="text-muted">(</span><span class="text-muted"
+                                                    th:text="${reviewCount}">127</span><span
+                                                    class="text-muted">개의리뷰)</span>
+                                            </div>
+                                            <div class="text-muted mb-2" th:if="${reviewCount == 0}">
+                                                <span class="me-1">⭐</span>
+                                                <span class="fw-semibold">아직 리뷰가 없습니다</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap gap-1 mb-3">
+                                        <span class="badge text-bg-light"
+                                            th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}"
+                                            th:text="${#strings.trim(s)}">영어</span>
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        <span class="me-3">⏱️ 경력 <span th:text="${tutor.experience}">5년</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <h3 class="h5 fw-bold mb-3">튜터 정보</h3>
+
+                            <ul class="nav nav-pills tutor-info-tabs mb-2" id="tutorInfoTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="intro-tab" data-bs-toggle="tab"
+                                        data-bs-target="#intro-pane" type="button" role="tab" aria-controls="intro-pane"
+                                        aria-selected="true">자기소개</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="education-tab" data-bs-toggle="tab"
+                                        data-bs-target="#education-pane" type="button" role="tab"
+                                        aria-controls="education-pane" aria-selected="false">학력</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="career-tab" data-bs-toggle="tab"
+                                        data-bs-target="#career-pane" type="button" role="tab"
+                                        aria-controls="career-pane" aria-selected="false">근무경력</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="certificate-tab" data-bs-toggle="tab"
+                                        data-bs-target="#certificate-pane" type="button" role="tab"
+                                        aria-controls="certificate-pane" aria-selected="false">자격증</button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content tutor-info-tab-content mb-4" id="tutorInfoTabContent">
+                                <div class="tab-pane fade show active" id="intro-pane" role="tabpanel"
+                                    aria-labelledby="intro-tab" tabindex="0">
+                                    <div class="mb-3">
+                                        <div class="small fw-semibold text-muted mb-1">소개</div>
+                                        <div class="text-muted"
+                                            th:text="${#strings.isEmpty(tutor.bio) ? '등록된 자기소개가 없습니다.' : tutor.bio}">
+                                            등록된 자기소개가 없습니다.
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small fw-semibold text-muted mb-1">강의 스타일</div>
+                                        <div th:if="${!#strings.isEmpty(tutor.selfIntro)}"
+                                            th:with="lines=${#strings.arraySplit(#strings.replace(tutor.selfIntro, '\r', ''), '\n')}">
+                                            <div class="text-muted" th:each="line : ${lines}"
+                                                th:if="${!#strings.isEmpty(#strings.trim(line))}"
+                                                th:text="${#strings.startsWith(#strings.trim(line), '-') ? #strings.trim(line) : '- ' + #strings.trim(line)}">
+                                                - 학생 수준에 맞춘 맞춤형 커리큘럼
+                                            </div>
+                                        </div>
+
+                                        <div class="text-muted" th:if="${#strings.isEmpty(tutor.selfIntro)}">
+                                            등록된 강의 스타일 정보가 없습니다.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="education-pane" role="tabpanel"
+                                    aria-labelledby="education-tab" tabindex="0">
+                                    <div th:if="${!#lists.isEmpty(tutor.educationTimelineItems)}" class="timeline-list">
+                                        <div class="timeline-item" th:each="item : ${tutor.educationTimelineItems}">
+                                            <div class="timeline-year" th:text="${item.year}">
+                                                2018 - 2022
+                                            </div>
+                                            <div class="timeline-text" th:text="${item.text}">
+                                                서울대학교 · 영어영문학 학사
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-muted" th:if="${#lists.isEmpty(tutor.educationTimelineItems)}">
+                                        등록된 학력 정보가 없습니다.
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="career-pane" role="tabpanel" aria-labelledby="career-tab"
+                                    tabindex="0">
+                                    <div th:if="${!#lists.isEmpty(tutor.careerTimelineItems)}" class="timeline-list">
+                                        <div class="timeline-item" th:each="item : ${tutor.careerTimelineItems}">
+                                            <div class="timeline-year" th:text="${item.year}">
+                                                2021 - 현재
+                                            </div>
+                                            <div class="timeline-text" th:text="${item.text}">
+                                                어학원 · 영어강사
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-muted" th:if="${#lists.isEmpty(tutor.careerTimelineItems)}">
+                                        등록된 근무경력 정보가 없습니다.
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="certificate-pane" role="tabpanel"
+                                    aria-labelledby="certificate-tab" tabindex="0">
+                                    <div th:if="${!#strings.isEmpty(tutor.certificates)}"
+                                        th:utext="${#strings.replace(tutor.certificates, ' | ', '<br/>')}">
+                                        TESOL
+                                    </div>
+                                    <div class="text-muted" th:if="${#strings.isEmpty(tutor.certificates)}">
+                                        등록된 자격증 정보가 없습니다.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h5 fw-bold mb-4">
+                                수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)
+                                <button type="button" class="btn btn-sm btn-primary float-end" id="btnOpenReviewModal"
+                                    onclick="openReviewModal()" th:if="${!isTutorViewer}">리뷰 작성</button>
+                            </h3>
+
+                            <div th:each="r : ${reviews}" class="mb-3">
+                                <div class="card border review-item"
+                                    th:attr="data-review-id=${r.id},data-student-id=${r.studentId},data-booking-id=${r.bookingId},data-rating=${r.rating},data-content=${r.content}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <div class="fw-bold mb-1">
+                                                    <span th:text="${r.studentName}">학생A</span>
+                                                    <span class="text-primary ms-1">님의 후기</span>
+                                                </div>
+                                            </div>
+                                            <div class="text-warning">
+                                                <span th:each="i : ${#numbers.sequence(1,5)}"
+                                                    th:text="${i <= r.rating ? '★' : '☆'}">★</span>
+                                            </div>
+                                        </div>
+                                        <p class="mb-2 text-dark" th:text="${r.content}">후기 내용</p>
+                                        <div class="small text-muted">
+                                            <span
+                                                th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
+                                        </div>
+                                        <div class="review-actions mt-2 gap-2 d-none">
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-primary btn-edit-review">수정</button>
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-danger btn-delete-review">삭제</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card shadow-sm sticky-top" style="top:90px;">
+                        <div class="tutorVideo-wrap" id="videoWrap" th:if="${!#strings.isEmpty(tutor.videoUrl)}">
+                            <div class="resize">
+                                <iframe id="tutorVideo" th:src="${tutor.videoUrl}" class="re" width="100%" height="100%"
+                                    title="YouTube video player" frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen></iframe>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="fw-bold">수업 예약</div>
+                                <div class="text-primary fw-semibold">시간당 <span
+                                        th:text="${#numbers.formatInteger(tutor.price, 0, 'COMMA')}">35,000</span>원
+                                </div>
+                            </div>
+
+                            <h4 class="h6 fw-bold mb-3">수업 가능 시간</h4>
+                            <div class="mb-3">
+                                <div class="tc-toolbar mb-3">
+                                    <button type="button" class="tc-iconbtn" id="btnPrevWeek" aria-label="이전 주">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M15.5 5.5 9 12l6.5 6.5" />
+                                        </svg>
+                                        <span class="sr-only"></span>
+                                    </button>
+                                    <div class="tc-range" id="weekRangeLabel">2026.02.02 ~ 02.08</div>
+                                    <button type="button" class="tc-iconbtn" id="btnNextWeek" aria-label="다음 주">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M8.5 18.5 15 12 8.5 5.5" />
+                                        </svg>
+                                        <span class="sr-only"></span>
+                                    </button>
+                                </div>
+
+                                <div class="weekly_calendar_wrap" id="tutorScheduleCalendar"
+                                    th:attr="data-tutor-id=${tutor.userId}">
+                                    <div class="weekly_head">
+                                        <ul class="dayHead" id="calendarDayHead">
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">일</p>
+                                                    <p class="dayDate">02.02</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">월</p>
+                                                    <p class="dayDate">02.03</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">화</p>
+                                                    <p class="dayDate">02.04</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">수</p>
+                                                    <p class="dayDate">02.05</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">목</p>
+                                                    <p class="dayDate">02.06</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">금</p>
+                                                    <p class="dayDate">02.07</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">토</p>
+                                                    <p class="dayDate">02.08</p>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="weekly_con">
+                                        <ul class="dayCon" id="calendarDayBody">
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <small class="text-muted d-block mt-2">
+                                    <span class="badge bg-primary">●</span> 수업 가능
+                                    <span class="badge bg-danger ms-2">●</span> 예약됨
+                                </small>
+                            </div>
+
+                            <form id="bookingForm" th:if="${!isTutorViewer}"
+                                th:attr="data-tutor-id=${tutor.userId},data-tutor-name=${tutor.name},data-hourly-rate=${tutor.price}">
+                                <input type="hidden" name="date" id="selectedDate" required>
+                                <input type="hidden" name="time" id="selectedTime" required>
+
+                                <div class="mb-3">
+                                    <label class="form-label">선택된 시간</label>
+                                    <textarea class="form-control bg-white" id="displaySelectedTime" rows="3"
+                                        placeholder="캘린더에서 시간을 선택해주세요" readonly></textarea>
+                                    <div class="form-text">같은 날짜도 여러 시간을 선택할 수 있으며, 연속 시간은 한 수업으로 묶여 표시됩니다.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">과목 *</label>
+                                    <select name="subject" class="form-select" required>
+                                        <option value="" selected>선택</option>
+                                        <option th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}"
+                                            th:value="${#strings.trim(s)}" th:text="${#strings.trim(s)}">영어</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">요청사항</label>
+                                    <textarea name="message" class="form-control" rows="3"
+                                        placeholder="추가로 전달할 내용을 입력하세요"></textarea>
+                                </div>
+                                <button id="bookingSubmit" type="submit" class="btn btn-primary w-100"
+                                    th:disabled="${canBook == null or !canBook}">예약하기</button>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <th:block layout:fragment="extra-scripts">
+            <script src="/js/tutor-calendar.js"></script>
+            <script>
+                const FULL_DAY_RANGES = {
+                    0: [{ start: '00:00', end: '24:00' }],
+                    1: [{ start: '00:00', end: '24:00' }],
+                    2: [{ start: '00:00', end: '24:00' }],
+                    3: [{ start: '00:00', end: '24:00' }],
+                    4: [{ start: '00:00', end: '24:00' }],
+                    5: [{ start: '00:00', end: '24:00' }],
+                    6: [{ start: '00:00', end: '24:00' }]
+                };
+
+                function formatLocalDateTime(date) {
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    const hh = String(date.getHours()).padStart(2, '0');
+                    const mm = String(date.getMinutes()).padStart(2, '0');
+                    const ss = String(date.getSeconds()).padStart(2, '0');
+                    return `${y}-${m}-${d}T${hh}:${mm}:${ss}`;
+                }
+
+                function getDateRangeForMaxWeeks(maxWeeks = 9) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const day = today.getDay();
+                    const sunday = new Date(today);
+                    sunday.setDate(today.getDate() - day);
+
+                    const start = new Date(sunday);
+                    start.setHours(0, 0, 0, 0);
+
+                    const maxWeekStart = new Date(sunday);
+                    maxWeekStart.setDate(maxWeekStart.getDate() + (maxWeeks * 7));
+                    const end = new Date(maxWeekStart);
+                    end.setDate(end.getDate() + 6);
+                    end.setHours(23, 59, 59, 0);
+
+                    return {
+                        start: formatLocalDateTime(start),
+                        end: formatLocalDateTime(end)
+                    };
+                }
+
+                function addGroupedSlot(grouped, date, time) {
+                    if (!grouped.has(date)) grouped.set(date, new Set());
+                    grouped.get(date).add(time);
+                }
+
+                function toSlotArray(grouped) {
+                    return Array.from(grouped.entries()).map(([date, slotSet]) => ({
+                        date,
+                        slots: Array.from(slotSet).sort()
+                    }));
+                }
+
+                function normalizeTimeToStep(rawTime, stepMinutes = 30) {
+                    const matched = String(rawTime || '').match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+                    if (!matched) return '';
+                    const hour = Number(matched[1]);
+                    const minute = Number(matched[2]);
+                    const second = Number(matched[3] || '0');
+                    if (!Number.isFinite(hour) || !Number.isFinite(minute) || !Number.isFinite(second)) return '';
+                    if (minute % stepMinutes !== 0 || second !== 0) return '';
+                    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+                }
+
+                function timeToMinutes(time) {
+                    const matched = String(time || '').match(/^(\d{2}):(\d{2})$/);
+                    if (!matched) return NaN;
+                    return Number(matched[1]) * 60 + Number(matched[2]);
+                }
+
+                function minutesToTime(totalMinutes) {
+                    const hour = Math.floor(totalMinutes / 60);
+                    const minute = totalMinutes % 60;
+                    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+                }
+
+                function formatDurationLabel(durationMinutes) {
+                    if (durationMinutes % 60 === 0) {
+                        return `${durationMinutes / 60}시간`;
+                    }
+                    return `${durationMinutes}분`;
+                }
+
+                function buildMergedSelection(selectedData, stepMinutes = 30) {
+                    const groupedByDate = new Map();
+
+                    selectedData.forEach(item => {
+                        if (!item?.date || !item?.time) return;
+                        const minute = timeToMinutes(item.time);
+                        if (!Number.isFinite(minute)) return;
+                        if (!groupedByDate.has(item.date)) groupedByDate.set(item.date, new Set());
+                        groupedByDate.get(item.date).add(minute);
+                    });
+
+                    const merged = [];
+                    Array.from(groupedByDate.entries())
+                        .sort((a, b) => a[0].localeCompare(b[0]))
+                        .forEach(([date, minuteSet]) => {
+                            const sortedMinutes = Array.from(minuteSet).sort((a, b) => a - b);
+                            if (sortedMinutes.length === 0) return;
+
+                            let blockStart = sortedMinutes[0];
+                            let previous = sortedMinutes[0];
+                            for (let i = 1; i < sortedMinutes.length; i += 1) {
+                                const current = sortedMinutes[i];
+                                if (current === previous + stepMinutes) {
+                                    previous = current;
+                                    continue;
+                                }
+
+                                const end = previous + stepMinutes;
+                                merged.push({
+                                    date,
+                                    startTime: minutesToTime(blockStart),
+                                    endTime: minutesToTime(end),
+                                    durationMinutes: end - blockStart
+                                });
+                                blockStart = current;
+                                previous = current;
+                            }
+
+                            const end = previous + stepMinutes;
+                            merged.push({
+                                date,
+                                startTime: minutesToTime(blockStart),
+                                endTime: minutesToTime(end),
+                                durationMinutes: end - blockStart
+                            });
+                        });
+
+                    return merged;
+                }
+
+                function toLocalDateKey(date) {
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${d}`;
+                }
+
+                function alignDateTimeToStep(date, stepMinutes = 30, mode = 'floor') {
+                    const aligned = new Date(date);
+                    if (Number.isNaN(aligned.getTime())) return null;
+
+                    const hasSubMinute = aligned.getSeconds() !== 0 || aligned.getMilliseconds() !== 0;
+                    let totalMinutes = (aligned.getHours() * 60) + aligned.getMinutes();
+                    const remainder = totalMinutes % stepMinutes;
+
+                    if (mode === 'ceil') {
+                        if (remainder !== 0) {
+                            totalMinutes += (stepMinutes - remainder);
+                        } else if (hasSubMinute) {
+                            totalMinutes += stepMinutes;
+                        }
+                    } else {
+                        totalMinutes -= remainder;
+                    }
+
+                    aligned.setHours(0, 0, 0, 0);
+                    aligned.setMinutes(totalMinutes, 0, 0);
+                    return aligned;
+                }
+
+                function expandAvailabilityToSlots(item, stepMinutes = 30) {
+                    if (!item?.startAt) return [];
+                    const startRaw = new Date(item.startAt);
+                    if (Number.isNaN(startRaw.getTime())) return [];
+
+                    const endParsed = item.endAt ? new Date(item.endAt) : null;
+                    const endRaw = endParsed && !Number.isNaN(endParsed.getTime()) && endParsed > startRaw
+                        ? endParsed
+                        : new Date(startRaw.getTime() + (stepMinutes * 60000));
+
+                    const start = alignDateTimeToStep(startRaw, stepMinutes, 'ceil');
+                    const end = alignDateTimeToStep(endRaw, stepMinutes, 'floor');
+                    if (!start || !end || end <= start) return [];
+
+                    const slots = [];
+                    for (let cursor = new Date(start); cursor < end; cursor = new Date(cursor.getTime() + (stepMinutes * 60000))) {
+                        const time = normalizeTimeToStep(
+                            `${String(cursor.getHours()).padStart(2, '0')}:${String(cursor.getMinutes()).padStart(2, '0')}:00`,
+                            stepMinutes
+                        );
+                        if (!time) continue;
+                        slots.push({
+                            date: toLocalDateKey(cursor),
+                            time
+                        });
+                    }
+                    return slots;
+                }
+
+                async function loadTutorAvailability(tutorId) {
+                    try {
+                        const { start, end } = getDateRangeForMaxWeeks(9);
+                        const response = await fetch(`/api/tutors/${tutorId}/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+                        if (!response.ok) throw new Error('Failed to load');
+                        const result = await response.json();
+                        console.log('API response', result);
+
+                        if (!result.success || !Array.isArray(result.data)) {
+                            console.warn('No availability data');
+                            return { visibleSlots: [], bookedSlots: [] };
+                        }
+
+                        const visibleGrouped = new Map();
+                        const bookedGrouped = new Map();
+                        result.data.forEach(item => {
+                            const status = String(item.status || 'OPEN').toUpperCase();
+                            const slots = expandAvailabilityToSlots(item, 30);
+
+                            slots.forEach(slot => {
+                                if (status === 'OPEN' || status === 'BOOKED') {
+                                    addGroupedSlot(visibleGrouped, slot.date, slot.time);
+                                }
+                                if (status === 'BOOKED') {
+                                    addGroupedSlot(bookedGrouped, slot.date, slot.time);
+                                }
+                            });
+                        });
+
+                        return {
+                            visibleSlots: toSlotArray(visibleGrouped),
+                            bookedSlots: toSlotArray(bookedGrouped)
+                        };
+                    } catch (e) {
+                        console.warn('Failed to load tutor availability', e);
+                        return { visibleSlots: [], bookedSlots: [] };
+                    }
+                }
+
+                let currentUserId = null;
+
+                function setRatingValue(value) {
+                    const reviewRating = document.getElementById('reviewRating');
+                    if (!reviewRating) return;
+                    reviewRating.value = value || '';
+                    document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
+                    if (value) {
+                        const btn = document.querySelector(`.rating-btn[data-rating="${value}"]`);
+                        if (btn) btn.classList.add('active');
+                    }
+                }
+
+                async function openReviewModal(preselectBookingId = '') {
+                    const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+                    document.getElementById('reviewModalTitle').textContent = '리뷰 작성';
+                    document.getElementById('reviewId').value = '';
+                    document.getElementById('bookingId').value = preselectBookingId || '';
+                    setRatingValue('');
+                    document.getElementById('reviewComment').value = '';
+                    const bookingSelect = document.getElementById('bookingSelect');
+                    if (bookingSelect) {
+                        bookingSelect.disabled = false;
+                    }
+
+                    // 현재 튜터와의 과거 예약 목록 로드
+                    const tutorId = document.getElementById('bookingForm')?.dataset?.tutorId;
+                    if (tutorId) {
+                        try {
+                            const token = localStorage.getItem('accessToken');
+                            if (!token) {
+                                alert('로그인이 필요합니다.');
+                                location.href = '/login';
+                                return;
+                            }
+
+                            const response = await fetch('/api/users/me', {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            const userResult = await response.json();
+                            if (userResult.success && userResult.data) {
+                                const userId = userResult.data.id;
+                                const bookingResponse = await fetch(`/api/bookings/student/${userId}?tutorId=${tutorId}`, {
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                const bookingResult = await bookingResponse.json();
+                                if (bookingResult.success && bookingResult.data) {
+                                    const bookingSelect = document.getElementById('bookingSelect');
+                                    const eligibleBookings = bookingResult.data.filter(booking => booking.status === 'COMPLETED' && !booking.reviewId);
+                                    bookingSelect.innerHTML = '<option value="">수업 선택 (필수)</option>';
+                                    if (eligibleBookings.length === 0) {
+                                        bookingSelect.innerHTML = '<option value="">완료된 수업이 없습니다.</option>';
+                                        bookingSelect.disabled = true;
+                                    } else {
+                                        bookingSelect.disabled = false;
+                                        eligibleBookings.forEach(booking => {
+                                            const option = document.createElement('option');
+                                            option.value = booking.bookingId || booking.id;
+                                            option.textContent = `${booking.lessonDate} ${booking.startTime} - ${booking.subject}`;
+                                            bookingSelect.appendChild(option);
+                                        });
+                                        if (preselectBookingId) {
+                                            bookingSelect.value = preselectBookingId;
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('Failed to load bookings', e);
+                        }
+                    }
+
+                    reviewModal.show();
+                }
+
+                function openReviewEditModal(reviewItem) {
+                    const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+                    const reviewId = reviewItem.dataset.reviewId;
+                    const bookingId = reviewItem.dataset.bookingId;
+                    const rating = reviewItem.dataset.rating;
+                    const content = reviewItem.dataset.content || reviewItem.querySelector('p')?.textContent || '';
+
+                    document.getElementById('reviewModalTitle').textContent = '리뷰 수정';
+                    document.getElementById('reviewId').value = reviewId || '';
+                    document.getElementById('bookingId').value = bookingId || '';
+                    document.getElementById('reviewComment').value = content;
+                    setRatingValue(rating);
+
+                    const bookingSelect = document.getElementById('bookingSelect');
+                    if (bookingSelect) {
+                        bookingSelect.innerHTML = bookingId
+                            ? `<option value="${bookingId}">선택된 수업</option>`
+                            : '<option value="">선택된 수업</option>';
+                        bookingSelect.value = bookingId || '';
+                        bookingSelect.disabled = true;
+                    }
+
+                    reviewModal.show();
+                }
+
+                document.addEventListener('DOMContentLoaded', async () => {
+                    const params = new URLSearchParams(window.location.search);
+                    const calendarContainer = document.getElementById('tutorScheduleCalendar');
+                    const bookingForm = document.getElementById('bookingForm');
+                    const tutorId = bookingForm?.dataset?.tutorId || calendarContainer?.dataset?.tutorId;
+                    const reviewWriteBtn = document.getElementById('btnOpenReviewModal');
+                    const token = localStorage.getItem('accessToken');
+
+                    let isTutorViewer = false;
+                    let canWriteReview = false;
+                    let tutorCalendar = null;
+
+                    if (reviewWriteBtn) reviewWriteBtn.style.display = 'none';
+
+                    try {
+                        const response = await fetch('/api/users/me', {
+                            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                        });
+                        const userResult = await response.json();
+                        if (userResult.success && userResult.data) {
+                            currentUserId = userResult.data.id;
+
+                            const authList = Array.isArray(userResult.data.authList) ? userResult.data.authList : [];
+                            isTutorViewer = authList.some(a =>
+                                a?.auth === 'ROLE_TUTOR' ||
+                                a?.auth === 'ROLE_TUTOR_PENDING' ||
+                                a === 'ROLE_TUTOR' ||
+                                a === 'ROLE_TUTOR_PENDING'
+                            );
+                            canWriteReview = !isTutorViewer;
+
+                            if (reviewWriteBtn && canWriteReview) {
+                                reviewWriteBtn.style.display = 'inline-block';
+                            }
+                            if (isTutorViewer && bookingForm) {
+                                bookingForm.style.display = 'none';
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Failed to load user', e);
+                    }
+
+                    if (params.get('review') === '1' && canWriteReview) {
+                        const bookingIdParam = params.get('bookingId') || '';
+                        await openReviewModal(bookingIdParam);
+                        history.replaceState({}, '', window.location.pathname);
+                    }
+
+                    // 예약 폼 제출 처리
+                    if (bookingForm && !isTutorViewer) {
+                        bookingForm.addEventListener('submit', async (e) => {
+                            e.preventDefault();
+
+                            const tutorId = bookingForm.dataset.tutorId;
+                            const subject = bookingForm.querySelector('select[name="subject"]').value;
+                            const message = bookingForm.querySelector('textarea[name="message"]').value;
+                            const selectedData = tutorCalendar?.getSelectedData() || [];
+
+                            if (selectedData.length === 0) {
+                                alert('시간을 선택해주세요.');
+                                return;
+                            }
+                            if (!subject) {
+                                alert('과목을 선택해주세요.');
+                                return;
+                            }
+
+                            const token = localStorage.getItem('accessToken');
+                            if (!token) {
+                                alert('로그인이 필요합니다.');
+                                location.href = '/login';
+                                return;
+                            }
+
+                            const submitBtn = document.getElementById('bookingSubmit');
+                            if (submitBtn) {
+                                submitBtn.disabled = true;
+                                submitBtn.textContent = '예약 처리 중...';
+                            }
+
+                            let successCount = 0;
+                            let failCount = 0;
+                            const mergedBlocks = buildMergedSelection(selectedData, 30);
+                            if (mergedBlocks.length === 0) {
+                                alert('예약 가능한 시간 블록이 없습니다.');
+                                return;
+                            }
+
+                            try {
+                                for (const block of mergedBlocks) {
+                                    const response = await fetch(`/api/bookings/tutor/${tutorId}`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': `Bearer ${token}`
+                                        },
+                                        body: JSON.stringify({
+                                            date: block.date,
+                                            time: block.startTime,
+                                            endTime: block.endTime,
+                                            subject: subject,
+                                            message: message
+                                        })
+                                    });
+                                    const result = await response.json();
+                                    if (result.success) successCount += 1;
+                                    else failCount += 1;
+                                }
+
+                                if (successCount > 0 && failCount === 0) {
+                                    alert('예약 요청이 완료되었습니다. 튜터의 승인을 기다려주세요.');
+                                    location.reload();
+                                } else if (successCount > 0) {
+                                    alert(`일부 예약만 완료되었습니다. 성공: ${successCount}, 실패: ${failCount}`);
+                                    location.reload();
+                                } else {
+                                    alert('예약에 실패했습니다. 다시 시도해주세요.');
+                                }
+                            } catch (error) {
+                                console.error('예약 실패:', error);
+                                alert('예약 처리 중 오류가 발생했습니다.');
+                            } finally {
+                                if (submitBtn) {
+                                    submitBtn.disabled = false;
+                                    submitBtn.textContent = '예약하기';
+                                }
+                            }
+                        });
+                    }
+
+                    document.querySelectorAll('.rating-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            setRatingValue(btn.dataset.rating);
+                        });
+                    });
+
+                    const saveReviewBtn = document.getElementById('btnSaveReview');
+                    if (saveReviewBtn) {
+                        saveReviewBtn.addEventListener('click', async () => {
+                            const reviewId = document.getElementById('reviewId')?.value || '';
+                            const bookingId = document.getElementById('bookingId')?.value || document.getElementById('bookingSelect')?.value || '';
+                            const rating = document.getElementById('reviewRating')?.value || '';
+                            const content = document.getElementById('reviewComment')?.value.trim() || '';
+
+                            if (!bookingId) {
+                                alert('수업을 선택해주세요.');
+                                return;
+                            }
+                            if (!rating) {
+                                alert('평점을 선택해주세요.');
+                                return;
+                            }
+                            if (!content) {
+                                alert('후기 내용을 입력해주세요.');
+                                return;
+                            }
+
+                            const url = reviewId ? `/api/reviews/${reviewId}` : `/api/reviews`;
+                            const method = reviewId ? 'PUT' : 'POST';
+
+                            const token = localStorage.getItem('accessToken');
+
+                            if (!token) {
+                                alert('로그인이 필요합니다.');
+                                location.href = '/login';
+                                return;
+                            }
+
+                            const body = reviewId
+                                ? { rating: parseInt(rating), content: content }
+                                : { bookingId: bookingId, rating: parseInt(rating), content: content };
+
+                            const response = await fetch(url, {
+                                method: method,
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify(body)
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert('리뷰가 저장되었습니다.');
+                                const modalEl = document.getElementById('reviewModal');
+                                const modalInstance = modalEl ? bootstrap.Modal.getInstance(modalEl) : null;
+                                if (modalInstance) modalInstance.hide();
+                                location.reload();
+                            } else {
+                                alert('리뷰 저장에 실패했습니다: ' + (result.message || '알 수 없는 오류'));
+                            }
+                        });
+                    }
+
+                    document.querySelectorAll('.review-item').forEach(item => {
+                        const actions = item.querySelector('.review-actions');
+                        if (!actions) return;
+                        const isOwner = !!currentUserId && item.dataset.studentId === currentUserId;
+                        actions.classList.toggle('d-none', !isOwner);
+                        actions.classList.toggle('d-flex', isOwner);
+                    });
+
+                    document.addEventListener('click', async (e) => {
+                        const editBtn = e.target.closest('.btn-edit-review');
+                        if (editBtn) {
+                            const reviewItem = editBtn.closest('.review-item');
+                            if (reviewItem) openReviewEditModal(reviewItem);
+                            return;
+                        }
+                        const deleteBtn = e.target.closest('.btn-delete-review');
+                        if (deleteBtn) {
+                            const reviewItem = deleteBtn.closest('.review-item');
+                            const reviewId = reviewItem?.dataset?.reviewId;
+                            if (!reviewId) return;
+                            if (!confirm('리뷰를 삭제할까요?')) return;
+
+                            try {
+                                const res = await fetch(`/api/reviews/${reviewId}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`
+                                    }
+                                });
+                                const result = await res.json();
+                                if (result.success) {
+                                    alert('리뷰가 삭제되었습니다.');
+                                    location.reload();
+                                } else {
+                                    alert(result.message || '리뷰 삭제에 실패했습니다.');
+                                }
+                            } catch (err) {
+                                console.error('리뷰 삭제 실패', err);
+                                alert('리뷰 삭제 중 오류가 발생했습니다.');
+                            }
+                        }
+                    });
+
+                    if (tutorId && calendarContainer) {
+                        const availabilityData = await loadTutorAvailability(tutorId);
+
+                        tutorCalendar = new TutorCalendar({
+                            containerId: 'tutorScheduleCalendar',
+                            mode: isTutorViewer ? 'readonly' : 'edit',
+                            singleSlotPerDay: false,
+                            baseTimeRanges: FULL_DAY_RANGES,
+                            renderOnlyInRange: true,
+                            timeStepMinutes: 30,
+                            availableSlots: availabilityData.visibleSlots,
+                            initialData: availabilityData.bookedSlots.map(item => ({
+                                date: item.date,
+                                slots: item.slots,
+                                booked: true
+                            })),
+                            availableSlotsOnly: true,
+                            onSlotClick: (dateKey, time, selectedData) => {
+                                const mergedBlocks = buildMergedSelection(selectedData, 30);
+                                const first = mergedBlocks[0];
+                                const selectedDateInput = document.getElementById('selectedDate');
+                                const selectedTimeInput = document.getElementById('selectedTime');
+                                const selectedTextArea = document.getElementById('displaySelectedTime');
+                                const bookingSubmitBtn = document.getElementById('bookingSubmit');
+
+                                if (selectedDateInput) selectedDateInput.value = first ? first.date : '';
+                                if (selectedTimeInput) selectedTimeInput.value = first ? first.startTime : '';
+                                if (selectedTextArea) {
+                                    selectedTextArea.value = mergedBlocks.length
+                                        ? mergedBlocks.map(block => (
+                                            `${block.date} ${block.startTime}~${block.endTime} (${formatDurationLabel(block.durationMinutes)})`
+                                        )).join('\n')
+                                        : '';
+                                }
+                                if (bookingSubmitBtn) bookingSubmitBtn.disabled = mergedBlocks.length === 0;
+                            }
+                        });
+                    }
+                });
+            </script>
+        </th:block>
+
+        <!-- Review Write/Edit Modal -->
+        <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold" id="reviewModalTitle">리뷰 작성</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="reviewId">
+                        <input type="hidden" id="bookingId">
+                        <div class="mb-3">
+                            <label for="bookingSelect" class="form-label fw-semibold">수업 선택 <span
+                                    class="text-danger">*</span></label>
+                            <select class="form-select" id="bookingSelect" required>
+                                <option value="">수업을 선택해주세요</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">평점 <span class="text-danger">*</span></label>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="1">★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="2">★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="3">★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="4">★★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="5">★★★★★</button>
+                            </div>
+                            <input type="hidden" id="reviewRating" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reviewComment" class="form-label fw-semibold">후기 내용 <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" id="reviewComment" rows="5"
+                                placeholder="수업에 대한 솔직한 후기를 작성해주세요." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="btnSaveReview">저장</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

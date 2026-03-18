@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main_layout}">
+
+<head>
+    <th:block layout:fragment="title">
+        <title>스케줄 관리 | 튜터 플랫폼</title>
+    </th:block>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" href="/css/tutor-calendar.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </th:block>
+</head>
+
+<body>
+    <main layout:fragment="content">
+        <div class="container my-5">
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <!-- 헤더 -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="fw-bold">스케줄 관리</h2>
+                            <p class="text-muted">수업 가능 시간을 설정하세요</p>
+                        </div>
+                        <a href="/tutor/mypage" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> 마이페이지로
+                        </a>
+                    </div>
+
+                    <!-- 안내 -->
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>스케줄 설정 방법</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>캘린더에서 수업 가능한 시간대를 클릭하여 선택하세요</li>
+                            <li>"이번 주 설정을 9주까지 적용" 버튼으로 반복 패턴을 설정할 수 있습니다</li>
+                            <li>선택한 시간은 <span class="badge bg-primary">파란색</span>으로 표시됩니다</li>
+                            <li>저장 후 학생들에게 노출됩니다</li>
+                        </ul>
+                    </div>
+
+                    <!-- 기본 시간대 설정 -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h4 class="h6 fw-bold mb-3">기본 수업 가능 시간대</h4>
+                            <p class="text-muted mb-3">요일별로 여러 구간을 추가할 수 있습니다. 예: 08:00~09:30, 20:00~23:30</p>
+
+                            <div id="baseTimeRangeEditor"></div>
+
+                            <div class="text-muted small mt-2">
+                                설정된 시간대만 캘린더에 표시됩니다.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 캘린더 -->
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <!-- 주간 네비게이션 -->
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+                                <div class="tc-toolbar">
+                                    <button type="button" class="tc-iconbtn" id="btnPrevWeek" aria-label="이전 주">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                    <div class="tc-range" id="weekRangeLabel">2026.02.02 ~ 02.08</div>
+                                    <button type="button" class="tc-iconbtn" id="btnNextWeek" aria-label="다음 주">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 캘린더 컨테이너 -->
+                            <div class="weekly_calendar_wrap" id="tutorScheduleEditor">
+                                <div class="weekly_head">
+                                    <ul class="dayHead flex" id="calendarDayHead">
+                                        <li class="flex"><div class="head_in"><p class="dayTit">일</p><p class="dayDate en">02.02</p></div></li>
+                                        <li class="flex"><div class="head_in"><p class="dayTit">월</p><p class="dayDate en">02.03</p></div></li>
+                                        <li class="flex"><div class="head_in"><p class="dayTit">화</p><p class="dayDate en">02.04</p></div></li>
+                                        <li class="flex"><div class="head_in"><p class="dayTit">수</p><p class="dayDate en">02.05</p></div></li>
+                                        <li class="flex"><div class="head_in"><p class="dayTit">목</p><p class="dayDate en">02.06</p></div></li>
+                                        <li class="flex"><div class="head_in"><p class="dayTit">금</p><p class="dayDate en">02.07</p></div></li>
+                                        <li class="flex"><div class="head_in"><p class="dayTit">토</p><p class="dayDate en">02.08</p></div></li>
+                                    </ul>
+                                </div>
+                                <div class="weekly_con">
+                                    <ul class="dayCon flex" id="calendarDayBody">
+                                        <li class="flex"><div class="con_in"></div></li>
+                                        <li class="flex"><div class="con_in"></div></li>
+                                        <li class="flex"><div class="con_in"></div></li>
+                                        <li class="flex"><div class="con_in"></div></li>
+                                        <li class="flex"><div class="con_in"></div></li>
+                                        <li class="flex"><div class="con_in"></div></li>
+                                        <li class="flex"><div class="con_in"></div></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- 패턴 적용 버튼 -->
+                            <div class="mt-4">
+                                <button type="button" class="btn btn-outline-primary" id="btnApplyPattern">
+                                    <i class="bi bi-arrow-repeat"></i> 이번 주 설정을 9주까지 적용
+                                </button>
+                                <small class="text-muted ms-2">현재 주의 패턴을 앞으로 9주간 반복합니다</small>
+                            </div>
+
+                            <!-- 저장/취소 버튼 -->
+                            <div class="d-flex gap-3 mt-5 pt-4 border-top">
+                                <button type="button" class="btn btn-primary btn-lg px-5" id="btnSaveSchedule">
+                                    <i class="bi bi-check-lg"></i> 저장
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-5" onclick="history.back()">
+                                    <i class="bi bi-x-lg"></i> 취소
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 범례 -->
+                    <div class="mt-3 text-center">
+                        <small class="text-muted">
+                            <span class="badge bg-secondary">●</span> 선택 불가 
+                            <span class="badge bg-primary ms-2">●</span> 선택됨 
+                            <span class="badge bg-danger ms-2">●</span> 예약됨
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="extra-scripts">
+        <script src="/js/tutor-calendar.js"></script>
+        <script>
+            const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+            const dayEnumToIndex = { SUN: 0, MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6 };
+            const indexToDayEnum = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+            const DEFAULT_BASE_TIME_RANGES = {
+                0: [],
+                1: [{ start: '09:00', end: '18:00' }],
+                2: [{ start: '09:00', end: '18:00' }],
+                3: [{ start: '09:00', end: '18:00' }],
+                4: [{ start: '09:00', end: '18:00' }],
+                5: [{ start: '09:00', end: '18:00' }],
+                6: []
+            };
+
+            let baseTimeRanges = JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+            let calendar = null;
+
+            const AUTH_HEADERS = (() => {
+                const token = localStorage.getItem('accessToken');
+                return token ? { 'Authorization': `Bearer ${token}` } : null;
+            })();
+
+            async function loadBaseTimeRanges() {
+                try {
+                    const response = await fetch('/api/tutors/me/time-ranges', { headers: AUTH_HEADERS || {} });
+                    if (!response.ok) throw new Error('Failed to load');
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        const ranges = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+                        result.data.forEach(item => {
+                            const dayIdx = dayEnumToIndex[item.dayOfWeek];
+                            if (dayIdx !== undefined) {
+                                ranges[dayIdx].push({ start: item.startTime, end: item.endTime });
+                            }
+                        });
+                        return ranges;
+                    }
+                } catch (e) {
+                    console.warn('Failed to load time ranges from API', e);
+                }
+                
+                return JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+            }
+
+            async function persistBaseTimeRanges() {
+                try {
+                    // Convert calendar format to API format
+                    const timeRanges = [];
+                    
+                    Object.keys(baseTimeRanges).forEach(dayIdx => {
+                        const ranges = baseTimeRanges[dayIdx] || [];
+                        ranges.forEach(range => {
+                            timeRanges.push({
+                                dayOfWeek: indexToDayEnum[dayIdx],
+                                startTime: range.start,
+                                endTime: range.end
+                            });
+                        });
+                    });
+                    
+                    const response = await fetch('/api/tutors/me/time-ranges', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', ...(AUTH_HEADERS || {}) },
+                        body: JSON.stringify(timeRanges)
+                    });
+                    
+                    if (!response.ok) throw new Error('Failed to save');
+                    return true;
+                } catch (e) {
+                    console.error('Failed to save time ranges to API', e);
+                    alert('기본 시간대 저장에 실패했습니다.');
+                    return false;
+                }
+            }
+
+            function addRange(dayIndex) {
+                if (!baseTimeRanges[dayIndex]) baseTimeRanges[dayIndex] = [];
+                baseTimeRanges[dayIndex].push({ start: '08:00', end: '09:30' });
+                persistBaseTimeRanges().then(() => {
+                    renderBaseTimeEditor();
+                    calendar.render();
+                });
+            }
+
+            function removeRange(dayIndex, rangeIndex) {
+                baseTimeRanges[dayIndex].splice(rangeIndex, 1);
+                persistBaseTimeRanges().then(() => {
+                    renderBaseTimeEditor();
+                    calendar.render();
+                });
+            }
+
+            function updateRange(dayIndex, rangeIndex, key, value) {
+                const range = baseTimeRanges[dayIndex][rangeIndex];
+                range[key] = value;
+                persistBaseTimeRanges().then(() => {
+                    calendar.render();
+                });
+            }
+
+            function renderBaseTimeEditor() {
+                const container = document.getElementById('baseTimeRangeEditor');
+                container.innerHTML = '';
+
+                dayLabels.forEach((label, dayIndex) => {
+                    const dayRow = document.createElement('div');
+                    dayRow.className = 'border rounded p-3 mb-2';
+
+                    const header = document.createElement('div');
+                    header.className = 'd-flex justify-content-between align-items-center mb-2';
+                    header.innerHTML = `
+                        <div class="fw-semibold">${label}요일</div>
+                        <button type="button" class="btn btn-sm btn-outline-primary">시간대 추가</button>
+                    `;
+
+                    header.querySelector('button').addEventListener('click', () => addRange(dayIndex));
+                    dayRow.appendChild(header);
+
+                    const ranges = baseTimeRanges[dayIndex] || [];
+                    if (ranges.length === 0) {
+                        const empty = document.createElement('div');
+                        empty.className = 'text-muted small';
+                        empty.textContent = '설정된 시간대 없음';
+                        dayRow.appendChild(empty);
+                    } else {
+                        ranges.forEach((range, rangeIndex) => {
+                            const row = document.createElement('div');
+                            row.className = 'd-flex align-items-center gap-2 mb-2';
+                            row.innerHTML = `
+                                <input type="time" class="form-control form-control-sm" value="${range.start}">
+                                <span>~</span>
+                                <input type="time" class="form-control form-control-sm" value="${range.end}">
+                                <button type="button" class="btn btn-sm btn-outline-danger" aria-label="시간대 삭제" title="시간대 삭제">
+                                    <i class="bi bi-x-lg"></i>
+                                    <span class="visually-hidden">삭제</span>
+                                </button>
+                            `;
+
+                            const [startInput, endInput] = row.querySelectorAll('input');
+                            const removeBtn = row.querySelector('button');
+
+                            startInput.addEventListener('change', (e) => updateRange(dayIndex, rangeIndex, 'start', e.target.value));
+                            endInput.addEventListener('change', (e) => updateRange(dayIndex, rangeIndex, 'end', e.target.value));
+                            removeBtn.addEventListener('click', () => removeRange(dayIndex, rangeIndex));
+
+                            dayRow.appendChild(row);
+                        });
+                    }
+
+                    container.appendChild(dayRow);
+                });
+            }
+
+            // TODO: 서버에서 이미 선택된 스케줄 받아오기
+            function formatLocalDateTime(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                const hh = String(date.getHours()).padStart(2, '0');
+                const mm = String(date.getMinutes()).padStart(2, '0');
+                const ss = String(date.getSeconds()).padStart(2, '0');
+                return `${y}-${m}-${d}T${hh}:${mm}:${ss}`;
+            }
+
+            function getDateRangeForMaxWeeks(maxWeeks = 9) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const day = today.getDay();
+                const sunday = new Date(today);
+                sunday.setDate(today.getDate() - day);
+
+                const start = new Date(sunday);
+                start.setHours(0, 0, 0, 0);
+
+                const maxWeekStart = new Date(sunday);
+                maxWeekStart.setDate(maxWeekStart.getDate() + (maxWeeks * 7));
+                const end = new Date(maxWeekStart);
+                end.setDate(end.getDate() + 6);
+                end.setHours(23, 59, 59, 0);
+
+                return {
+                    start: formatLocalDateTime(start),
+                    end: formatLocalDateTime(end)
+                };
+            }
+
+            function normalizeTimeToStep(rawTime, stepMinutes = 30) {
+                const matched = String(rawTime || '').match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+                if (!matched) return '';
+                const hour = Number(matched[1]);
+                const minute = Number(matched[2]);
+                const second = Number(matched[3] || '0');
+                if (!Number.isFinite(hour) || !Number.isFinite(minute) || !Number.isFinite(second)) return '';
+                if (minute % stepMinutes !== 0 || second !== 0) return '';
+                return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+            }
+
+            function toLocalDateKey(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
+            function expandAvailabilityToSlots(item, stepMinutes = 30) {
+                if (!item?.startAt) return [];
+                const start = new Date(item.startAt);
+                if (Number.isNaN(start.getTime())) return [];
+
+                const endParsed = item.endAt ? new Date(item.endAt) : null;
+                const end = endParsed && !Number.isNaN(endParsed.getTime()) && endParsed > start
+                    ? endParsed
+                    : new Date(start.getTime() + (stepMinutes * 60000));
+
+                const slots = [];
+                for (let cursor = new Date(start); cursor < end; cursor = new Date(cursor.getTime() + (stepMinutes * 60000))) {
+                    const time = normalizeTimeToStep(
+                        `${String(cursor.getHours()).padStart(2, '0')}:${String(cursor.getMinutes()).padStart(2, '0')}:00`,
+                        stepMinutes
+                    );
+                    if (!time) continue;
+                    slots.push({
+                        date: toLocalDateKey(cursor),
+                        time
+                    });
+                }
+                return slots;
+            }
+
+            async function loadAvailability() {
+                try {
+                    const { start, end } = getDateRangeForMaxWeeks(9);
+                    
+                    const response = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, { headers: AUTH_HEADERS || {} });
+                    if (!response.ok) throw new Error('Failed to load');
+                    
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const selectedMap = new Map();
+                        const bookedMap = new Map();
+
+                        result.data.forEach(item => {
+                            const slots = expandAvailabilityToSlots(item, 30);
+                            const status = String(item.status || '').toUpperCase();
+
+                            slots.forEach(slot => {
+                                if (status === 'BOOKED') {
+                                    if (!bookedMap.has(slot.date)) bookedMap.set(slot.date, new Set());
+                                    bookedMap.get(slot.date).add(slot.time);
+                                    return;
+                                }
+
+                                if (status && status !== 'OPEN') return;
+
+                                if (!selectedMap.has(slot.date)) selectedMap.set(slot.date, new Set());
+                                selectedMap.get(slot.date).add(slot.time);
+                            });
+                        });
+
+                        const resultData = [];
+                        selectedMap.forEach((times, date) => {
+                            resultData.push({ date, slots: Array.from(times) });
+                        });
+                        bookedMap.forEach((times, date) => {
+                            resultData.push({ date, slots: Array.from(times), booked: true });
+                        });
+
+                        return resultData;
+                    }
+                } catch (e) {
+                    console.warn('Failed to load availability from API', e);
+                }
+                return [];
+            }
+
+            async function initCalendar() {
+                baseTimeRanges = await loadBaseTimeRanges();
+                const initialData = await loadAvailability();
+                
+                calendar = new TutorCalendar({
+                    containerId: 'tutorScheduleEditor',
+                    mode: 'edit',
+                    baseTimeRanges: baseTimeRanges,
+                    renderOnlyInRange: true,
+                    timeStepMinutes: 30,
+                    initialData: initialData
+                });
+
+                renderBaseTimeEditor();
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                if (!AUTH_HEADERS) {
+                    alert('???? ?????.');
+                    location.href = '/login';
+                    return;
+                }
+
+            // Initialize on page load
+            initCalendar();
+
+            // "9주까지 적용" 버튼
+            document.getElementById('btnApplyPattern').addEventListener('click', () => {
+                if (confirm('현재 주의 패턴을 앞으로 9주간 반복 적용하시겠습니까?')) {
+                    calendar.applyWeekPattern(9);
+                    alert('9주간의 스케줄이 적용되었습니다.');
+                }
+            });
+
+            // 저장 버튼
+            document.getElementById('btnSaveSchedule').addEventListener('click', async () => {
+                const selectedData = calendar.getSelectedData();
+                
+                try {
+                    // Calculate date range
+                    const { start, end } = getDateRangeForMaxWeeks(9);
+                    
+                    const availabilities = selectedData.map(item => {
+                        const startDate = new Date(`${item.date}T${item.time}:00`);
+                        const endDate = new Date(startDate.getTime() + (calendar.options.timeStepMinutes * 60000));
+                        return {
+                            startAt: formatLocalDateTime(startDate),
+                            endAt: formatLocalDateTime(endDate),
+                            status: 'OPEN'
+                        };
+                    });
+                    
+                    const response = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', ...(AUTH_HEADERS || {}) },
+                        body: JSON.stringify(availabilities)
+                    });
+                    
+                    const result = await response.json();
+                    if (!result.success) throw new Error(result.message || '저장 실패');
+                    
+                    alert('스케줄이 저장되었습니다.');
+                    window.location.href = '/tutor/mypage';
+                } catch (error) {
+                    console.error('저장 중 오류:', error);
+                    alert('저장에 실패했습니다. 다시 시도해주세요.');
+                }
+            });
+            });
+        </script>
+    </th:block>
+</body>
+</html>

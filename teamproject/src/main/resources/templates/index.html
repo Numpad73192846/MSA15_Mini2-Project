@@ -1,0 +1,376 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+<th:block layout:fragment="extra-css">
+    <!-- Custom Styles -->
+    <style>
+        .main-background {
+            background-color: #0B0B1A;
+        }
+        .main-visual {
+            position: relative;
+            padding: 2rem 0 4rem 0;
+            height: 75vh;
+            min-height: 40rem;
+            overflow: hidden;
+        }
+        .main-visual p { margin: 0;}
+        .shape-wrap .shape{
+            position: absolute;
+            width: 18rem;
+            height: 18rem;
+            border-radius: 50%;           
+            filter: blur(2.5rem);
+            opacity: .6;
+            animation: scaleAni 6s ease-in-out infinite;
+        }
+        .shape-wrap .shape1{
+            width: 34rem;
+            height: 34rem;
+            top: -3rem;
+            left: -2rem;
+            background: linear-gradient(45deg,#00e34f,#4f46e5,#0d6efd,#00e34f);            
+            animation: scaleAni 7s ease-in-out infinite;
+        }
+        .shape-wrap .shape2{
+            right: 2rem;
+            bottom: 2rem;
+            background: linear-gradient(45deg,#00e34f,#4f46e5,#fd0dd5);            
+            animation: scaleAni 4s ease-in-out infinite;
+        }
+        .visual-tit {
+            font-size: 4.5rem;
+            font-weight: 800;
+            line-height: 1.4; 
+            margin: 0;           
+        }
+        .visual-txt {
+            font-size: 1.5rem;  
+            opacity: .7;         
+        }
+        .visual-logo {
+            filter: brightness(0) invert(1);
+            opacity: .4;
+        }
+        .visual-logo img { height: 2.25rem;}
+        .txt-gradient {
+            background: linear-gradient(90deg,#00e34f,#7a60ff,#00e34f,#7a60ff);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            animation: gradientAni 3s ease-in-out infinite;
+        }
+        .txt-point {
+            color: #fff386;
+            font-weight: 800;
+        }
+        .main-content .btn {
+            display: inline-flex;
+            justify-content: center;
+            gap: 0 1.25rem;
+            min-width: 15rem;
+            border: none;
+            border-radius: 1.25rem 1.25rem 1.25rem .5rem;            
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .main-content .btn-point {
+            background: var(--primary-hover) !important;
+            border: none;
+            color: white;
+        }
+        .main-content .btn-light {
+            background: #fff !important;
+        }
+        .main-content .btn:hover {            
+            transform: translateY(-.25rem);
+            border-radius: 1.25rem .5rem 1.25rem 1.25rem;
+            box-shadow: 0 8px 20px rgba(67, 56, 202, .3);
+        }
+        .main-content .btn .arrow {
+            transition: all 0.3s;
+        }
+        .main-content .btn:hover .arrow {
+            transform: translateX(.25rem);
+        }
+
+        .main-section {
+            padding: 4.5rem 0 6rem 0;
+        }
+        .main-stats .inner { 
+            padding-top: 2rem;
+        }
+        .main-stats .wrap-img {
+            position: relative;         
+        }
+        .main-stats .wrap-img:before {
+            content: "";
+            position: absolute;            
+            left: 0; 
+            right: 0; 
+            bottom: 0;
+            height: 9rem;
+            border-radius: 4rem 6rem 6rem 2rem;            
+        }
+        .main-stats .wrap-img.bg-c1:before { background: #a390f8; }
+        .main-stats .wrap-img.bg-c2:before { background: #fac980; }
+        .main-stats .wrap-img.bg-c3:before { background: #71e9d9; }
+        .main-stats .wrap-img img {
+            position: relative;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 11rem;
+        }
+
+        .main-stats .wrap-txt {
+            padding-top: 2rem;
+            text-align: center;           
+        }
+        .main-stats .wrap-txt .t1 { font-size: 2.75rem; font-weight: 800; color: #222;}
+        .main-stats .wrap-txt .t2 { font-size: 1.125rem;}
+
+        .main-languages .inner {
+            padding: 2rem 0 6rem 0;
+        }
+        .main-languages .inner > div:not(:last-child) {
+            border-right: 1px solid #e9ecef;
+        }
+
+        .main-languages .inner .wrap-in {   
+            display: block;         
+            transition: all 0.3s;
+        }
+        .main-languages .inner .wrap-in:hover {
+            transform: translateY(-.375rem);
+        }
+
+        .main-languages .inner .wrap-img img {
+            width: 4.5rem;
+            height: 4.5rem;
+            border: 4px solid #fff;
+            border-radius: 50%;
+        }
+        .main-languages .inner .wrap-txt {
+            color: #1f2937;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: .5rem 1.5rem;
+            background: #fff;
+            border-radius: 6rem;    
+            box-shadow: 0 2px 6px rgba(0,0,0,.06);        
+            font-weight: 600;
+            color: #495057;
+            transition: all 0.3s;
+        }
+        .category-badge:hover {
+            background: #0d6efd;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .main-cta {
+            position: relative;
+            padding: 3.5rem 0 4rem 0;
+            overflow: hidden;
+            background: linear-gradient(-45deg, #1a1a2e, #16213e, #211433, #0B0B1A);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        .main-cta::before,
+        .main-cta::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            width: 200%;
+            height: 300%;
+        }
+        .main-cta::before {            
+            left: -50%;            
+            background: radial-gradient(circle, rgba(76, 71, 177, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;           
+        }
+        .main-cta::after {
+            right: -50%;
+            background: radial-gradient(circle, rgba(74, 82, 199, 0.1) 0%, transparent 70%);
+            animation: rotate 25s linear infinite reverse;
+        }
+        .main-cta .container {
+            position: relative;
+            z-index: 1;
+        }
+        .main-cta .shape {
+            opacity: .4;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes gradientAni {
+            0%,to { background-position: 0% 50% }
+            50% { background-position: 100% 50% }
+        }
+        @keyframes scaleAni {
+            0% { transform: scale(1);}
+            50% { transform: scale(1.4);}
+        }
+        @media (max-width: 1024px) {
+            .visual-tit {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</th:block> 
+<div layout:fragment="content"> 
+    <div class="main-content">
+        <!-- visual Section -->
+        <section class="main-visual main-background shape-wrap d-flex justify-content-center align-items-center">
+            <div class="shape shape1"></div>
+            <div class="shape shape2"></div>
+            <div class="container position-relative">            
+                <div class="text-white text-center d-flex flex-column align-items-center gap-4">
+                    <p class="visual-logo"><img src="/img/logo.png" alt="투코스 로고"></p>
+                    <h1 class="visual-tit">                    
+                        <p class="fw-light">언어 학습이 필요한 순간,</p>
+                        나에게 <span class="txt-gradient">딱 맞는 튜터</span>를 찾아보세요!!
+                    </h1>
+                    <p class="visual-txt">
+                        검증된 전문 튜터와 함께 1:1 맞춤 학습을 시작하세요! 내일이면 나도 언어박사!!
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap justify-content-center mt-5">
+                        <button class="btn btn-point btn-lg px-5 py-3" onclick="location.href='/tutors'">
+                            <i class="bi bi-search me-2"></i>튜터 찾기
+                        </button>
+                        <button class="btn btn-light btn-lg px-5 py-3" onclick="location.href='/guide'">
+                            <i class="bi bi-card-list"></i>이용 안내
+                        </button>
+                    </div>
+                </div>           
+            </div>        
+        </section>
+
+        <!-- Stats Section -->
+        <section class="main-section main-stats bg-white">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold display-6 mb-3">믿을 수 있는 튜터 매칭 플랫폼</h2>
+                    <p class="text-muted">수천 명의 학습자들이 선택한 이유</p>
+                </div>
+                <div class="inner row g-5">
+                    <div class="col-md-4">
+                        <div class="wrap-img bg-c1">
+                            <img src="/img/teacher.png" alt="선생님이미지">
+                        </div>
+                        <div class="wrap-txt">
+                            <h3 class="tt t1 c1 mb-2">100+</h3>
+                            <p class="tt t2 text-muted mb-0">검증된 전문 튜터</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="wrap-img bg-c2">
+                            <img src="/img/star.png" alt="만족도">
+                        </div>
+                        <div class="wrap-txt">
+                            <h3 class="tt t1 c2 mb-2">4.8</h3>
+                            <p class="tt t2 text-muted mb-0">평균 수강 만족도</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="wrap-img bg-c3">
+                            <img src="/img/time.png" alt="예약시간">
+                        </div>
+                        <div class="wrap-txt">
+                            <h3 class="tt t1 c3 mb-2">24h</h3>
+                            <p class="tt t2 text-muted mb-0">언제든지 자유 예약</p>
+                        </div>
+                    </div>
+                </div>                
+            </div>
+        </section>
+
+        <!-- Popular Languages Section -->
+        <section class="main-section main-languages bg-light">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold display-6 mb-3">인기 언어에서 시작하세요</h2>
+                    <p class="text-muted">다양한 언어의 전문 튜터를 만나보세요</p>
+                </div>
+
+                <div class="inner row g-4">
+                    <div class="col-6 col-md-4 col-lg-2"
+                        th:each="item : ${ {
+                            {'name': '영어', 'icon': 'usa.svg', 'color': '#3B82F6'},
+                            {'name': '한국어', 'icon': 'korea.svg', 'color': '#EF4444'},
+                            {'name': '일본어', 'icon': 'japan.svg', 'color': '#EC4899'},
+                            {'name': '중국어', 'icon': 'china.svg', 'color': '#F59E0B'},
+                            {'name': '스페인어', 'icon': 'spain.svg', 'color': '#10B981'},
+                            {'name': '프랑스어', 'icon': 'france.svg', 'color': '#8B5CF6'}
+                        } }">
+                        <a href="/tutors" class="wrap-in text-decoration-none border-0 text-center">
+                            <div class="card-body p-0">
+                                <div class="wrap-img mb-3 position-relative">
+                                    <img th:src="@{/img/flag/{file}(file=${item.icon})}" th:alt="${item.name}">
+                                </div>
+                                <h5 class="wrap-txt fw-bold mb-0" th:text="${item.name}">언어</h5>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Category Badges -->
+                <div class="text-center">
+                    <h3 class="fw-bold mb-4">카테고리별로 찾기</h3>
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <a href="/tutors" class="category-badge text-decoration-none">
+                            <i class="bi bi-chat-dots me-2"></i>회화
+                        </a>
+                        <a href="/tutors" class="category-badge text-decoration-none">
+                            <i class="bi bi-book me-2"></i>문법
+                        </a>
+                        <a href="/tutors" class="category-badge text-decoration-none">
+                            <i class="bi bi-briefcase me-2"></i>비즈니스
+                        </a>
+                        <a href="/tutors" class="category-badge text-decoration-none">
+                            <i class="bi bi-music-note-list me-2"></i>노래
+                        </a>
+                        <a href="/tutors" class="category-badge text-decoration-none">
+                            <i class="bi bi-tv me-2"></i>드라마
+                        </a>
+                        <a href="/tutors" class="category-badge text-decoration-none">
+                            <i class="bi bi-globe-asia-australia me-2"></i>문화
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="main-section main-cta shape-wrap">
+            <div class="shape shape1"></div>
+            <div class="shape shape2"></div>
+            <div class="container text-center text-white">
+                <h2 class="display-5 mb-4 fw-light"><span class="txt-point">지금 바로 시작</span> 하세요!!</h2>
+                <p class="lead mb-5 opacity-90">완벽한 튜터를 찾아 언어 학습 목표를 달성하세요</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <button class="btn btn-point btn-lg px-4 py-3" onclick="location.href='/tutors'">
+                        튜터 둘러보기 <i class="arrow bi bi-arrow-right"></i>
+                    </button>
+                    <button class="btn btn-light btn-lg px-4 py-3" onclick="location.href='/about'">
+                        튜터링고 알아보기 <i class="arrow bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+</div>

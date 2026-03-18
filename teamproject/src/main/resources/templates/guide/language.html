@@ -1,0 +1,603 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+
+        <style>
+            /* ============================================
+               언어 페이지 전용 스타일
+               ============================================ */
+            .language-hero {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: #fff;
+                padding: 100px 0 80px;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .language-hero::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(circle at 30% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+                animation: heroFloat 20s ease-in-out infinite;
+            }
+
+            @keyframes heroFloat {
+
+                0%,
+                100% {
+                    transform: translateY(0) rotate(0deg);
+                }
+
+                50% {
+                    transform: translateY(-30px) rotate(3deg);
+                }
+            }
+
+            .language-hero .container {
+                position: relative;
+                z-index: 1;
+            }
+
+            .language-hero h1 {
+                font-size: 3.2rem;
+                font-weight: 900;
+                margin-bottom: 20px;
+                letter-spacing: -1.5px;
+                text-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            .language-hero p {
+                font-size: 1.25rem;
+                opacity: 0.9;
+                max-width: 700px;
+                margin: 0 auto;
+                line-height: 1.8;
+            }
+
+            .language-hero .hero-badge {
+                display: inline-block;
+                background: rgba(255, 255, 255, 0.25);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                color: #fff;
+                padding: 8px 20px;
+                border-radius: 999px;
+                font-size: 0.9rem;
+                font-weight: 700;
+                margin-bottom: 24px;
+                backdrop-filter: blur(10px);
+            }
+
+            /* 언어 카드 */
+            .language-section {
+                padding: 80px 0;
+                background: #f8fafc;
+            }
+
+            .language-card {
+                position: relative;
+                border-radius: 24px;
+                overflow: hidden;
+                transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+                border: 1px solid rgba(0, 0, 0, 0.06);
+                background: #fff;
+            }
+
+            .language-card:hover {
+                transform: translateY(-12px);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+                border-color: rgba(99, 102, 241, 0.2);
+            }
+
+            .language-card .card-bg {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 0;
+            }
+
+            .language-card .card-bg img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0.4;
+            }
+
+            .language-card .card-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 1;
+            }
+
+            .language-card .card-content {
+                position: relative;
+                z-index: 2;
+                padding: 40px 36px;
+            }
+
+            .language-card.rank-1 {
+                min-height: 420px;
+            }
+
+            .language-card.rank-2-5 {
+                min-height: 360px;
+            }
+
+            .language-card.rank-special {
+                min-height: 400px;
+            }
+
+            .rank-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                font-weight: 900;
+                font-size: 1.3rem;
+                margin-bottom: 16px;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            }
+
+            .rank-badge.gold {
+                background: linear-gradient(135deg, #fbbf24, #f59e0b);
+                color: #fff;
+            }
+
+            .rank-badge.silver {
+                background: linear-gradient(135deg, #dc2626, #b91c1c);
+                color: #fff;
+            }
+
+            .rank-badge.bronze {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                color: #fff;
+            }
+
+            .rank-badge.green {
+                background: linear-gradient(135deg, #10b981, #059669);
+                color: #fff;
+            }
+
+            .rank-badge.blue {
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                color: #fff;
+            }
+
+            .rank-badge.special {
+                background: linear-gradient(135deg, #ec4899, #be185d);
+                color: #fff;
+            }
+
+            .flag-circle {
+                width: 90px;
+                height: 90px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 4px solid rgba(255, 255, 255, 0.9);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            }
+
+            .language-title {
+                font-size: 2rem;
+                font-weight: 800;
+                color: #1e293b;
+                margin-bottom: 12px;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+
+            .language-subtitle {
+                font-size: 1.1rem;
+                color: #334155;
+                font-weight: 600;
+                margin-bottom: 12px;
+            }
+
+            .language-desc {
+                font-size: 0.95rem;
+                color: #475569;
+                line-height: 1.7;
+                margin-bottom: 20px;
+            }
+
+            .language-stats {
+                display: inline-block;
+                font-size: 3.5rem;
+                font-weight: 900;
+                color: #1e293b;
+                opacity: 0.8;
+                text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .language-stats-label {
+                font-size: 0.85rem;
+                color: #64748b;
+                font-weight: 600;
+            }
+
+            .culture-tag {
+                display: inline-block;
+                background: rgba(30, 41, 59, 0.85);
+                color: #fff;
+                padding: 8px 16px;
+                border-radius: 999px;
+                font-size: 0.85rem;
+                font-weight: 700;
+                margin: 4px;
+                transition: all 0.25s ease;
+                backdrop-filter: blur(4px);
+            }
+
+            .culture-tag:hover {
+                background: rgba(99, 102, 241, 0.9);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            }
+
+            /* 정보 카드 */
+            .info-card {
+                background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+                border-radius: 20px;
+                padding: 32px;
+                text-align: center;
+                border: 1px solid rgba(0, 0, 0, 0.05);
+            }
+
+            .info-card i {
+                font-size: 1.2rem;
+                color: #6366f1;
+            }
+
+            .info-card p {
+                font-size: 0.9rem;
+                color: #64748b;
+                line-height: 1.6;
+                margin-bottom: 0;
+            }
+
+            /* CTA 섹션 */
+            .language-cta {
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                padding: 80px 0;
+                text-align: center;
+                color: #fff;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .language-cta::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+            }
+
+            .language-cta .container {
+                position: relative;
+                z-index: 1;
+            }
+
+            .language-cta h2 {
+                font-size: 2.5rem;
+                font-weight: 900;
+                margin-bottom: 16px;
+                text-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            .language-cta p {
+                font-size: 1.15rem;
+                opacity: 0.9;
+                margin-bottom: 36px;
+            }
+
+            .language-cta .btn-cta {
+                background: #fff;
+                color: #6366f1;
+                border: none;
+                padding: 16px 48px;
+                border-radius: 999px;
+                font-size: 1.1rem;
+                font-weight: 800;
+                transition: all 0.3s ease;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            }
+
+            .language-cta .btn-cta:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+                background: #f8fafc;
+            }
+
+            @media (max-width: 768px) {
+                .language-hero h1 {
+                    font-size: 2.2rem;
+                }
+
+                .language-hero p {
+                    font-size: 1rem;
+                }
+
+                .language-title {
+                    font-size: 1.5rem;
+                }
+
+                .language-stats {
+                    font-size: 2.5rem;
+                }
+
+                .flag-circle {
+                    width: 70px;
+                    height: 70px;
+                }
+            }
+        </style>
+
+        <!-- 히어로 섹션 -->
+        <section class="language-hero">
+            <div class="container">
+                <span class="hero-badge">🌍 Global Languages</span>
+                <h1>전세계 사용언어 TOP 5</h1>
+                <p>
+                    다양한 분야의 전문가를 만나보세요<br>
+                    튜터링고에서 다양한 국적의 언어를 학습하세요!
+                </p>
+            </div>
+        </section>
+
+        <!-- 언어 랭킹 섹션 -->
+        <section class="language-section">
+            <div class="container">
+
+                <!-- 1위 - 영어 (특별 강조) -->
+                <div class="row mb-5 justify-content-center">
+                    <div class="col-lg-11">
+                        <div class="language-card rank-1">
+                            <div class="card-bg">
+                                <img src="/img/introflag/us.jpg" alt="영어 배경">
+                            </div>
+                            <div class="card-overlay"
+                                style="background: linear-gradient(135deg, rgba(255, 216, 155, 0.5) 0%, rgba(25, 84, 123, 0.6) 100%);">
+                            </div>
+                            <div class="card-content">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-center gap-3 mb-3">
+                                            <span class="rank-badge gold">1</span>
+                                            <img src="/img/introflag/us.jpg" alt="영어" class="flag-circle">
+                                        </div>
+                                        <h2 class="language-title">영어 (English)</h2>
+                                        <p class="language-subtitle">세계 공용어의 절대 강자, 국제 비즈니스의 필수 언어</p>
+                                        <p class="language-desc">
+                                            전 세계 약 15억 명 이상이 사용하며, 약 100개국 이상에서 공용어로 지정된 영어는
+                                            국제 비즈니스, 학술 연구, 여행의 핵심 언어입니다.
+                                            원어민 튜터와 함께 회화, 비즈니스 영어, TOEIC 등 다양한 학습 목표를 달성하세요.
+                                        </p>
+                                        <div>
+                                            <span class="culture-tag">Hollywood</span>
+                                            <span class="culture-tag">Netflix</span>
+                                            <span class="culture-tag">Silicon Valley</span>
+                                            <span class="culture-tag">Harry Potter</span>
+                                            <span class="culture-tag">Marvel</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-center mt-4 mt-md-0">
+                                        <div class="language-stats">15억+</div>
+                                        <p class="language-stats-label">전체 사용자 수</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2~5위 카드 -->
+                <div class="row g-4 mb-5">
+
+                    <!-- 2위 - 중국어 -->
+                    <div class="col-lg-6">
+                        <div class="language-card rank-2-5">
+                            <div class="card-bg">
+                                <img src="/img/introflag/cn.jpg" alt="중국어 배경">
+                            </div>
+                            <div class="card-overlay"
+                                style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.45) 0%, rgba(127, 29, 29, 0.55) 100%);">
+                            </div>
+                            <div class="card-content">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="rank-badge silver">2</span>
+                                    <img src="/img/introflag/cn.jpg" alt="중국어" class="flag-circle">
+                                </div>
+                                <h3 class="language-title" style="font-size: 1.7rem;">중국어 (Mandarin)</h3>
+                                <p class="language-subtitle" style="font-size: 1rem;">세계 최대 시장과 소통하는 열쇠</p>
+                                <p class="language-desc">
+                                    약 11~12억 명이 사용하는 중국어는 모국어 사용자 수 1위 언어입니다.
+                                    거대한 중국 시장 진출을 위한 비즈니스 필수 언어로, HSK 시험부터 실용 회화까지 체계적으로 학습하세요.
+                                </p>
+                                <div>
+                                    <span class="culture-tag">만리장성</span>
+                                    <span class="culture-tag">중국요리</span>
+                                    <span class="culture-tag">무협소설</span>
+                                    <span class="culture-tag">TikTok</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3위 - 힌디어 -->
+                    <div class="col-lg-6">
+                        <div class="language-card rank-2-5">
+                            <div class="card-bg">
+                                <img src="/img/introflag/id.jpg" alt="힌디어 배경">
+                            </div>
+                            <div class="card-overlay"
+                                style="background: linear-gradient(135deg, rgba(234, 179, 8, 0.45) 0%, rgba(161, 98, 7, 0.55) 100%);">
+                            </div>
+                            <div class="card-content">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="rank-badge bronze">3</span>
+                                    <img src="/img/introflag/id.jpg" alt="힌디어" class="flag-circle">
+                                </div>
+                                <h3 class="language-title" style="font-size: 1.7rem;">힌디어 (Hindi)</h3>
+                                <p class="language-subtitle" style="font-size: 1rem;">떠오르는 IT 강국, 인도의 주요 언어</p>
+                                <p class="language-desc">
+                                    약 6억 명 이상이 사용하는 힌디어는 인도의 공용어입니다.
+                                    세계 IT 산업의 중심지이자 거대 소비 시장으로 성장 중인 인도와 소통하기 위한 필수 언어입니다.
+                                </p>
+                                <div>
+                                    <span class="culture-tag">볼리우드</span>
+                                    <span class="culture-tag">요가</span>
+                                    <span class="culture-tag">카레</span>
+                                    <span class="culture-tag">크리켓</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4위 - 스페인어 -->
+                    <div class="col-lg-6">
+                        <div class="language-card rank-2-5">
+                            <div class="card-bg">
+                                <img src="/img/introflag/sp.jpg" alt="스페인어 배경">
+                            </div>
+                            <div class="card-overlay"
+                                style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.45) 0%, rgba(220, 38, 38, 0.55) 100%);">
+                            </div>
+                            <div class="card-content">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="rank-badge green">4</span>
+                                    <img src="/img/introflag/sp.jpg" alt="스페인어" class="flag-circle">
+                                </div>
+                                <h3 class="language-title" style="font-size: 1.7rem;">스페인어 (Spanish)</h3>
+                                <p class="language-subtitle" style="font-size: 1rem;">정열의 언어, 남미 전역을 아우르는 언어</p>
+                                <p class="language-desc">
+                                    약 5억 4천만 명 이상이 사용하며, 스페인과 남미 20개국에서 공용어로 사용됩니다.
+                                    로망스 언어의 대표로 비즈니스와 여행 모두에서 유용한 언어입니다.
+                                </p>
+                                <div>
+                                    <span class="culture-tag">플라멩코</span>
+                                    <span class="culture-tag">축구</span>
+                                    <span class="culture-tag">라틴음악</span>
+                                    <span class="culture-tag">타파스</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5위 - 프랑스어 -->
+                    <div class="col-lg-6">
+                        <div class="language-card rank-2-5">
+                            <div class="card-bg">
+                                <img src="/img/introflag/fr.jpg" alt="프랑스어 배경">
+                            </div>
+                            <div class="card-overlay"
+                                style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.45) 0%, rgba(29, 78, 216, 0.55) 100%);">
+                            </div>
+                            <div class="card-content">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="rank-badge blue">5</span>
+                                    <img src="/img/introflag/fr.jpg" alt="프랑스어" class="flag-circle">
+                                </div>
+                                <h3 class="language-title" style="font-size: 1.7rem;">프랑스어 (French)</h3>
+                                <p class="language-subtitle" style="font-size: 1rem;">우아함의 상징, 국제기구의 공식 언어</p>
+                                <p class="language-desc">
+                                    약 2억 7천만 명 이상이 사용하며, 프랑스를 비롯한 29개국에서 공용어로 사용됩니다.
+                                    유엔, EU 등 국제기구의 공식 언어로 외교와 문화 분야에서 중요한 역할을 합니다.
+                                </p>
+                                <div>
+                                    <span class="culture-tag">패션</span>
+                                    <span class="culture-tag">에펠탑</span>
+                                    <span class="culture-tag">향수</span>
+                                    <span class="culture-tag">미식</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 급상승 중인 언어 - 한국어 -->
+                <div class="row mb-5 justify-content-center">
+                    <div class="col-lg-11">
+                        <div class="language-card rank-special">
+                            <div class="card-bg">
+                                <img src="/img/introflag/kr.jpg" alt="한국어 배경">
+                            </div>
+                            <div class="card-overlay"
+                                style="background: linear-gradient(135deg, rgba(234, 102, 113, 0.5) 0%, rgba(75, 98, 162, 0.6) 100%);">
+                            </div>
+                            <div class="card-content">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-center gap-3 mb-3">
+                                            <span class="rank-badge special">🔥</span>
+                                            <img src="/img/introflag/kr.jpg" alt="한국어" class="flag-circle">
+                                        </div>
+                                        <h2 class="language-title">한국어 (Korean)</h2>
+                                        <p class="language-subtitle">K-문화와 함께 전 세계로 뻗어나가는 언어</p>
+                                        <p class="language-desc">
+                                            약 7,700~8,000만 명이 사용하는 한국어는 세계 언어 사용 순위 약 12~15위권에 위치합니다.
+                                            하지만 K-POP, K-드라마, K-무비 등 한류 열풍과 함께 학습 수요가 폭발적으로 증가하고 있는 주목받는 언어입니다.
+                                        </p>
+                                        <div>
+                                            <span class="culture-tag">BTS</span>
+                                            <span class="culture-tag">블랙핑크</span>
+                                            <span class="culture-tag">오징어게임</span>
+                                            <span class="culture-tag">기생충</span>
+                                            <span class="culture-tag">K-POP</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-center mt-4 mt-md-0">
+                                        <div class="language-stats" style="font-size: 2.8rem;">급상승</div>
+                                        <p class="language-stats-label">학습 수요 증가율</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 참고 정보 -->
+                <div class="row justify-content-center">
+                    <div class="col-lg-11">
+                        <div class="info-card">
+                            <p>
+                                <i class="bi bi-info-circle me-2"></i>
+                                위 순위는 2025-2026년 기준 에스놀로그(Ethnologue) 자료를 참고하여
+                                모국어 및 제2외국어 사용자를 모두 포함한 전체 사용자 수를 기준으로 작성되었습니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CTA 섹션 -->
+        <section class="language-cta">
+            <div class="container">
+                <h2>지금 바로 시작하세요!</h2>
+                <p>전문 튜터와 함께 원하는 언어를 마스터하세요</p>
+                <button class="btn btn-cta" onclick="location.href='/tutors'">
+                    <i class="bi bi-search me-2"></i>튜터 찾기
+                </button>
+            </div>
+        </section>
+
+    </div>
+</div>

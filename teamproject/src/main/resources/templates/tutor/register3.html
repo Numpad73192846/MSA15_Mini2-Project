@@ -1,0 +1,748 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" href="/css/tutor-calendar.css">
+        <link rel="stylesheet" href="/css/tutor-register-admin.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <style>
+            .section-block{
+                border: 1px solid #e5e7eb;
+                background: #f8fafc;
+                border-radius: 14px;
+                padding: 16px;
+            }
+            .section-title{
+                display:flex;
+                align-items:center;
+                gap:8px;
+                font-weight:700;
+                font-size:1rem;
+                margin-bottom:6px;
+            }
+            .section-title.main-title{
+                font-size:1.5rem;
+            }
+
+            .section-sub.main-sub{
+                font-size:1rem;
+            }
+
+            .section-title .dot{
+                width:8px;
+                height:8px;
+                border-radius:999px;
+                background:#2563eb;
+                display:inline-block;
+            }
+            .section-sub{
+                color:#6b7280;
+                font-size:.85rem;
+                margin-bottom:12px;
+            }
+        </style>
+     
+    </th:block>
+
+    <div layout:fragment="content">
+        <div class="container py-5" style="max-width: 720px;">
+            <div class="mb-4 text-center">
+                <h2 class="h4 fw-bold">튜터 회원가입 (4/4단계)</h2>
+                <p class="text-muted mb-0">수업 가능 시간대를 입력해 주세요.</p>
+            </div>
+
+            <div class="progress mb-4" style="height: 8px;">
+                <div class="progress-bar" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form id="tutorProfileForm">
+                        <div class="mb-4">
+                            <div class="section-title main-title">수업 가능 시간대</div>
+                            <div class="section-sub main-sub">요일별 기본 시간대를 설정하고, 캘린더에서 수업 가능한 시간을 선택하세요.</div>
+
+                            <!-- 기본 시간대 설정 -->
+                            <div class="section-block mb-3">
+                                <div class="section-title">기본 수업 가능 시간대</div>
+                                <div class="section-sub">요일별로 여러 구간을 추가할 수 있습니다. 예: 08:00~09:30, 20:00~23:30</div>
+                                <div id="baseTimeRangeEditor"></div>
+                                <div class="text-muted small mt-2">설정된 시간대만 캘린더에 표시됩니다.</div>
+                            </div>
+
+                            <!-- 주간 캘린더 -->
+                            <div class="section-block mb-3" style="background:#fff;">
+                                <div class="section-title">주간 캘린더</div>
+                                <div class="section-sub">원하는 시간을 클릭해 선택/해제하세요.</div>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                                    <div class="tc-toolbar">
+                                        <button type="button" class="tc-iconbtn" id="btnPrevWeek" aria-label="이전 주">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </button>
+                                        <div class="tc-range" id="weekRangeLabel">2026.02.03 ~ 2026.02.09</div>
+                                        <button type="button" class="tc-iconbtn" id="btnNextWeek" aria-label="다음 주">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="weekly_calendar_wrap border rounded overflow-hidden" id="tutorScheduleCalendar" style="background: #fff;">
+                                    <div class="weekly_head">
+                                        <ul class="dayHead flex" id="calendarDayHead">
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">일</p><p class="dayDate en">02.02</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">월</p><p class="dayDate en">02.03</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">화</p><p class="dayDate en">02.04</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">수</p><p class="dayDate en">02.05</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">목</p><p class="dayDate en">02.06</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">금</p><p class="dayDate en">02.07</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">토</p><p class="dayDate en">02.08</p></div></li>
+                                        </ul>
+                                    </div>
+                                    <div class="weekly_con">
+                                        <ul class="dayCon flex" id="calendarDayBody">
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <button type="button" class="btn btn-outline-primary" id="btnApplyPattern">
+                                        <i class="bi bi-arrow-repeat"></i> 이번 주 설정을 9주까지 적용
+                                    </button>
+                                    <small class="text-muted ms-2">현재 주의 패턴을 앞으로 9주간 반복합니다</small>
+                                </div>
+                            </div>
+
+                            <input type="hidden" id="availableTime" name="availableTime">
+                        </div>
+                        
+                        <div class="alert alert-info border-0 bg-info bg-opacity-10">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-lightbulb text-info" style="font-size: 1.25rem;"></i>
+                                <div>
+                                    <div class="fw-semibold text-info mb-1">💡 예약률 향상 팁</div>
+                                    <p class="mb-0 small text-dark">가능한 시간대를 다양하게 설정하면 학생들의 예약률이 높아집니다!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                                <i class="bi bi-arrow-left"></i> 이전
+                            </button>
+                            <button type="submit" class="btn btn-success flex-fill">
+                                <i class="bi bi-check-circle"></i> 회원가입 완료
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="extra-scripts">
+        <script src="/js/tutor-calendar.js"></script>
+        <script>
+            let calendar = null;
+
+            function getStoredTokens() {
+                return {
+                    accessToken: localStorage.getItem('accessToken'),
+                    refreshToken: localStorage.getItem('refreshToken')
+                };
+            }
+
+            async function fetchMe(accessToken) {
+                let response = await fetch('/api/users/me', {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    return data && data.success ? data.data : null;
+                }
+
+                // 토큰 갱신
+                const refreshToken = localStorage.getItem('refreshToken');
+                const refreshResponse = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken: refreshToken })
+                });
+                if (!refreshResponse.ok) {
+                    return null;
+                }
+                const refreshData = await refreshResponse.json();
+                if (refreshData && refreshData.success && refreshData.data && refreshData.data.accessToken) {
+                    const newAccessToken = refreshData.data.accessToken;
+                    localStorage.setItem('accessToken', newAccessToken);
+                    if (refreshData.data.refreshToken) {
+                        localStorage.setItem('refreshToken', refreshData.data.refreshToken);
+                    }
+                    // 갱신된 토큰으로 다시 시도
+                    response = await fetch('/api/users/me', {
+                        headers: { Authorization: `Bearer ${newAccessToken}` }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data && data.success ? data.data : null;
+                    }
+                }
+                return null;
+            }
+
+            function isTutor(authList) {
+                if (!Array.isArray(authList)) {
+                    return false;
+                }
+                return authList.some((a) =>
+                    a.auth === 'ROLE_TUTOR' ||
+                    a.auth === 'ROLE_TUTOR_PENDING' ||
+                    a === 'ROLE_TUTOR' ||
+                    a === 'ROLE_TUTOR_PENDING'
+                );
+            }
+
+            const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+            const dayEnumToIndex = { SUN: 0, MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6 };
+            const indexToDayEnum = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+            const DEFAULT_BASE_TIME_RANGES = {
+                0: [{ start: '09:00', end: '18:00' }],
+                1: [{ start: '09:00', end: '18:00' }],
+                2: [{ start: '09:00', end: '18:00' }],
+                3: [{ start: '09:00', end: '18:00' }],
+                4: [{ start: '09:00', end: '18:00' }],
+                5: [{ start: '09:00', end: '18:00' }],
+                6: [{ start: '09:00', end: '18:00' }]
+            };
+
+            function formatLocalDateTime(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                const hh = String(date.getHours()).padStart(2, '0');
+                const mm = String(date.getMinutes()).padStart(2, '0');
+                const ss = String(date.getSeconds()).padStart(2, '0');
+                return `${y}-${m}-${d}T${hh}:${mm}:${ss}`;
+            }
+
+            function getDateRangeForMaxWeeks(maxWeeks = 9) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const day = today.getDay();
+                const sunday = new Date(today);
+                sunday.setDate(today.getDate() - day);
+
+                const start = new Date(sunday);
+                start.setHours(0, 0, 0, 0);
+
+                const maxWeekStart = new Date(sunday);
+                maxWeekStart.setDate(maxWeekStart.getDate() + (maxWeeks * 7));
+                const end = new Date(maxWeekStart);
+                end.setDate(end.getDate() + 6);
+                end.setHours(23, 59, 59, 0);
+
+                return {
+                    start: formatLocalDateTime(start),
+                    end: formatLocalDateTime(end)
+                };
+            }
+
+            function normalizeTimeToStep(rawTime, stepMinutes = 30) {
+                const matched = String(rawTime || '').match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+                if (!matched) return '';
+                const hour = Number(matched[1]);
+                const minute = Number(matched[2]);
+                const second = Number(matched[3] || '0');
+                if (!Number.isFinite(hour) || !Number.isFinite(minute) || !Number.isFinite(second)) return '';
+                if (minute % stepMinutes !== 0 || second !== 0) return '';
+                return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+            }
+
+            function toLocalDateKey(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
+            function expandAvailabilityToSlots(item, stepMinutes = 30) {
+                if (!item?.startAt) return [];
+                const start = new Date(item.startAt);
+                if (Number.isNaN(start.getTime())) return [];
+
+                const endParsed = item.endAt ? new Date(item.endAt) : null;
+                const end = endParsed && !Number.isNaN(endParsed.getTime()) && endParsed > start
+                    ? endParsed
+                    : new Date(start.getTime() + (stepMinutes * 60000));
+
+                const slots = [];
+                for (let cursor = new Date(start); cursor < end; cursor = new Date(cursor.getTime() + (stepMinutes * 60000))) {
+                    const time = normalizeTimeToStep(
+                        `${String(cursor.getHours()).padStart(2, '0')}:${String(cursor.getMinutes()).padStart(2, '0')}:00`,
+                        stepMinutes
+                    );
+                    if (!time) continue;
+                    slots.push({
+                        date: toLocalDateKey(cursor),
+                        time
+                    });
+                }
+                return slots;
+            }
+
+            let baseTimeRanges = JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+
+            async function getBaseTimeRanges() {
+                try {
+                    const { accessToken } = getStoredTokens();
+                    const response = await fetch('/api/tutors/me/time-ranges', {
+                        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+                    });
+                    if (!response.ok) throw new Error('Failed to load');
+                    const result = await response.json();
+                    if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+                        const ranges = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+                        result.data.forEach(item => {
+                            const dayIdx = dayEnumToIndex[item.dayOfWeek];
+                            if (dayIdx !== undefined) {
+                                ranges[dayIdx].push({ start: item.startTime, end: item.endTime });
+                            }
+                        });
+                        return ranges;
+                    }
+                } catch (e) {
+                    console.warn('tutorBaseTimeRanges load failed', e);
+                }
+                return JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+            }
+
+            async function persistBaseTimeRanges() {
+                try {
+                    const { accessToken } = getStoredTokens();
+                    const timeRanges = [];
+
+                    Object.keys(baseTimeRanges).forEach(dayIdx => {
+                        const ranges = baseTimeRanges[dayIdx] || [];
+                        ranges.forEach(range => {
+                            timeRanges.push({
+                                dayOfWeek: indexToDayEnum[dayIdx],
+                                startTime: range.start,
+                                endTime: range.end
+                            });
+                        });
+                    });
+
+                    const response = await fetch('/api/tutors/me/time-ranges', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+                        },
+                        body: JSON.stringify(timeRanges)
+                    });
+
+                    if (!response.ok) throw new Error('Failed to save');
+                    return true;
+                } catch (e) {
+                    console.error('Failed to save time ranges to API', e);
+                    alert('기본 시간대 저장에 실패했습니다.');
+                    return false;
+                }
+            }
+
+            function addRange(dayIndex) {
+                if (!baseTimeRanges[dayIndex]) baseTimeRanges[dayIndex] = [];
+                baseTimeRanges[dayIndex].push({ start: '08:00', end: '09:30' });
+                persistBaseTimeRanges().then(() => {
+                    renderBaseTimeEditor();
+                    calendar.render();
+                });
+            }
+
+            function removeRange(dayIndex, rangeIndex) {
+                baseTimeRanges[dayIndex].splice(rangeIndex, 1);
+                persistBaseTimeRanges().then(() => {
+                    renderBaseTimeEditor();
+                    calendar.render();
+                });
+            }
+
+            function updateRange(dayIndex, rangeIndex, key, value) {
+                const range = baseTimeRanges[dayIndex][rangeIndex];
+                range[key] = value;
+                persistBaseTimeRanges().then(() => {
+                    calendar.render();
+                });
+            }
+
+            function renderBaseTimeEditor() {
+                const container = document.getElementById('baseTimeRangeEditor');
+                if (!container) return;
+                container.innerHTML = '';
+
+                dayLabels.forEach((label, dayIndex) => {
+                    const dayRow = document.createElement('div');
+                    dayRow.className = 'border rounded p-3 mb-2';
+
+                    const header = document.createElement('div');
+                    header.className = 'd-flex justify-content-between align-items-center mb-2';
+                    header.innerHTML = `
+                        <div class="fw-semibold">${label}요일</div>
+                        <button type="button" class="btn btn-sm btn-outline-primary">시간대 추가</button>
+                    `;
+
+                    header.querySelector('button').addEventListener('click', () => addRange(dayIndex));
+                    dayRow.appendChild(header);
+
+                    const ranges = baseTimeRanges[dayIndex] || [];
+                    if (ranges.length === 0) {
+                        const empty = document.createElement('div');
+                        empty.className = 'text-muted small';
+                        empty.textContent = '설정된 시간대 없음';
+                        dayRow.appendChild(empty);
+                    } else {
+                        ranges.forEach((range, rangeIndex) => {
+                            const row = document.createElement('div');
+                            row.className = 'd-flex align-items-center gap-2 mb-2';
+                            row.innerHTML = `
+                                <input type="time" class="form-control form-control-sm" value="${range.start}">
+                                <span>~</span>
+                                <input type="time" class="form-control form-control-sm" value="${range.end}">
+                                <button type="button" class="tc-iconbtn danger" aria-label="삭제">
+                                    <i class="bi bi-x"></i>
+                                </button>
+
+                            `;
+
+                            const [startInput, endInput] = row.querySelectorAll('input');
+                            const removeBtn = row.querySelector('button');
+
+                            startInput.addEventListener('change', (e) => updateRange(dayIndex, rangeIndex, 'start', e.target.value));
+                            endInput.addEventListener('change', (e) => updateRange(dayIndex, rangeIndex, 'end', e.target.value));
+                            removeBtn.addEventListener('click', () => removeRange(dayIndex, rangeIndex));
+
+                            dayRow.appendChild(row);
+                        });
+                    }
+
+                    container.appendChild(dayRow);
+                });
+            }
+
+            async function loadAvailability() {
+                try {
+                    const { accessToken } = getStoredTokens();
+                    const { start, end } = getDateRangeForMaxWeeks(9);
+                    const response = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+                        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+                    });
+                    if (!response.ok) throw new Error('Failed to load');
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const grouped = new Map();
+                        result.data.forEach(item => {
+                            const status = String(item.status || '').toUpperCase();
+                            if (status && status !== 'OPEN' && status !== 'BOOKED') return;
+                            const slots = expandAvailabilityToSlots(item, 30);
+                            slots.forEach(slot => {
+                                if (!grouped.has(slot.date)) grouped.set(slot.date, []);
+                                grouped.get(slot.date).push(slot.time);
+                            });
+                        });
+                        return Array.from(grouped.entries()).map(([date, slots]) => ({ date, slots }));
+                    }
+                } catch (e) {
+                    console.warn('availability load failed', e);
+                }
+                return [];
+            }
+
+            document.addEventListener('DOMContentLoaded', async () => {
+                const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep4') || '{}');
+                let initialData = [];
+                baseTimeRanges = await getBaseTimeRanges();
+                const apiInitialData = await loadAvailability();
+
+                if (apiInitialData.length > 0) {
+                    initialData = apiInitialData;
+                } else if (savedData.availableTime) {
+                    try {
+                        const parsed = JSON.parse(savedData.availableTime);
+                        const grouped = new Map();
+                        parsed.forEach(({ date, time }) => {
+                            if (!grouped.has(date)) grouped.set(date, []);
+                            grouped.get(date).push(time);
+                        });
+                        initialData = Array.from(grouped.entries()).map(([date, slots]) => ({ date, slots }));
+                    } catch (e) {
+                        console.warn('saved availableTime parse failed', e);
+                    }
+                }
+
+                calendar = new TutorCalendar({
+                    containerId: 'tutorScheduleCalendar',
+                    mode: 'edit',
+                    baseTimeRanges: baseTimeRanges,
+                    renderOnlyInRange: true,
+                    timeStepMinutes: 30,
+                    initialData: initialData,
+                    onSlotClick: () => {
+                        document.getElementById('availableTime').value = JSON.stringify(calendar.getSelectedData());
+                    }
+                });
+
+                renderBaseTimeEditor();
+
+                document.getElementById('btnApplyPattern').addEventListener('click', () => {
+                    if (!confirm('현재 주의 패턴을 앞으로 9주간 반복 적용하시겠습니까?')) {
+                        return;
+                    }
+                    calendar.applyWeekPattern(9);
+                    document.getElementById('availableTime').value = JSON.stringify(calendar.getSelectedData());
+                    alert('9주간의 스케줄이 적용되었습니다.');
+                });
+            });
+
+            function base64ToFile(base64, filename) {
+                const arr = base64.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+
+                return new File([u8arr], filename, { type: mime });
+            }
+
+            function normalizeBase64Files(items) {
+                if (!Array.isArray(items)) return [];
+                return items.filter((item) =>
+                    item &&
+                    typeof item === 'object' &&
+                    typeof item.data === 'string' &&
+                    item.data.startsWith('data:') &&
+                    typeof item.name === 'string' &&
+                    item.name.trim() !== ''
+                );
+            }
+
+            async function uploadTutorDocuments(accessToken, docs, docType) {
+                const files = normalizeBase64Files(docs);
+                for (const doc of files) {
+                    const file = base64ToFile(doc.data, doc.name);
+                    const uploadForm = new FormData();
+                    uploadForm.append('docType', docType);
+                    uploadForm.append('file', file);
+
+                    const response = await fetch('/api/tutors/documents', {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`
+                        },
+                        body: uploadForm
+                    });
+
+                    let payload = null;
+                    try {
+                        payload = await response.json();
+                    } catch (_) {
+                        payload = null;
+                    }
+
+                    if (!response.ok || (payload && payload.success === false)) {
+                        const message = payload && payload.message ? payload.message : `${docType} 문서 업로드 실패`;
+                        throw new Error(message);
+                    }
+                }
+            }
+
+            document.getElementById('tutorProfileForm').addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const { accessToken } = getStoredTokens();
+                if (!accessToken) {
+                    location.href = '/login';
+                    return;
+                }
+
+                // 4단계 데이터 저장
+                const step4Data = {
+                    availableTime: document.getElementById('availableTime').value
+                };
+                sessionStorage.setItem('tutorRegisterStep4', JSON.stringify(step4Data));
+
+                // 모든 단계의 데이터 수집
+                const step1Data = JSON.parse(sessionStorage.getItem('tutorRegisterStep1') || '{}');
+                const step2Data = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
+                const step3Data = JSON.parse(sessionStorage.getItem('tutorRegisterStep3') || '{}');
+
+                // 최종 제출 데이터
+                const formData = new FormData();
+
+                // Step 1: 기본 정보
+                formData.append('basicName', step1Data.basicName);
+                formData.append('basicPhone', step1Data.basicPhone);
+                formData.append('basicBankName', step1Data.basicBankName);
+                formData.append('basicAccountNumber', step1Data.basicAccountNumber);
+                formData.append('basicAccountHolder', step1Data.basicAccountHolder);
+                formData.append('headline', step1Data.headline);
+                formData.append('bio', step1Data.bio);
+                formData.append('selfIntro', step1Data.selfIntro);
+                formData.append('videoUrl', step1Data.videoUrl);
+                if (step1Data.profileImg) {
+                    const profileImgFile = base64ToFile(
+                        step1Data.profileImg,
+                        step1Data.profileImgOriginalName || 'profile.png'
+                    );
+                    formData.append('profileImg', profileImgFile);
+                }
+
+                // Step 2: 학력 및 경력
+                formData.append('career', step2Data.career || '');
+                const normalizeCareerYear = (value) => {
+                    if (value === null || value === undefined) return null;
+                    const text = String(value).trim();
+                    if (!text) return null;
+                    const matched = text.match(/^(\d{4})(?:-\d{2}-\d{2})?$/);
+                    if (matched) return Number(matched[1]);
+                    const parsed = Number.parseInt(text, 10);
+                    return Number.isNaN(parsed) ? null : parsed;
+                };
+                const careersPayload = (step2Data.careers || []).map(career => ({
+                    ...career,
+                    startYear: normalizeCareerYear(career.startYear),
+                    endYear: normalizeCareerYear(career.endYear)
+                }));
+                formData.append('careersJson', JSON.stringify(careersPayload));
+                formData.append('educationsJson', JSON.stringify(step2Data.educations || []));
+                formData.append('degreesJson', JSON.stringify(step2Data.degrees || []));
+                formData.append('certificateTextsJson', JSON.stringify(step2Data.certificateTexts || []));
+
+                (step2Data.academicCertificates || []).forEach(id =>
+                    formData.append('academicCertificates', id)
+                );
+                (step2Data.educationCertificates || []).forEach(id =>
+                    formData.append('educationCertificates', id)
+                );
+
+                
+                // Step 3
+                formData.append('lessonSubjects', step3Data.lessonSubjects || '');
+                formData.append('lessonCardsJson', JSON.stringify(step3Data.lessonCards || []));
+                (step3Data.fieldIds || []).forEach(id =>
+                    formData.append('fieldIds', id)
+                );
+
+                // Step 4: 수업 가능 시간대
+                formData.append('availableTime', step4Data.availableTime);
+
+                try {
+                    const response = await fetch('/api/tutors/profile', {
+                        method: 'POST',
+                        headers: {
+                            // 'Content-Type': 'application/json',
+                            Authorization: `Bearer ${accessToken}`
+                        },
+                        body: formData
+                    });
+
+                    // const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error('튜터 등록 실패');
+                    }
+
+                    const result = await response.json();
+                    if (!result.success) {
+                        alert(result.message || '튜터 등록 실패');
+                        return;
+                    }
+
+                    // Final submit should always persist base time ranges.
+                    const timeRangeSaved = await persistBaseTimeRanges();
+                    if (!timeRangeSaved) {
+                        return;
+                    }
+
+                    const certificateTextResponse = await fetch('/api/tutors/documents/certificate-texts', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${accessToken}`
+                        },
+                        body: JSON.stringify(Array.isArray(step2Data.certificateTexts) ? step2Data.certificateTexts : [])
+                    });
+                    let certificateTextResult = null;
+                    try {
+                        certificateTextResult = await certificateTextResponse.json();
+                    } catch (_) {
+                        certificateTextResult = null;
+                    }
+                    if (!certificateTextResponse.ok || (certificateTextResult && certificateTextResult.success === false)) {
+                        throw new Error((certificateTextResult && certificateTextResult.message) || 'Failed to save certificate texts');
+                    }
+
+                    await uploadTutorDocuments(accessToken, step2Data.academicCertificates, 'EDUCATION');
+                    await uploadTutorDocuments(accessToken, step2Data.educationCertificates, 'DEGREE');
+                    await uploadTutorDocuments(accessToken, step2Data.certificateFiles, 'CERTIFICATE');
+
+                    // 스케줄 저장
+                    if (calendar) {
+                        const selectedData = calendar.getSelectedData();
+                        const { start, end } = getDateRangeForMaxWeeks(9);
+                        const availabilityPayload = selectedData.map(item => {
+                            const startDate = new Date(`${item.date}T${item.time}:00`);
+                            const endDate = new Date(startDate.getTime() + (calendar.options.timeStepMinutes * 60000));
+                            return {
+                                startAt: formatLocalDateTime(startDate),
+                                endAt: formatLocalDateTime(endDate),
+                                status: 'OPEN'
+                            };
+                        });
+
+                        const availabilityResponse = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${accessToken}`
+                            },
+                            body: JSON.stringify(availabilityPayload)
+                        });
+
+                        let availabilityResult = null;
+                        try {
+                            availabilityResult = await availabilityResponse.json();
+                        } catch (_) {
+                            availabilityResult = null;
+                        }
+                        if (!availabilityResponse.ok || (availabilityResult && availabilityResult.success === false)) {
+                            throw new Error((availabilityResult && availabilityResult.message) || 'Failed to save availability');
+                        }
+                    }
+
+                    // 성공 시 세션 스토리지 클리어
+                    sessionStorage.removeItem('tutorRegisterStep1');
+                    sessionStorage.removeItem('tutorRegisterStep2');
+                    sessionStorage.removeItem('tutorRegisterStep3');
+                    sessionStorage.removeItem('tutorRegisterStep4');
+
+                    alert('튜터 회원가입이 완료되었습니다!');
+                    location.href = '/tutor/mypage';
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('서버와 통신 중 오류가 발생했습니다.');
+                }
+            });
+        </script>
+    </th:block>
+</div>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TutorMyPageMapper">
+
+	<select id="selectTutorProfileByUserId" resultType="TutorProfile">
+		SELECT u.id AS userId, u.name, u.username AS email, u.nickname, tp.phone, u.profile_img AS profileImg, tp.bio, tp.headline,
+		       tp.self_intro AS selfIntro, tp.video_url AS videoUrl, tp.default_zoom_url AS defaultZoomUrl,
+		       tp.bank_name AS bankName, tp.account_number AS accountNumber, tp.account_holder AS accountHolder,
+		       tp.rating_avg AS ratingAvg, tp.review_count AS reviewCount
+		FROM tutor_profile tp
+		JOIN users u ON tp.user_id = u.id
+		WHERE tp.user_id = #{userId}
+	</select>
+
+	<select id="selectTutorFieldsByUserId" resultType="LanguageField">
+		SELECT lf.id, lf.name, lf.category, tf.seq
+		FROM tutor_field tf
+		JOIN language_field lf ON tf.field_id = lf.id
+		WHERE tf.user_id = #{userId}
+		ORDER BY tf.seq
+	</select>
+
+	<select id="selectUpcomingBookingsByUserId" resultType="UpcomingLesson">
+		SELECT b.id AS bookingId, l.id AS lessonId, u.id AS studentId, u.name AS studentName, l.title AS subject,
+		       ta.start_at AS startAt, ta.end_at AS endAt,
+		  CASE
+		    WHEN b.canceled_at IS NOT NULL THEN 'CANCELLED'
+		    WHEN b.done_at IS NOT NULL THEN 'COMPLETED'
+		    WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
+		    ELSE 'PENDING'
+		  END AS status,
+		  (l.price * GREATEST(1, TIMESTAMPDIFF(MINUTE, ta.start_at, ta.end_at) / 30)) AS price,
+		  COALESCE(b.paid_at, p.paid_at) AS paidAt
+		FROM booking b
+		JOIN lesson l ON b.lesson_id = l.id
+		JOIN tutor_availability ta ON b.availability_id = ta.id
+		JOIN users u ON b.user_id = u.id
+		LEFT JOIN (
+			SELECT booking_id, MAX(paid_at) AS paid_at
+			FROM payment
+			WHERE status = 'PAID'
+			GROUP BY booking_id
+		) p ON p.booking_id = b.id
+		WHERE l.user_id = #{userId}
+		  AND ta.start_at &gt;= NOW()
+		  AND b.canceled_at IS NULL
+		  AND b.done_at IS NULL
+		ORDER BY ta.start_at ASC
+	</select>
+
+	<select id="selectPastBookingsByUserId" resultType="UpcomingLesson">
+		SELECT b.id AS bookingId, l.id AS lessonId, u.id AS studentId, u.name AS studentName, l.title AS subject,
+		       ta.start_at AS startAt, ta.end_at AS endAt,
+		  CASE
+		    WHEN b.canceled_at IS NOT NULL THEN 'CANCELLED'
+		    WHEN b.done_at IS NOT NULL THEN 'COMPLETED'
+		    WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
+		    ELSE 'PENDING'
+		  END AS status,
+		  (l.price * GREATEST(1, TIMESTAMPDIFF(MINUTE, ta.start_at, ta.end_at) / 30)) AS price,
+		  COALESCE(b.paid_at, p.paid_at) AS paidAt
+		FROM booking b
+		JOIN lesson l ON b.lesson_id = l.id
+		JOIN tutor_availability ta ON b.availability_id = ta.id
+		JOIN users u ON b.user_id = u.id
+		LEFT JOIN (
+			SELECT booking_id, MAX(paid_at) AS paid_at
+			FROM payment
+			WHERE status = 'PAID'
+			GROUP BY booking_id
+		) p ON p.booking_id = b.id
+		WHERE l.user_id = #{userId}
+		  AND (ta.start_at &lt; NOW() OR b.done_at IS NOT NULL OR b.canceled_at IS NOT NULL)
+		ORDER BY ta.start_at DESC
+	</select>
+
+	<select id="selectTutorReviewsByUserId" resultType="TutorReview">
+		SELECT r.id AS reviewId, b.id AS bookingId, u.id AS studentId, u.name AS studentName,
+		       r.rating, r.content, r.created_at AS createdAt
+		FROM review r
+		JOIN booking b ON r.booking_id = b.id
+		JOIN lesson l ON b.lesson_id = l.id
+		JOIN users u ON b.user_id = u.id
+		WHERE l.user_id = #{userId}
+		ORDER BY r.created_at DESC
+		LIMIT 10
+	</select>
+
+	<select id="selectTutorStatsByUserId" resultType="TutorStats">
+		SELECT
+			(SELECT COUNT(*)
+			 FROM booking b
+			 JOIN lesson l ON b.lesson_id = l.id
+			 WHERE l.user_id = #{userId}
+			   AND b.canceled_at IS NULL
+			   AND b.done_at IS NOT NULL) AS totalLessons,
+			COALESCE((SELECT SUM(p.amount)
+			 FROM payment p
+			 JOIN booking b ON p.booking_id = b.id
+			 JOIN lesson l ON b.lesson_id = l.id
+			 WHERE l.user_id = #{userId}
+			   AND p.status = 'PAID'), 0) AS totalEarnings,
+			(SELECT COUNT(DISTINCT b.user_id)
+			 FROM booking b
+			 JOIN lesson l ON b.lesson_id = l.id
+			 WHERE l.user_id = #{userId}
+			   AND b.canceled_at IS NULL) AS activeStudents,
+			NULL AS hourlyRate,
+			COALESCE((SELECT ROUND(AVG(r.rating), 1)
+			 FROM review r
+			 JOIN booking b ON r.booking_id = b.id
+			 JOIN lesson l ON b.lesson_id = l.id
+			 WHERE l.user_id = #{userId}), 0) AS ratingAvg,
+			(SELECT COUNT(*)
+			 FROM review r
+			 JOIN booking b ON r.booking_id = b.id
+			 JOIN lesson l ON b.lesson_id = l.id
+			 WHERE l.user_id = #{userId}) AS reviewCount
+	</select>
+
+	<select id="selectMonthlyEarningsByUserId" resultType="MonthlyEarning">
+		SELECT DATE_FORMAT(p.paid_at, '%Y-%m') AS yearMonth,
+			   COUNT(DISTINCT b.id) AS lessonCount,
+			   COALESCE(SUM(TIMESTAMPDIFF(MINUTE, ta.start_at, ta.end_at)) / 60, 0) AS totalHours,
+			   COALESCE(SUM(p.amount), 0) AS totalEarnings,
+			   COUNT(p.id) AS paidCount,
+			   AVG(l.price) AS avgLessonPrice
+		FROM payment p
+		JOIN booking b ON p.booking_id = b.id
+		JOIN lesson l ON b.lesson_id = l.id
+		JOIN tutor_availability ta ON b.availability_id = ta.id
+		WHERE l.user_id = #{userId}
+		  AND p.paid_at IS NOT NULL
+		GROUP BY DATE_FORMAT(p.paid_at, '%Y-%m')
+		ORDER BY yearMonth DESC
+	</select>
+
+</mapper>

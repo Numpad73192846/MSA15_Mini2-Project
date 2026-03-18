@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TutorStudentNoteMapper">
+
+    <insert id="upsert">
+        INSERT INTO tutor_student_note (
+            id, tutor_id, student_id, progress, notes
+        ) VALUES (
+            UUID(), #{tutorId}, #{studentId}, #{progress}, #{notes}
+        )
+        ON DUPLICATE KEY UPDATE
+            progress = VALUES(progress),
+            notes = VALUES(notes),
+            updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <select id="selectByTutorId" resultType="com.aloha.teamproject.dto.TutorStudentNote">
+        SELECT id, tutor_id AS tutorId, student_id AS studentId, progress, notes, updated_at AS updatedAt
+        FROM tutor_student_note
+        WHERE tutor_id = #{tutorId}
+    </select>
+
+    <select id="countTutorStudentBookingRelation" resultType="int">
+        SELECT COUNT(*)
+        FROM booking b
+        JOIN lesson l ON b.lesson_id = l.id
+        WHERE l.user_id = #{tutorId}
+          AND b.user_id = #{studentId}
+          AND b.canceled_at IS NULL
+    </select>
+
+</mapper>

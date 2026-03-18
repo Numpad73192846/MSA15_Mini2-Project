@@ -1,0 +1,495 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <!-- 문의하기 페이지 -->
+        <section class="contact-section py-5">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <!-- 페이지 제목 -->
+                        <div class="text-center mb-5">
+                            <h1 class="display-5 fw-bold mb-3">문의하기</h1>
+                            <p class="text-muted">궁금하신 사항을 남겨주시면 빠른 시일 내로 답변드리겠습니다.</p>
+                        </div>
+
+                        <div class="row g-4">
+                            <!-- 연락처 정보 -->
+                            <div class="col-lg-5">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body p-5">
+                                        <h4 class="fw-bold mb-4 text-center">연락처 정보</h4>
+                                        
+                                        <!-- 이메일 -->
+                                        <div class="mb-4 text-center">
+                                            <div class="mb-3">
+                                                <i class="bi bi-envelope-fill text-primary" style="font-size: 2rem;"></i>
+                                            </div>
+                                            <h6 class="fw-bold mb-2">이메일</h6>
+                                            <p class="text-muted mb-0">
+                                                <a href="mailto:thejoen@gmail.com" class="text-decoration-none text-muted">
+                                                    thejoen@gmail.com
+                                                </a>
+                                            </p>
+                                        </div>
+
+                                        <!-- 전화번호 -->
+                                        <div class="mb-4 text-center">
+                                            <div class="mb-3">
+                                                <i class="bi bi-telephone-fill text-primary" style="font-size: 2rem;"></i>
+                                            </div>
+                                            <h6 class="fw-bold mb-2">전화번호</h6>
+                                            <p class="text-muted mb-0">
+                                                <a href="tel:032-521-8889" class="text-decoration-none text-muted">
+                                                    032-521-8889
+                                                </a>
+                                            </p>
+                                        </div>
+
+                                        <!-- 운영시간 -->
+                                        <div class="mb-4 text-center">
+                                            <div class="mb-3">
+                                                <i class="bi bi-clock-fill text-primary" style="font-size: 2rem;"></i>
+                                            </div>
+                                            <h6 class="fw-bold mb-2">운영시간</h6>
+                                            <p class="text-muted mb-0">
+                                                평일: 오전 9시 - 오후 6시<br>
+                                                주말 및 공휴일: 휴무
+                                            </p>
+                                        </div>
+
+                                        <!-- 안내사항 -->
+                                        <div class="alert alert-info border-0 mt-4 text-center">
+                                            <i class="bi bi-info-circle-fill me-2"></i>
+                                            <small>
+                                                문의 접수 후 영업일 기준 1~2일 내로 답변드립니다.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 문의 폼 -->
+                            <div class="col-lg-7">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body p-4">
+                                        <h4 class="fw-bold mb-4">문의 남기기</h4>
+                                        
+                                        <form id="contactForm">
+                                            <!-- 이름 -->
+                                            <div class="mb-3">
+                                                <label for="userName" class="form-label fw-bold">
+                                                    이름 <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" class="form-control" id="userName" 
+                                                       placeholder="이름을 입력해주세요" required>
+                                            </div>
+
+                                            <!-- 이메일 -->
+                                            <div class="mb-3">
+                                                <label for="userEmail" class="form-label fw-bold">
+                                                    이메일 <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="email" class="form-control" id="userEmail" 
+                                                       placeholder="example@email.com" required>
+                                            </div>
+
+                                            <!-- 연락처 -->
+                                            <div class="mb-3">
+                                                <label for="userPhone" class="form-label fw-bold">
+                                                    연락처 <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="tel" class="form-control" id="userPhone" 
+                                                       placeholder="010-1234-5678" required>
+                                            </div>
+
+                                            <!-- 문의 유형 -->
+                                            <div class="mb-3">
+                                                <label for="inquiryCategory" class="form-label fw-bold">
+                                                    문의 유형 <span class="text-danger">*</span>
+                                                </label>
+                                                <select class="form-select" id="inquiryCategory" required>
+                                                    <option value="INQUIRY">일반 문의</option>
+                                                    <option value="PAYMENT">결제 문의</option>
+                                                    <option value="ACCOUNT">계정 문의</option>
+                                                    <option value="REPORT">신고</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- 문의 제목 -->
+                                            <div class="mb-3">
+                                                <label for="inquiryTitle" class="form-label fw-bold">
+                                                    문의 제목 <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" class="form-control" id="inquiryTitle" 
+                                                       placeholder="문의 제목을 입력해주세요" required>
+                                            </div>
+
+                                            <!-- 문의 내용 -->
+                                            <div class="mb-4">
+                                                <label for="inquiryContent" class="form-label fw-bold">
+                                                    문의 내용 <span class="text-danger">*</span>
+                                                </label>
+                                                <textarea class="form-control" id="inquiryContent" rows="6" 
+                                                          placeholder="문의하실 내용을 자세히 작성해주세요" required></textarea>
+                                            </div>
+
+                                            <!-- 버튼 -->
+                                            <div class="d-flex gap-3">
+                                                <button type="submit" class="btn btn-primary px-4" style="width: 130px; height: 48px;">
+                                                    전송하기
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary px-4" 
+                                                        onclick="history.back()" style="width: 130px; height: 48px;">
+                                                    돌아가기
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="fw-bold mb-0">내 문의 내역</h5>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" id="btnReloadMyInquiries">새로고침</button>
+                                        </div>
+                                        <div id="myInquiryList" class="list-group"></div>
+                                        <div id="myInquiryEmpty" class="text-center text-muted small py-4">
+                                            로그인 후 문의 내역을 확인할 수 있습니다.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="inquiryThreadModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="inquiryThreadTitle">문의 대화</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div id="inquiryThreadMessages" class="mb-3" style="max-height:360px; overflow-y:auto;"></div>
+                                        <div class="mb-2">
+                                            <label class="form-label fw-bold mb-1" for="inquiryReplyContent">추가 메시지</label>
+                                            <textarea class="form-control" id="inquiryReplyContent" rows="3" placeholder="추가 문의 내용을 입력하세요."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">닫기</button>
+                                        <button type="button" class="btn btn-primary" id="btnSendInquiryReply">전송</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 추가 스크립트 -->
+    <th:block layout:fragment="extra-scripts">
+        <script>
+            let currentInquiryId = null;
+            let inquiryModal = null;
+
+            function escapeHtml(value) {
+                return String(value ?? "")
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;")
+                    .replaceAll("'", "&#39;");
+            }
+
+            function formatDateTime(value) {
+                if (!value) return "-";
+                const d = new Date(value);
+                if (Number.isNaN(d.getTime())) return value;
+                return d.toLocaleString("ko-KR", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+            }
+
+            function statusBadge(status) {
+                if (status === "DONE") {
+                    return '<span class="badge text-bg-success">완료</span>';
+                }
+                if (status === "IN_PROGRESS") {
+                    return '<span class="badge text-bg-warning">처리중</span>';
+                }
+                return '<span class="badge text-bg-secondary">접수</span>';
+            }
+
+            async function fetchWithAuth(url, options = {}) {
+                const headers = {
+                    ...(options.headers || {}),
+                    ...buildAuthHeaders()
+                };
+
+                const config = {
+                    credentials: "include",
+                    ...options,
+                    headers
+                };
+
+                let response = await fetch(url, config);
+                if (response.status !== 401) {
+                    return response;
+                }
+
+                const refreshed = await refreshAccessToken();
+                if (!refreshed) {
+                    return response;
+                }
+
+                return fetch(url, {
+                    ...config,
+                    headers: {
+                        ...(options.headers || {}),
+                        ...buildAuthHeaders()
+                    }
+                });
+            }
+
+            async function preloadUserProfile() {
+                try {
+                    const response = await fetchWithAuth("/api/users/me");
+                    const result = await response.json();
+                    if (!response.ok || !result?.success || !result?.data) {
+                        return;
+                    }
+
+                    const user = result.data;
+                    const nameEl = document.getElementById("userName");
+                    const emailEl = document.getElementById("userEmail");
+                    if (!nameEl.value) {
+                        nameEl.value = user.name || "";
+                    }
+                    if (!emailEl.value) {
+                        emailEl.value = user.username || "";
+                    }
+                } catch (e) {
+                    console.error("Failed to preload user profile", e);
+                }
+            }
+
+            function renderMyInquiries(inquiries) {
+                const listEl = document.getElementById("myInquiryList");
+                const emptyEl = document.getElementById("myInquiryEmpty");
+                listEl.innerHTML = "";
+
+                if (!Array.isArray(inquiries) || inquiries.length === 0) {
+                    emptyEl.textContent = "등록된 문의가 없습니다.";
+                    emptyEl.classList.remove("d-none");
+                    return;
+                }
+
+                emptyEl.classList.add("d-none");
+                inquiries.forEach((inquiry) => {
+                    const item = document.createElement("button");
+                    item.type = "button";
+                    item.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-start";
+                    item.innerHTML = `
+                        <div class="me-3 text-start">
+                            <div class="fw-semibold">${escapeHtml(inquiry.title || "-")}</div>
+                            <div class="small text-muted">${formatDateTime(inquiry.createdAt)} · ${escapeHtml(inquiry.category || "INQUIRY")}</div>
+                            <div class="small mt-1 text-muted">${escapeHtml(inquiry.lastMessage || "")}</div>
+                        </div>
+                        <div>${statusBadge(inquiry.status)}</div>
+                    `;
+                    item.addEventListener("click", () => openInquiryThread(inquiry));
+                    listEl.appendChild(item);
+                });
+            }
+
+            async function loadMyInquiries() {
+                const emptyEl = document.getElementById("myInquiryEmpty");
+                try {
+                    const response = await fetchWithAuth("/api/inquiries/my");
+                    const result = await response.json();
+                    if (!response.ok || !result?.success) {
+                        if (response.status === 401) {
+                            emptyEl.textContent = "로그인 후 문의 내역을 확인할 수 있습니다.";
+                            emptyEl.classList.remove("d-none");
+                            document.getElementById("myInquiryList").innerHTML = "";
+                            return;
+                        }
+                        emptyEl.textContent = result?.message || "문의 내역을 불러오지 못했습니다.";
+                        emptyEl.classList.remove("d-none");
+                        return;
+                    }
+
+                    renderMyInquiries(result.data || []);
+                } catch (e) {
+                    console.error("Failed to load inquiries", e);
+                    emptyEl.textContent = "문의 내역을 불러오지 못했습니다.";
+                    emptyEl.classList.remove("d-none");
+                }
+            }
+
+            function renderInquiryThread(messages) {
+                const container = document.getElementById("inquiryThreadMessages");
+                if (!Array.isArray(messages) || messages.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted small py-4">메시지 내역이 없습니다.</div>';
+                    return;
+                }
+
+                container.innerHTML = messages.map((msg) => {
+                    const isAdmin = msg.senderRole === "ADMIN";
+                    const alignClass = isAdmin ? "text-end" : "text-start";
+                    const bubbleClass = isAdmin ? "bg-primary text-white" : "bg-light";
+                    return `
+                        <div class="${alignClass} mb-2">
+                            <div class="d-inline-block px-3 py-2 rounded ${bubbleClass}" style="max-width:85%; white-space:pre-wrap;">
+                                ${escapeHtml(msg.content || "")}
+                            </div>
+                            <div class="small text-muted mt-1">
+                                ${escapeHtml(msg.senderName || (isAdmin ? "관리자" : "회원"))} · ${formatDateTime(msg.createdAt)}
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+
+                container.scrollTop = container.scrollHeight;
+            }
+
+            async function loadInquiryThreadMessages(inquiryId) {
+                const response = await fetchWithAuth(`/api/inquiries/${encodeURIComponent(inquiryId)}/messages`);
+                const result = await response.json();
+                if (!response.ok || !result?.success) {
+                    throw new Error(result?.message || "메시지를 불러오지 못했습니다.");
+                }
+                renderInquiryThread(result.data || []);
+            }
+
+            async function openInquiryThread(inquiry) {
+                currentInquiryId = inquiry.id;
+                document.getElementById("inquiryThreadTitle").textContent = `문의 대화 - ${inquiry.title || "-"}`;
+                document.getElementById("inquiryReplyContent").value = "";
+                renderInquiryThread([]);
+
+                if (!inquiryModal) {
+                    const modalEl = document.getElementById("inquiryThreadModal");
+                    inquiryModal = new bootstrap.Modal(modalEl);
+                }
+                inquiryModal.show();
+
+                try {
+                    await loadInquiryThreadMessages(inquiry.id);
+                } catch (e) {
+                    console.error(e);
+                    document.getElementById("inquiryThreadMessages").innerHTML =
+                        `<div class="text-center text-danger small py-4">${escapeHtml(e.message)}</div>`;
+                }
+            }
+
+            async function sendInquiryReply() {
+                if (!currentInquiryId) {
+                    alert("문의를 먼저 선택해주세요.");
+                    return;
+                }
+                const content = document.getElementById("inquiryReplyContent").value.trim();
+                if (!content) {
+                    alert("메시지를 입력해주세요.");
+                    return;
+                }
+
+                try {
+                    const response = await fetchWithAuth(`/api/inquiries/${encodeURIComponent(currentInquiryId)}/messages`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ content })
+                    });
+                    const result = await response.json();
+                    if (!response.ok || !result?.success) {
+                        alert(result?.message || "메시지 전송에 실패했습니다.");
+                        return;
+                    }
+
+                    document.getElementById("inquiryReplyContent").value = "";
+                    await loadInquiryThreadMessages(currentInquiryId);
+                    await loadMyInquiries();
+                } catch (e) {
+                    console.error("Failed to send inquiry reply", e);
+                    alert("메시지 전송에 실패했습니다.");
+                }
+            }
+
+            document.getElementById("contactForm").addEventListener("submit", async function(e) {
+                e.preventDefault();
+
+                const userName = document.getElementById("userName").value.trim();
+                const userEmail = document.getElementById("userEmail").value.trim();
+                const userPhone = document.getElementById("userPhone").value.trim();
+                const inquiryCategory = document.getElementById("inquiryCategory").value;
+                const inquiryTitle = document.getElementById("inquiryTitle").value.trim();
+                const inquiryContent = document.getElementById("inquiryContent").value.trim();
+
+                if (!userName || !userEmail || !userPhone || !inquiryTitle || !inquiryContent) {
+                    alert("모든 필수 항목을 입력해주세요.");
+                    return;
+                }
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(userEmail)) {
+                    alert("올바른 이메일 형식을 입력해주세요.");
+                    return;
+                }
+
+                const payload = {
+                    category: inquiryCategory,
+                    title: inquiryTitle,
+                    content: inquiryContent,
+                    contactName: userName,
+                    contactEmail: userEmail,
+                    contactPhone: userPhone
+                };
+
+                try {
+                    const response = await fetchWithAuth("/api/inquiries", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok || !result?.success) {
+                        if (response.status === 401) {
+                            alert("로그인 후 문의를 등록할 수 있습니다.");
+                            location.href = "/login";
+                            return;
+                        }
+                        alert(result?.message || "문의 등록에 실패했습니다.");
+                        return;
+                    }
+
+                    alert("문의가 접수되었습니다. 관리자 답변을 기다려주세요.");
+                    this.reset();
+                    await loadMyInquiries();
+                } catch (error) {
+                    console.error("Failed to submit inquiry", error);
+                    alert("문의 등록 중 오류가 발생했습니다.");
+                }
+            });
+
+            document.getElementById("btnReloadMyInquiries").addEventListener("click", loadMyInquiries);
+            document.getElementById("btnSendInquiryReply").addEventListener("click", sendInquiryReply);
+
+            preloadUserProfile();
+            loadMyInquiries();
+        </script>
+    </th:block>
+
+</div>

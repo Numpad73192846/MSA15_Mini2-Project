@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main_layout}">
+<head>
+    <th:block layout:fragment="title">
+        <title>결제 성공 | 튜터 플랫폼</title>
+    </th:block>
+</head>
+<body>
+<main layout:fragment="content">
+    <div class="container my-5" style="max-width: 720px;">
+        <div class="text-center">
+            <h2 class="fw-bold">결제 성공</h2>
+            <p class="text-muted">결제가 정상 처리되었습니다.</p>
+        </div>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-body">
+                <div class="mb-2">결제 키: <span id="paymentKey"></span></div>
+                <div class="mb-2">주문 ID: <span id="orderId"></span></div>
+                <div class="mb-2">금액: <span id="amount"></span></div>
+                <div id="statusMsg" class="text-success fw-semibold mt-3"></div>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <a href="/" class="btn btn-outline-primary">홈으로</a>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="extra-scripts">
+    <script>
+        const params = new URLSearchParams(location.search);
+        const paymentKey = params.get('paymentKey');
+        const orderId = params.get('orderId');
+        const amount = params.get('amount');
+
+        document.getElementById('paymentKey').textContent = paymentKey || '-';
+        document.getElementById('orderId').textContent = orderId || '-';
+        document.getElementById('amount').textContent = amount ? `${Number(amount).toLocaleString()}원` : '-';
+
+        async function confirmTossPayment() {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                document.getElementById('statusMsg').textContent = '로그인이 필요합니다.';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/payments/toss/confirm', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        paymentKey: paymentKey,
+                        orderId: orderId,
+                        amount: amount ? Number(amount) : null
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('statusMsg').textContent = '결제가 완료되었습니다. 마이페이지로 이동합니다.';
+                    setTimeout(() => location.href = '/member/mypage', 1200);
+                } else {
+                    document.getElementById('statusMsg').textContent = result.message || '결제 확인에 실패했습니다.';
+                }
+            } catch (e) {
+                document.getElementById('statusMsg').textContent = '결제 확인 중 오류가 발생했습니다.';
+            }
+        }
+
+        confirmTossPayment();
+    </script>
+</th:block>
+</body>
+</html>

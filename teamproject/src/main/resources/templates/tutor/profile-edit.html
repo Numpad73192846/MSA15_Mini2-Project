@@ -1,0 +1,1770 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" href="/css/tutor-register-admin.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <style>
+            body {
+                background: #f8fafc;
+            }
+
+            .edit-shell {
+                display: flex;
+                gap: 24px;
+            }
+
+            .edit-sidebar {
+                width: 280px;
+                flex: 0 0 280px;
+                position: sticky;
+                top: 90px;
+                height: fit-content;
+            }
+
+            .edit-card {
+                border-radius: 16px;
+                border: 1px solid #e5e7eb;
+            }
+
+            .edit-menu .list-group-item {
+                border: 0;
+                border-radius: 12px;
+                padding: 12px 14px;
+                color: #334155;
+                cursor: pointer;
+            }
+
+            .edit-menu .list-group-item.active {
+                background: #2563eb;
+                color: #fff;
+            }
+
+            .edit-menu .list-group-item:hover:not(.active) {
+                background: #f1f5f9;
+            }
+
+            .panel-title {
+                font-weight: 800;
+            }
+
+            .muted {
+                color: #64748b;
+            }
+
+            .divider {
+                height: 1px;
+                background: #e5e7eb;
+                margin: 14px 0;
+            }
+
+            .form-label {
+                font-weight: 600;
+                color: #334155;
+            }
+
+            .btn-pill {
+                border-radius: 999px;
+            }
+
+            .btn-delete:hover,
+            .btn-delete:focus {
+                background-color: #dc3545;
+                border-color: #dc3545;
+            }
+
+            .btn-delete i {
+                color: inherit;
+            }
+
+            .btn-delete:hover i,
+            .btn-delete:focus i {
+                color: #fff;
+            }
+
+            #careerCardList:empty {
+                display: none;
+            }
+
+            #careerCardList {
+                margin-top: 14px;
+                display: grid;
+                gap: 12px;
+            }
+
+            .career-item-card {
+                display: flex;
+                align-items: stretch;
+                border: 1px solid #d8e1ee;
+                border-radius: 14px;
+                background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+                transition: box-shadow .18s ease, transform .18s ease;
+            }
+
+            .career-item-card:hover {
+                box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+                transform: translateY(-1px);
+            }
+
+            .career-year-col {
+                flex: 0 0 152px;
+                background: linear-gradient(180deg, #eff6ff 0%, #e8f0ff 100%);
+                border-right: 1px solid #d7e2f3;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: flex-start;
+                gap: 3px;
+                padding: 12px 14px;
+            }
+
+            .career-year-title {
+                color: #64748b;
+                font-weight: 700;
+                font-size: 0.72rem;
+                letter-spacing: .06em;
+                text-transform: uppercase;
+            }
+
+            .career-year-value {
+                color: #1e3a8a;
+                font-weight: 800;
+                font-size: 0.98rem;
+                line-height: 1.2;
+                white-space: nowrap;
+            }
+
+            .career-main-col {
+                flex: 1 1 auto;
+                min-width: 0;
+                padding: 13px 16px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .career-company {
+                font-weight: 800;
+                font-size: 1.03rem;
+                color: #0f172a;
+                line-height: 1.3;
+                margin-bottom: 5px;
+            }
+
+            .career-role {
+                color: #64748b;
+                font-size: 0.89rem;
+                line-height: 1.35;
+                word-break: keep-all;
+            }
+
+            .career-remove-btn {
+                margin: auto 12px auto 0;
+                background: #fff;
+            }
+
+            @media (max-width: 576px) {
+                .career-year-col {
+                    flex-basis: 126px;
+                    padding: 10px 10px;
+                }
+
+                .career-year-value {
+                    font-size: 0.88rem;
+                }
+
+                .career-company {
+                    font-size: 0.95rem;
+                }
+
+                .career-main-col {
+                    padding: 11px 12px;
+                }
+            }
+
+            #educationCardList:empty,
+            #degreeCardList:empty,
+            #certificateTextCardList:empty {
+                display: none;
+            }
+
+            #educationCardList,
+            #degreeCardList,
+            #certificateTextCardList {
+                margin-top: 12px;
+                display: grid;
+                gap: 10px;
+            }
+
+            .text-entry-card {
+                display: flex;
+                align-items: center;
+                border: 1px solid #dbe4f0;
+                border-radius: 12px;
+                background: #fff;
+                padding: 10px 12px;
+                box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+            }
+
+            .text-entry-card+.text-entry-card {
+                margin-top: 2px;
+            }
+
+            .text-entry-icon {
+                width: 34px;
+                height: 34px;
+                border-radius: 10px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 10px;
+                font-size: .95rem;
+                flex: 0 0 auto;
+                border: 1px solid transparent;
+            }
+
+            .text-entry-card.text-entry-edu .text-entry-icon {
+                color: #0f4fa8;
+                background: #eaf2ff;
+                border-color: #cfe0ff;
+            }
+
+            .text-entry-card.text-entry-degree .text-entry-icon {
+                color: #7c3aed;
+                background: #f4efff;
+                border-color: #e2d4ff;
+            }
+
+            .text-entry-card.text-entry-cert .text-entry-icon {
+                color: #b45309;
+                background: #fff5e6;
+                border-color: #ffe2b8;
+            }
+
+            .text-entry-main {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
+            .text-entry-title {
+                font-weight: 700;
+                color: #0f172a;
+                line-height: 1.3;
+                margin-bottom: 3px;
+            }
+
+            .text-entry-sub {
+                font-size: .85rem;
+                color: #64748b;
+                line-height: 1.3;
+            }
+
+            .register-section-card {
+                border-radius: 14px;
+                border: 1px solid #dde6f2;
+                background: linear-gradient(180deg, #f8fbff 0%, #f4f8ff 100%);
+                box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+            }
+
+            .register-section-card--degree {
+                background: linear-gradient(180deg, #fbfaff 0%, #f8f6ff 100%);
+                border-color: #e7ddff;
+            }
+
+            .register-section-card--cert {
+                background: linear-gradient(180deg, #fffdf8 0%, #fff9f0 100%);
+                border-color: #ffe7c6;
+            }
+
+            @media (max-width: 992px) {
+                .edit-shell {
+                    flex-direction: column;
+                }
+
+                .edit-sidebar {
+                    width: 100%;
+                    position: static;
+                }
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="content">
+        <div class="container py-4">
+            <!-- 헤더 -->
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">프로필 수정</h2>
+                    <div class="muted small">튜터 정보를 수정하세요</div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="/tutor/mypage" class="btn btn-outline-secondary btn-sm btn-pill px-3">
+                        <i class="bi bi-arrow-left me-1"></i> 마이페이지로
+                    </a>
+                </div>
+            </div>
+
+            <div class="edit-shell">
+                <!-- 사이드바 -->
+                <aside class="edit-sidebar">
+                    <div class="card edit-card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div id="sidebarProfileImg"
+                                    class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                    style="width:60px;height:60px;font-size:1.5rem;">
+                                    <span class="fs-4">👨‍🏫</span>
+                                </div>
+                                <div>
+                                    <div class="fw-bold" id="sidebarName">튜터</div>
+                                    <div class="muted small" id="sidebarLoginId">아이디</div>
+                                </div>
+                            </div>
+
+                            <div class="divider"></div>
+
+                            <div class="list-group edit-menu">
+                                <a class="list-group-item active" data-section="basic">
+                                    <i class="bi bi-person me-2"></i> 기본 정보
+                                </a>
+                                <a class="list-group-item" data-section="profile">
+                                    <i class="bi bi-card-text me-2"></i> 프로필
+                                </a>
+                                <a class="list-group-item" data-section="employment">
+                                    <i class="bi bi-briefcase me-2"></i> 근무경력
+                                </a>
+                                <a class="list-group-item" data-section="account">
+                                    <i class="bi bi-bank me-2"></i> 계좌 정보
+                                </a>
+                                <a class="list-group-item" data-section="documents">
+                                    <i class="bi bi-file-earmark-arrow-up me-2"></i> 서류 업로드
+                                </a>
+                                <a class="list-group-item" data-section="lessons">
+                                    <i class="bi bi-book me-2"></i> 수업관리
+                                </a>
+                                <a class="list-group-item" data-section="schedule">
+                                    <i class="bi bi-calendar2-check me-2"></i> 스케줄 관리
+                                </a>
+                                <a class="list-group-item" data-section="zoom">
+                                    <i class="bi bi-camera-video me-2"></i> Zoom 연동
+                                </a>
+                                <a class="list-group-item" data-section="security">
+                                    <i class="bi bi-shield-lock me-2"></i> 보안
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card edit-card shadow-sm mt-3">
+                        <div class="card-body p-3">
+                            <div class="small text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                정보 수정 후 각 섹션의 저장 버튼을 눌러주세요.
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+                <!-- 메인 컨텐츠 -->
+                <main class="flex-grow-1">
+                    <form id="profileEditForm">
+                        <div id="profileEditContainer"></div>
+                    </form>
+                </main>
+            </div>
+        </div>
+
+        <script>
+            const getFallbackToken = () => localStorage.getItem('accessToken');
+            const getAuthHeaders = () => {
+                if (typeof buildAuthHeaders === 'function') {
+                    return buildAuthHeaders();
+                }
+                const token = getFallbackToken();
+                return token ? { 'Authorization': `Bearer ${token}` } : {};
+            };
+
+            async function ensureAuth() {
+                const token = (typeof getAccessToken === 'function') ? getAccessToken() : getFallbackToken();
+                if (token) return true;
+                if (typeof refreshAccessToken === 'function') {
+                    return await refreshAccessToken();
+                }
+                return false;
+            }
+
+            async function fetchWithAuth(url, options = {}) {
+                const headers = { ...(options.headers || {}), ...getAuthHeaders() };
+                const response = await fetch(url, {
+                    ...options,
+                    headers,
+                    credentials: 'include'
+                });
+
+                if (response.status === 401 && typeof refreshAccessToken === 'function') {
+                    const refreshed = await refreshAccessToken();
+                    if (refreshed) {
+                        const retryHeaders = { ...(options.headers || {}), ...getAuthHeaders() };
+                        return fetch(url, {
+                            ...options,
+                            headers: retryHeaders,
+                            credentials: 'include'
+                        });
+                    }
+                }
+
+                return response;
+            }
+
+            const sections = ["basic", "profile", "employment", "account", "documents", "lessons", "schedule", "zoom", "security"];
+            const profileState = {
+                loginId: "",
+                email: "",
+                nickname: "",
+                name: "",
+                phone: "",
+                headline: "",
+                bio: "",
+                selfIntro: "",
+                videoUrl: "",
+                defaultZoomUrl: "",
+                bankName: "",
+                accountNumber: "",
+                accountHolder: "",
+                password: "",
+                passwordConfirm: "",
+                profileImgFile: null,
+                profileImgUrl: ""
+            };
+
+            const documentDraft = {
+                educationFiles: [],
+                degreeFiles: [],
+                certificateFiles: [],
+                certificateTexts: [],
+                careers: [],
+                educations: [],
+                degrees: [],
+                employmentFiles: []
+            };
+
+            let documentTextsInitialized = false;
+            let careersInitialized = false;
+            let educationsInitialized = false;
+            let certificateTextsDirty = false;
+            let careerDirty = false;
+            let educationDirty = false;
+            let degreeDirty = false;
+
+            function collectSectionValues() {
+                if (document.getElementById('editEmail')) profileState.email = document.getElementById('editEmail').value || "";
+                if (document.getElementById('editNickname')) profileState.nickname = document.getElementById('editNickname').value || "";
+                if (document.getElementById('editName')) profileState.name = document.getElementById('editName').value || "";
+                if (document.getElementById('editPhone')) profileState.phone = document.getElementById('editPhone').value || "";
+                if (document.getElementById('editHeadline')) profileState.headline = document.getElementById('editHeadline').value || "";
+                if (document.getElementById('editBio')) profileState.bio = document.getElementById('editBio').value || "";
+                if (document.getElementById('editSelfIntro')) profileState.selfIntro = document.getElementById('editSelfIntro').value || "";
+                if (document.getElementById('editVideoUrl')) profileState.videoUrl = document.getElementById('editVideoUrl').value || "";
+                if (document.getElementById('editDefaultZoomUrl')) profileState.defaultZoomUrl = document.getElementById('editDefaultZoomUrl').value || "";
+                if (document.getElementById('editBankName')) profileState.bankName = document.getElementById('editBankName').value || "";
+                if (document.getElementById('editAccountNumber')) profileState.accountNumber = document.getElementById('editAccountNumber').value || "";
+                if (document.getElementById('editAccountHolder')) profileState.accountHolder = document.getElementById('editAccountHolder').value || "";
+                if (document.getElementById('editPassword')) profileState.password = document.getElementById('editPassword').value || "";
+                if (document.getElementById('editPasswordConfirm')) profileState.passwordConfirm = document.getElementById('editPasswordConfirm').value || "";
+
+                const profileImgInput = document.getElementById('editProfileImg');
+                if (profileImgInput && profileImgInput.files[0]) {
+                    profileState.profileImgFile = profileImgInput.files[0];
+                }
+            }
+
+            function applyStateToSection() {
+                const elements = {
+                    editEmail: document.getElementById('editEmail'),
+                    editNickname: document.getElementById('editNickname'),
+                    editName: document.getElementById('editName'),
+                    editPhone: document.getElementById('editPhone'),
+                    editHeadline: document.getElementById('editHeadline'),
+                    editBio: document.getElementById('editBio'),
+                    editSelfIntro: document.getElementById('editSelfIntro'),
+                    editVideoUrl: document.getElementById('editVideoUrl'),
+                    editDefaultZoomUrl: document.getElementById('editDefaultZoomUrl'),
+                    editBankName: document.getElementById('editBankName'),
+                    editAccountNumber: document.getElementById('editAccountNumber'),
+                    editAccountHolder: document.getElementById('editAccountHolder'),
+                    currentProfileImg: document.getElementById('currentProfileImg')
+                };
+
+                // 안전하게 값 설정
+                if (elements.editEmail) elements.editEmail.value = profileState.email || "";
+                if (elements.editNickname) elements.editNickname.value = profileState.nickname || "";
+                if (elements.editName) elements.editName.value = profileState.name || "";
+                if (elements.editPhone) elements.editPhone.value = profileState.phone || "";
+                if (elements.editHeadline) elements.editHeadline.value = profileState.headline || "";
+                if (elements.editBio) elements.editBio.value = profileState.bio || "";
+                if (elements.editSelfIntro) elements.editSelfIntro.value = profileState.selfIntro || "";
+                if (elements.editVideoUrl) elements.editVideoUrl.value = profileState.videoUrl || "";
+                if (elements.editDefaultZoomUrl) {
+                    elements.editDefaultZoomUrl.value = profileState.defaultZoomUrl || "";
+                    elements.editDefaultZoomUrl.dispatchEvent(new Event('input'));
+                }
+                if (elements.editBankName) {
+                    elements.editBankName.value = profileState.bankName || "";
+                    // select option selected 처리 (동적 렌더링 대응)
+                    Array.from(elements.editBankName.options).forEach(opt => {
+                        opt.selected = (opt.value === profileState.bankName);
+                    });
+                }
+                if (elements.editAccountNumber) elements.editAccountNumber.value = profileState.accountNumber || "";
+                if (elements.editAccountHolder) elements.editAccountHolder.value = profileState.accountHolder || "";
+
+                // 프로필 이미지 처리
+                if (elements.currentProfileImg && profileState.profileImgUrl) {
+                    elements.currentProfileImg.classList.remove('bg-primary');
+                    elements.currentProfileImg.innerHTML =
+                        `<img src="${profileState.profileImgUrl}" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;" alt="프로필">`;
+                } else if (elements.currentProfileImg) {
+                    elements.currentProfileImg.classList.add('bg-primary');
+                    elements.currentProfileImg.innerHTML = `
+                        <span class="fs-4">👨‍🏫</span>
+                    `;
+                }
+            }
+
+            console.log('profileState 초기값:', profileState);
+
+            // 프로필 이미지 변경 미리보기
+            function bindProfileImagePreview() {
+                const profileImgInput = document.getElementById('editProfileImg');
+                const currentProfileImg = document.getElementById('currentProfileImg');
+
+                if (!profileImgInput || !currentProfileImg) return;
+
+                profileImgInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    // 상태 저장 (submit 때 사용)
+                    profileState.profileImgFile = file;
+
+                    // 미리보기 URL 생성
+                    const previewUrl = URL.createObjectURL(file);
+
+                    // 현재 currentProfileImg 요소에 img가 있는지 확인
+                    const imgEl = currentProfileImg.querySelector('img');
+
+                    if (imgEl) {
+                        // 이미지 요소가 있으면 src만 변경
+                        imgEl.src = previewUrl;
+                    } else {
+                        // 이미지 요소가 없으면(이모지 상태)
+                        currentProfileImg.classList.remove('bg-primary');
+                        currentProfileImg.innerHTML = `
+                            <img
+                                src="${previewUrl}"
+                                style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;"
+                                alt="프로필 이미지 미리보기"
+                            >
+                        `;
+                    }
+                });
+            }
+
+            let currentSection = "basic";
+            let securityVerified = false;
+
+            function reloadProfileEditSection(sectionType) {
+                const safeKey = sections.includes(sectionType) ? sectionType : (currentSection || 'basic');
+                window.location.href = `${window.location.pathname}?section=${encodeURIComponent(safeKey)}`;
+            }
+
+            window.reloadProfileEditSection = reloadProfileEditSection;
+
+            async function verifySecurityAccessInline() {
+                if (!profileState.loginId) {
+                    alert('아이디 정보를 불러오지 못했습니다.');
+                    return false;
+                }
+
+                const currentPassword = document.getElementById('securityPassword')?.value || "";
+                const errorEl = document.getElementById('securityError');
+                const verifyBtn = document.getElementById('btnSecurityVerify');
+
+                if (!currentPassword) {
+                    if (errorEl) {
+                        errorEl.textContent = '현재 비밀번호를 입력하세요.';
+                        errorEl.classList.remove('d-none');
+                    }
+                    return false;
+                }
+
+                try {
+                    console.log('[비밀번호 검증] 요청 시작:', { username: profileState.loginId });
+
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: profileState.loginId, password: currentPassword }),
+                        credentials: 'include'
+                    });
+
+                    console.log('[비밀번호 검증] 응답 상태:', response.status);
+
+                    if (!response.ok && response.status !== 400 && response.status !== 401) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const result = await response.json();
+                    console.log('[비밀번호 검증] 응답 데이터:', result);
+
+                    // success 필드 확인
+                    const isSuccess = result?.success === true;
+
+                    if (!isSuccess) {
+                        const errorMsg = result?.message || '비밀번호가 올바르지 않습니다.';
+                        if (errorEl) {
+                            errorEl.textContent = errorMsg;
+                            errorEl.classList.remove('d-none');
+                        }
+                        if (verifyBtn) {
+                            verifyBtn.disabled = false;
+                            verifyBtn.innerHTML = '확인';
+                        }
+                        console.log('[비밀번호 검증] 실패:', errorMsg);
+                        return false;
+                    }
+
+                    // 성공 - securityForm 표시
+                    securityVerified = true;
+                    const pwdInput = document.getElementById('securityPassword');
+                    if (pwdInput) pwdInput.disabled = true;
+                    if (verifyBtn) {
+                        verifyBtn.disabled = true;
+                        verifyBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> 확인 완료';
+                        verifyBtn.classList.remove('btn-outline-primary');
+                        verifyBtn.classList.add('btn-success');
+                    }
+                    if (errorEl) {
+                        errorEl.classList.add('d-none');
+                    }
+
+                    document.getElementById('securityGate')?.classList.add('d-none');
+                    document.getElementById('securityForm')?.classList.remove('d-none');
+                    console.log('[비밀번호 검증] 성공');
+                    return true;
+                } catch (error) {
+                    console.error('[비밀번호 검증] 예외 발생:', error);
+                    if (errorEl) {
+                        errorEl.textContent = '비밀번호 확인 중 오류가 발생했습니다. 콘솔을 확인하세요.';
+                        errorEl.classList.remove('d-none');
+                    }
+                    if (verifyBtn) {
+                        verifyBtn.disabled = false;
+                        verifyBtn.innerHTML = '확인';
+                    }
+                    return false;
+                }
+            }
+
+            async function runEmbeddedScripts(root) {
+                const scripts = Array.from(root.querySelectorAll('script'));
+                for (const old of scripts) {
+                    if (old.src) {
+                        if (document.querySelector(`script[src="${old.src}"]`)) continue;
+                        await new Promise((resolve, reject) => {
+                            const s = document.createElement('script');
+                            s.src = old.src;
+                            s.async = false;
+                            s.onload = resolve;
+                            s.onerror = reject;
+                            document.body.appendChild(s);
+                        });
+                    } else {
+                        const s = document.createElement('script');
+                        s.textContent = old.textContent;
+                        document.body.appendChild(s);
+                    }
+                }
+            }
+
+            async function flushSectionDraftBeforeLeave(nextSection) {
+                if (currentSection === 'employment' && nextSection !== 'employment' && careerDirty) {
+                    const ok = await saveCareersToApi(true);
+                    if (!ok) return false;
+                }
+
+                if (currentSection === 'documents' && nextSection !== 'documents' && (educationDirty || degreeDirty)) {
+                    const ok = await saveEducationsToApi(true);
+                    if (!ok) return false;
+                }
+
+                return true;
+            }
+
+            async function showSection(key) {
+                const safeKey = sections.includes(key) ? key : "basic";
+                const canLeave = await flushSectionDraftBeforeLeave(safeKey);
+                if (!canLeave) return;
+
+                collectSectionValues();
+
+                document.querySelectorAll('.edit-menu .list-group-item').forEach(i => {
+                    i.classList.toggle('active', i.dataset.section === safeKey);
+                });
+
+                const container = document.getElementById('profileEditContainer');
+                if (!container) return;
+
+                try {
+                    console.log(`[showSection] 요청 URL: /tutor/profile-edit/partial/${safeKey}`);
+                    const res = await fetch(`/tutor/profile-edit/partial/${safeKey}`);
+                    console.log(`[showSection] 응답 상태: ${res.status} ${res.statusText}`);
+
+                    if (!res.ok) {
+                        const errorText = await res.text();
+                        console.error(`[showSection] 응답 내용: ${errorText}`);
+                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    }
+
+                    const html = await res.text();
+                    console.log(`[showSection] HTML 로드 성공 (${html.length} chars)`);
+                    container.innerHTML = html;
+                    await runEmbeddedScripts(container);
+                    applyStateToSection();
+                    bindSectionHandlers(safeKey);
+                    currentSection = safeKey;
+                } catch (e) {
+                    console.error('[showSection] 오류 발생:', e);
+                    container.innerHTML = `
+                      <div class="card edit-card shadow-sm">
+                        <div class="card-body">
+                          <div class="panel-title mb-1">로딩 실패</div>
+                          <div class="muted small">데이터를 불러오지 못했습니다.</div>
+                          <div class="text-danger small mt-2">오류: ${e.message}</div>
+                        </div>
+                      </div>
+                    `;
+
+
+                }
+            }
+
+            function bindSectionHandlers(key) {
+                if (key === "basic") {
+                    bindProfileImagePreview();
+                }
+                if (key === "documents") {
+                    initDocumentSection();
+                }
+                if (key === "employment") {
+                    initEmploymentSection();
+                }
+                if (key === "security") {
+                    initSecuritySection();
+                }
+            }
+
+            function initSecuritySection() {
+                const gate = document.getElementById('securityGate');
+                const form = document.getElementById('securityForm');
+                const verifyBtn = document.getElementById('btnSecurityVerify');
+                const passwordInput = document.getElementById('securityPassword');
+                const errorEl = document.getElementById('securityError');
+
+                if (!gate || !form) return;
+
+                // 상태에 따라 UI 설정
+                if (securityVerified) {
+                    gate.classList.add('d-none');
+                    form.classList.remove('d-none');
+                } else {
+                    gate.classList.remove('d-none');
+                    form.classList.add('d-none');
+
+                    // 에러 메시지 초기화
+                    if (errorEl) {
+                        errorEl.classList.add('d-none');
+                        errorEl.textContent = '';
+                    }
+                }
+
+                // 확인 버튼 클릭 이벤트
+                if (verifyBtn) {
+                    verifyBtn.addEventListener('click', async () => {
+                        await verifySecurityAccessInline();
+                    });
+                }
+
+                // Enter 키 지원
+                if (passwordInput) {
+                    passwordInput.addEventListener('keydown', async (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            await verifySecurityAccessInline();
+                        }
+                    });
+
+                    // 입력 시 에러 메시지 숨김
+                    passwordInput.addEventListener('input', () => {
+                        if (errorEl) {
+                            errorEl.classList.add('d-none');
+                        }
+                    });
+                }
+            }
+
+            // 섹션 전환
+            document.querySelectorAll('.edit-menu .list-group-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    showSection(this.dataset.section);
+                });
+            });
+
+            // 페이지 로드 시 데이터 바인딩
+            document.addEventListener('DOMContentLoaded', async function () {
+
+                try {
+                    const authed = await ensureAuth();
+                    if (!authed) {
+                        location.href = '/login';
+                        return;
+                    }
+
+                    const response = await fetchWithAuth('/api/tutors/me');
+                    if (!response.ok) throw new Error('Failed to fetch');
+
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const profile = result.data.tutorProfile;
+                        if (profile) {
+                            // 사이드바
+                            document.getElementById('sidebarName').textContent = profile.name || '튜터';
+                            document.getElementById('sidebarLoginId').textContent = profile.email || '';
+                            if (profile.profileImg) {
+                                document.getElementById('sidebarProfileImg').classList.remove('bg-primary');
+                                document.getElementById('sidebarProfileImg').innerHTML =
+                                    `<img src="${profile.profileImg}" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;" alt="프로필">`;
+                                profileState.profileImgUrl = profile.profileImg;
+                            } else {
+                                document.getElementById('sidebarProfileImg').classList.add('bg-primary');
+                                document.getElementById('sidebarProfileImg').innerHTML = `
+                                    <span class="fs-4">👨‍🏫</span>
+                                `;
+                            }
+
+                            // 상태 저장
+                            profileState.loginId = profile.email || '';
+                            profileState.email = profile.email || '';
+                            profileState.nickname = profile.nickname || '';
+                            profileState.name = profile.name || '';
+                            profileState.phone = profile.phone || '';
+                            profileState.headline = profile.headline || '';
+                            profileState.bio = profile.bio || '';
+                            profileState.selfIntro = profile.selfIntro || '';
+                            profileState.videoUrl = profile.videoUrl || '';
+                            profileState.defaultZoomUrl = profile.defaultZoomUrl || '';
+                            profileState.bankName = profile.bankName || '';
+                            profileState.accountNumber = profile.accountNumber || '';
+                            profileState.accountHolder = profile.accountHolder || '';
+
+                            applyStateToSection();
+                        }
+                    }
+                } catch (e) {
+                    console.warn('프로필 데이터 불러오기 실패', e);
+                }
+            });
+
+            // 섹션별 저장 함수
+            async function saveSection(sectionType) {
+                collectSectionValues();
+
+                const formData = new FormData();
+
+                // 섹션 유형에 따른 폼 데이터 설정
+                switch (sectionType) {
+                    case 'basic':
+                        formData.set('name', profileState.name || '');
+                        formData.set('phone', profileState.phone || '');
+                        if (profileState.profileImgFile) {
+                            formData.set('profileImg', profileState.profileImgFile);
+                        }
+                        break;
+
+                    case 'profile':
+                        formData.set('headline', profileState.headline || '');
+                        formData.set('bio', profileState.bio || '');
+                        formData.set('selfIntro', profileState.selfIntro || '');
+                        formData.set('videoUrl', profileState.videoUrl || '');
+                        break;
+
+                    case 'account':
+                        formData.set('bankName', profileState.bankName || '');
+                        formData.set('accountNumber', profileState.accountNumber || '');
+                        formData.set('accountHolder', profileState.accountHolder || '');
+                        break;
+
+                    case 'zoom':
+                        formData.set('defaultZoomUrl', profileState.defaultZoomUrl || '');
+                        break;
+
+                    case 'documents':
+                        // 파일 업로드: 학력증명서, 학위증명서, 자격증
+                        const eduFiles = document.getElementById('editDocEducation')?.files || [];
+                        const degFiles = document.getElementById('editDocDegree')?.files || [];
+                        const certFiles = document.getElementById('editDocCertificate')?.files || [];
+                        for (const file of eduFiles) {
+                            formData.append('docEducation', file);
+                        }
+                        for (const file of degFiles) {
+                            formData.append('docDegree', file);
+                        }
+                        for (const file of certFiles) {
+                            formData.append('docCertificate', file);
+                        }
+                        break;
+
+                    case 'security':
+                        // 보안 탭 접근 확인
+                        if (!securityVerified) {
+                            alert('현재 비밀번호를 먼저 확인해주세요.');
+                            return;
+                        }
+
+                        if (profileState.password) {
+                            // 현재 비밀번호와 새 비밀번호 비교
+                            const currentPassword = document.getElementById('securityPassword')?.value || "";
+                            if (currentPassword === profileState.password) {
+                                alert('현재 비밀번호와 같습니다');
+                                return;
+                            }
+
+                            if (profileState.password !== profileState.passwordConfirm) {
+                                alert('비밀번호가 일치하지 않습니다.');
+                                return;
+                            }
+                            const passwordCheck = /^(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{6,}$/;
+                            if (!passwordCheck.test(profileState.password)) {
+                                alert('비밀번호는 6자 이상이며 특수문자를 1개 이상 포함해야 합니다.');
+                                return;
+                            }
+                            formData.set('password', profileState.password);
+                            formData.set('passwordConfirm', profileState.passwordConfirm);
+                        } else {
+                            alert('새 비밀번호를 입력해주세요.');
+                            return;
+                        }
+                        break;
+
+                    default:
+                        console.error('알 수 없는 섹션 유형', sectionType);
+                        return;
+                }
+
+                try {
+                    const response = await fetchWithAuth('/api/tutors', {
+                        method: 'PUT',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    const sectionNames = {
+                        basic: '기본 정보',
+                        profile: '프로필',
+                        account: '계좌 정보',
+                        zoom: 'Zoom 연동',
+                        security: '보안 설정'
+                    };
+                    if (result.success) {
+                        // 저장 완료
+                        alert(`${sectionNames[sectionType] || '섹션'}이(가) 저장되었습니다.`);
+
+                        // 보안 섹션 저장 후 마이페이지로 이동
+                        if (sectionType === 'security') {
+                            location.href = '/tutor/mypage';
+                            return;
+                        }
+
+                        // 사이드바 프로필 이미지 업데이트 (basic 섹션 저장 시)
+                        if (sectionType === 'basic' && profileState.profileImgFile) {
+                            const previewUrl = URL.createObjectURL(profileState.profileImgFile);
+                            const sidebarProfileImg = document.getElementById('sidebarProfileImg');
+                            if (sidebarProfileImg) {
+                                sidebarProfileImg.classList.remove('bg-primary');
+                                sidebarProfileImg.innerHTML = `<img src="${previewUrl}" class="rounded-circle w-100 h-100 object-fit-cover" alt="프로필">`;
+                            }
+                        }
+
+                    } else {
+                        alert(result.message || `${sectionNames[sectionType] || '섹션'} 저장에 실패했습니다.`);
+                    }
+                } catch (error) {
+                    console.error('섹션 저장 실패:', error);
+                    alert('섹션 저장 중 오류가 발생했습니다.');
+                }
+            }
+
+            function formatFileSize(bytes) {
+                if (!Number.isFinite(bytes)) return '';
+                if (bytes < 1024) return `${bytes}B`;
+                if (bytes < (1024 * 1024)) return `${(bytes / 1024).toFixed(1)}KB`;
+                return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+            }
+
+            function parseCertificateText(displayName) {
+                const value = String(displayName || '').trim();
+                const match = value.match(/^(.*)\((.*)\)$/);
+                if (!match) {
+                    return { name: value, issuer: '' };
+                }
+                return {
+                    name: match[1].trim(),
+                    issuer: match[2].trim()
+                };
+            }
+
+            function renderCareerCards() {
+                const listEl = document.getElementById('careerCardList');
+                if (!listEl) return;
+
+                listEl.innerHTML = '';
+                if (!Array.isArray(documentDraft.careers) || documentDraft.careers.length === 0) {
+                    const empty = document.createElement('div');
+                    empty.className = 'text-muted small';
+                    empty.textContent = '추가된 근무경력이 없습니다.';
+                    listEl.appendChild(empty);
+                    return;
+                }
+
+                documentDraft.careers.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'career-item-card';
+
+                    const yearCol = document.createElement('div');
+                    yearCol.className = 'career-year-col';
+                    yearCol.innerHTML = `
+                        <div class="career-year-title">입사</div>
+                        <div class="career-year-value">${item.startYear || '-'}</div>
+                        <div class="career-year-title mt-1">퇴사</div>
+                        <div class="career-year-value">${item.endYear || '재직중'}</div>
+                    `;
+
+
+                    const mainCol = document.createElement('div');
+                    mainCol.className = 'career-main-col';
+
+                    const company = document.createElement('div');
+                    company.className = 'career-company';
+                    company.textContent = item.companyName || '회사명 미입력';
+
+                    const role = document.createElement('div');
+                    role.className = 'career-role';
+
+                    const job = item.jobCategory || '';
+                    const pos = item.jobRole || '';
+                    role.textContent = [job, pos].filter(Boolean).join(' · ') || '직종/직위 미입력';
+
+                    mainCol.appendChild(company);
+                    mainCol.appendChild(role);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'btn btn-sm btn-outline-danger career-remove-btn btn-delete';
+                    deleteBtn.textContent = '삭제';
+                    deleteBtn.addEventListener('click', () => {
+                        documentDraft.careers.splice(index, 1);
+                        careerDirty = true;
+                        renderCareerCards();
+                    });
+
+                    card.appendChild(yearCol);
+                    card.appendChild(mainCol);
+                    card.appendChild(deleteBtn);
+                    listEl.appendChild(card);
+                });
+
+            }
+
+            function renderEducationCards() {
+                const listEl = document.getElementById('educationCardList');
+                if (!listEl) return;
+
+                listEl.innerHTML = '';
+                if (!Array.isArray(documentDraft.educations) || documentDraft.educations.length === 0) {
+                    return;
+                }
+
+                documentDraft.educations.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'text-entry-card text-entry-edu';
+
+                    const icon = document.createElement('div');
+                    icon.className = 'text-entry-icon';
+                    icon.innerHTML = '<i class="bi bi-mortarboard-fill"></i>';
+
+                    const main = document.createElement('div');
+                    main.className = 'text-entry-main';
+
+                    const title = document.createElement('div');
+                    title.className = 'text-entry-title';
+                    title.textContent = item.schoolName || '학교명 미입력';
+
+                    const sub = document.createElement('div');
+                    sub.className = 'text-entry-sub';
+                    sub.textContent = `${item.startYear || '-'} ~ ${item.graduatedYear || '재학중'}`;
+
+                    main.appendChild(title);
+                    main.appendChild(sub);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'btn btn-sm btn-outline-danger';
+                    deleteBtn.textContent = '삭제';
+                    deleteBtn.addEventListener('click', () => {
+                        documentDraft.educations.splice(index, 1);
+                        educationDirty = true;
+                        renderEducationCards();
+                    });
+
+                    card.appendChild(icon);
+                    card.appendChild(main);
+                    card.appendChild(deleteBtn);
+                    listEl.appendChild(card);
+                });
+            }
+
+            function renderDegreeCards() {
+                const listEl = document.getElementById('degreeCardList');
+                if (!listEl) return;
+
+                listEl.innerHTML = '';
+                if (!Array.isArray(documentDraft.degrees) || documentDraft.degrees.length === 0) {
+                    return;
+                }
+
+                documentDraft.degrees.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'text-entry-card text-entry-degree';
+
+                    const icon = document.createElement('div');
+                    icon.className = 'text-entry-icon';
+                    icon.innerHTML = '<i class="bi bi-award-fill"></i>';
+
+                    const main = document.createElement('div');
+                    main.className = 'text-entry-main';
+
+                    const title = document.createElement('div');
+                    title.className = 'text-entry-title';
+                    title.textContent = item.degreeName || '학위명 미입력';
+
+                    const sub = document.createElement('div');
+                    sub.className = 'text-entry-sub';
+                    sub.textContent = item.major ? `전공: ${item.major}` : '전공 미입력';
+
+                    main.appendChild(title);
+                    main.appendChild(sub);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'btn btn-sm btn-outline-danger';
+                    deleteBtn.textContent = '삭제';
+                    deleteBtn.addEventListener('click', () => {
+                        documentDraft.degrees.splice(index, 1);
+                        degreeDirty = true;
+                        renderDegreeCards();
+                    });
+
+                    card.appendChild(icon);
+                    card.appendChild(main);
+                    card.appendChild(deleteBtn);
+                    listEl.appendChild(card);
+                });
+            }
+
+            function buildCareerPayload() {
+                return (documentDraft.careers || [])
+                    .map((item) => ({
+                        companyName: (item.companyName || '').trim(),
+                        jobCategory: (item.jobCategory || '').trim(),
+                        jobRole: (item.jobRole || '').trim(),
+                        startYear: item.startYear ? Number(item.startYear) : null,
+                        endYear: item.endYear ? Number(item.endYear) : null,
+                    }))
+                    .filter((item) => item.companyName && item.startYear);
+            }
+
+            function buildEducationPayload() {
+                const payload = [];
+                const maxLen = Math.max(
+                    documentDraft.educations.length,
+                    documentDraft.degrees.length
+                );
+
+                const nowYear = new Date().getFullYear();
+
+                for (let i = 0; i < maxLen; i++) {
+                    const edu = documentDraft.educations[i] || {};
+                    const deg = documentDraft.degrees[i] || {};
+
+                    const schoolName = (edu.schoolName || '').trim();
+                    const degreeName = (deg.degreeName || '').trim();
+                    const major = (deg.major || '').trim();
+
+                    const degree = degreeName && major ? `${degreeName} (${major})` : (degreeName || major || '');
+
+                    if (!schoolName && !degree) continue;
+
+                    payload.push({
+                        schoolName: schoolName || '학위 정보',
+                        degree: degree || '학위 미입력',
+                        startYear: Number(edu.startYear || edu.graduatedYear || nowYear),
+                        graduatedYear: edu.graduatedYear ? Number(edu.graduatedYear) : null,
+                    });
+
+                }
+
+                return payload;
+
+            }
+
+            async function saveCareersToApi(showSuccess = false) {
+                const payload = buildCareerPayload();
+
+                const res = await fetchWithAuth('/api/tutors/careers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json()
+                    .catch(() => ({
+                        success: false,
+                        message: '응답 파싱 실패'
+                    }));
+
+                if (!(res.ok && result.success)) {
+                    alert(result.message || '근무경력 저장에 실패했습니다.');
+                    return false;
+                }
+
+                careerDirty = false;
+                if (showSuccess) alert('근무경력이 저장되었습니다.');
+                return true;
+
+            }
+
+            window.saveEmploymentSection = async function saveEmploymentSection() {
+                const ok = await saveCareersToApi(true);
+                if (ok) {
+                    reloadProfileEditSection('employment');
+                }
+            };
+
+            async function saveEducationsToApi(showSuccess = false) {
+                const payload = buildEducationPayload();
+
+                const res = await fetchWithAuth('/api/tutors/educations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json().catch(() => ({ success: false, message: '응답 파싱 실패' }));
+                if (!(res.ok && result.success)) {
+                    alert(result.message || '학력/학위 저장에 실패했습니다.');
+                    return false;
+                }
+
+                educationDirty = false;
+                degreeDirty = false;
+                if (showSuccess) alert('학력/학위가 저장되었습니다.');
+                return true;
+            }
+
+            async function loadCareersFromApi() {
+                if (careersInitialized) {
+                    renderCareerCards();
+                    return;
+                }
+
+                const res = await fetchWithAuth('/api/tutors/careers');
+                const result = await res.json().catch(() => ({ success: false, data: [] }));
+                if (!(res.ok && result.success)) {
+                    alert(result.message || '근무경력 조회에 실패했습니다.');
+                    return;
+                }
+
+                documentDraft.careers = (result.data || []).map((item) => ({
+                    companyName: item.companyName || '',
+                    jobCategory: item.jobCategory || '',
+                    jobRole: item.jobRole || '',
+                    startYear: item.startYear || null,
+                    endYear: item.endYear || null
+                }));
+
+                careersInitialized = true;
+                careerDirty = false;
+                renderCareerCards();
+            }
+
+            async function loadEducationsFromApi() {
+                if (educationsInitialized) {
+                    renderEducationCards();
+                    renderDegreeCards();
+                    return;
+                }
+
+                const res = await fetchWithAuth('/api/tutors/educations');
+                const result = await res.json().catch(() => ({ success: false, data: [] }));
+                if (!(res.ok && result.success)) {
+                    alert(result.message || '학력/학위 조회에 실패했습니다.');
+                    return;
+                }
+
+                const rows = result.data || [];
+                documentDraft.educations = rows.map((item) => ({
+                    schoolName: item.schoolName || '',
+                    startYear: item.startYear || null,
+                    graduatedYear: item.graduatedYear || null
+                }));
+
+                documentDraft.degrees = rows.map((item) => {
+                    const raw = String(item.degree || '').trim();
+                    const m = raw.match(/^(.*)\((.*)\)$/);
+                    if (m) return { degreeName: m[1].trim(), major: m[2].trim() };
+                    return { degreeName: raw, major: '' };
+                });
+
+                educationsInitialized = true;
+                educationDirty = false;
+                degreeDirty = false;
+                renderEducationCards();
+                renderDegreeCards();
+            }
+
+            function renderPendingFileList(listId, cardId, files, inputId, draftKey) {
+                const listEl = document.getElementById(listId);
+                const cardEl = document.getElementById(cardId);
+                if (!listEl || !cardEl) return;
+
+                listEl.innerHTML = '';
+                if (!Array.isArray(files) || files.length === 0) {
+                    cardEl.style.display = 'none';
+                    return;
+                }
+
+                cardEl.style.display = '';
+                files.forEach((file, index) => {
+                    const item = document.createElement('li');
+                    item.className = 'list-group-item py-2 d-flex align-items-center gap-2';
+
+                    const info = document.createElement('div');
+                    info.className = 'col text-break';
+                    const nameEl = document.createElement('span');
+                    nameEl.textContent = file.name || '파일';
+                    const sizeEl = document.createElement('small');
+                    sizeEl.className = 'text-muted d-block';
+                    sizeEl.textContent = formatFileSize(Number(file.size || 0));
+                    info.appendChild(nameEl);
+                    info.appendChild(sizeEl);
+
+                    const actions = document.createElement('div');
+                    actions.className = 'd-flex align-items-center gap-1';
+
+                    const editBtn = document.createElement('button');
+                    editBtn.type = 'button';
+                    editBtn.className = 'btn btn-sm btn-outline-secondary';
+                    editBtn.textContent = '수정';
+                    editBtn.addEventListener('click', () => {
+                        const input = document.getElementById(inputId);
+                        if (!input) return;
+                        input.dataset.replaceIndex = String(index);
+                        input.click();
+                    });
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'btn btn-sm btn-outline-danger';
+                    deleteBtn.textContent = '삭제';
+                    deleteBtn.addEventListener('click', () => {
+                        documentDraft[draftKey].splice(index, 1);
+                        renderPendingFileList(listId, cardId, documentDraft[draftKey], inputId, draftKey);
+                    });
+
+                    actions.appendChild(editBtn);
+                    actions.appendChild(deleteBtn);
+                    item.appendChild(info);
+                    item.appendChild(actions);
+                    listEl.appendChild(item);
+                });
+            }
+
+            function renderCertificateTextCards() {
+                const listEl = document.getElementById('certificateTextCardList');
+                if (!listEl) return;
+
+                listEl.innerHTML = '';
+                if (documentDraft.certificateTexts.length === 0) {
+                    const empty = document.createElement('div');
+                    empty.className = 'text-muted small';
+                    empty.textContent = '추가된 자격증 텍스트가 없습니다.';
+                    listEl.appendChild(empty);
+                    return;
+                }
+
+                documentDraft.certificateTexts.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'border rounded p-2 d-flex align-items-center gap-2 bg-white';
+
+                    const content = document.createElement('div');
+                    content.className = 'flex-grow-1';
+
+                    const title = document.createElement('div');
+                    title.className = 'fw-semibold';
+                    title.textContent = item.name;
+
+                    const subtitle = document.createElement('div');
+                    subtitle.className = 'small text-muted';
+                    subtitle.textContent = item.issuer ? `발급기관: ${item.issuer}` : '발급기관 미입력';
+
+                    content.appendChild(title);
+                    content.appendChild(subtitle);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'btn btn-sm btn-outline-danger';
+                    deleteBtn.textContent = '삭제';
+                    deleteBtn.addEventListener('click', () => {
+                        documentDraft.certificateTexts.splice(index, 1);
+                        certificateTextsDirty = true;
+                        renderCertificateTextCards();
+                    });
+
+                    card.appendChild(content);
+                    card.appendChild(deleteBtn);
+                    listEl.appendChild(card);
+                });
+            }
+
+            function bindDocumentInput(inputId, draftKey, listId, cardId) {
+                const input = document.getElementById(inputId);
+                if (!input) return;
+
+                input.addEventListener('change', () => {
+                    const files = Array.from(input.files || []);
+                    if (files.length === 0) return;
+
+                    const replaceIndex = Number(input.dataset.replaceIndex);
+                    if (Number.isInteger(replaceIndex) && replaceIndex >= 0 && replaceIndex < documentDraft[draftKey].length) {
+                        documentDraft[draftKey].splice(replaceIndex, 1, files[0]);
+                        if (files.length > 1) {
+                            documentDraft[draftKey].splice(replaceIndex + 1, 0, ...files.slice(1));
+                        }
+                    } else {
+                        documentDraft[draftKey].push(...files);
+                    }
+
+                    delete input.dataset.replaceIndex;
+                    input.value = '';
+                    renderPendingFileList(listId, cardId, documentDraft[draftKey], inputId, draftKey);
+                });
+            }
+
+            async function uploadDocs(docType, files) {
+                for (const file of files) {
+                    const fd = new FormData();
+                    fd.set('docType', docType);
+                    fd.set('file', file);
+                    const res = await fetchWithAuth('/api/tutors/documents', {
+                        method: 'POST',
+                        body: fd
+                    });
+                    const result = await res.json();
+                    if (!(res.ok && result.success)) {
+                        throw new Error(result?.message || '문서 업로드에 실패했습니다.');
+                    }
+                }
+            }
+
+            async function saveCertificateTexts() {
+                const res = await fetchWithAuth('/api/tutors/documents/certificate-texts', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(documentDraft.certificateTexts)
+                });
+                const result = await res.json();
+                if (!(res.ok && result.success)) {
+                    throw new Error(result?.message || '자격증 텍스트 저장에 실패했습니다.');
+                }
+            }
+
+            function resetPendingDocumentFiles() {
+                documentDraft.educationFiles = [];
+                documentDraft.degreeFiles = [];
+                documentDraft.certificateFiles = [];
+                renderPendingFileList('academicList', 'academicListCard', documentDraft.educationFiles, 'editDocEducation', 'educationFiles');
+                renderPendingFileList('educationList', 'educationListCard', documentDraft.degreeFiles, 'educationCertificate', 'degreeFiles');
+                renderPendingFileList('certificateFileList', 'certificateFileListCard', documentDraft.certificateFiles, 'certificateFiles', 'certificateFiles');
+            }
+
+            async function loadDocumentList() {
+                const listEl = document.getElementById('docList');
+
+                const res = await fetchWithAuth('/api/tutors/documents');
+                if (!res.ok) {
+                    if (listEl) {
+                        listEl.innerHTML = '<tr><td colspan=\"4\" class=\"text-muted\">목록을 불러오지 못했습니다.</td></tr>';
+                    }
+                    return;
+                }
+
+                const result = await res.json();
+                const docs = (result && result.data) || [];
+
+                if (!documentTextsInitialized) {
+                    const texts = docs
+                        .filter((d) => d.docType === 'CERTIFICATE_TEXT')
+                        .map((d) => parseCertificateText(d.originalName))
+                        .filter((d) => d.name);
+                    documentDraft.certificateTexts = texts;
+                    documentTextsInitialized = true;
+                    certificateTextsDirty = false;
+                    renderCertificateTextCards();
+                }
+
+                if (!listEl) return;
+
+                const typeLabel = {
+                    EDUCATION: '학력',
+                    DEGREE: '학위',
+                    CERTIFICATE: '자격증',
+                    CERTIFICATE_TEXT: '자격증(텍스트)'
+                };
+
+                if (docs.length === 0) {
+                    listEl.innerHTML = '<tr><td colspan=\"4\" class=\"text-muted\">저장된 서류가 없습니다.</td></tr>';
+                    return;
+                }
+
+                listEl.innerHTML = docs.map((d) => `
+                  <tr>
+                    <td>${typeLabel[d.docType] || d.docType}</td>
+                    <td>${d.originalName || '-'}</td>
+                    <td class="muted">${d.createdAt ? d.createdAt.substring(0, 10) : ''}</td>
+                    <td>${d.reviewedAt ? '검토 완료' : '대기'}</td>
+                  </tr>
+                `).join('');
+
+            }
+
+            async function initEmploymentSection() {
+                await loadCareersFromApi();
+
+                renderCareerCards();
+
+                document.getElementById('btnAddCareer')?.addEventListener('click', () => {
+                    const companyName = document.getElementById('careerCompany')?.value.trim() || '';
+                    const jobCategory = document.getElementById('careerJob')?.value.trim() || '';
+                    const jobRole = document.getElementById('careerPosition')?.value.trim() || '';
+                    const startYearRaw = document.getElementById('careerStartYear')?.value.trim() || '';
+                    const endYearRaw = document.getElementById('careerEndYear')?.value.trim() || '';
+
+                    if (!companyName) {
+                        alert('회사명을 입력해주세요.');
+                        return;
+                    }
+
+                    if (!startYearRaw) {
+                        alert('입사년도를 입력해주세요.');
+                        return;
+                    }
+
+                    documentDraft.careers.push({
+                        companyName,
+                        jobCategory,
+                        jobRole,
+                        startYear: Number(startYearRaw),
+                        endYear: endYearRaw ? Number(endYearRaw) : null
+                    });
+
+                    careerDirty = true;
+                    renderCareerCards();
+
+                    document.getElementById('careerCompany').value = '';
+                    document.getElementById('careerJob').value = '';
+                    document.getElementById('careerPosition').value = '';
+                    document.getElementById('careerStartYear').value = '';
+                    document.getElementById('careerEndYear').value = '';
+                });
+
+                const uploadBtn = document.getElementById('btnEmploymentUpload');
+                const input = document.getElementById('editDocEmployment');
+
+                if (uploadBtn && input) {
+
+                    input.addEventListener('change', () => {
+                        const files = Array.from(input.files || []);
+                        if (files.length === 0) return;
+
+                        documentDraft.employmentFiles = files;
+                        input.value = '';
+                    });
+
+                    uploadBtn.addEventListener('click', async () => {
+                        if (documentDraft.employmentFiles.length === 0) {
+                            alert('업로드할 파일을 선택해주세요.');
+                            return;
+                        }
+
+                        try {
+                            await uploadDocs('EMPLOYMENT', documentDraft.employmentFiles);
+                            documentDraft.employmentFiles = [];
+                            alert('재직증명서가 업로드되었습니다.');
+                            await loadDocumentList();
+                        } catch (e) {
+                            console.error(e);
+                            alert(e.message || '재직증명서 업로드 중 오류가 발생했습니다.');
+                        }
+                    });
+                }
+            }
+
+            async function initDocumentSection() {
+                const uploadBtn = document.getElementById('btnDocUpload');
+
+                if (!uploadBtn) return;
+
+                await loadEducationsFromApi();
+
+                bindDocumentInput('editDocEducation', 'educationFiles', 'academicList', 'academicListCard');
+                bindDocumentInput('educationCertificate', 'degreeFiles', 'educationList', 'educationListCard');
+                bindDocumentInput('certificateFiles', 'certificateFiles', 'certificateFileList', 'certificateFileListCard');
+
+                renderPendingFileList('academicList', 'academicListCard', documentDraft.educationFiles, 'editDocEducation', 'educationFiles');
+                renderPendingFileList('educationList', 'educationListCard', documentDraft.degreeFiles, 'educationCertificate', 'degreeFiles');
+                renderPendingFileList('certificateFileList', 'certificateFileListCard', documentDraft.certificateFiles, 'certificateFiles', 'certificateFiles');
+                renderCertificateTextCards();
+
+                renderEducationCards();
+                renderDegreeCards();
+
+                document.getElementById('btnAddEducation')?.addEventListener('click', () => {
+                    const schoolName = document.getElementById('educationSchoolName')?.value.trim() || '';
+                    const startYearRaw = document.getElementById('educationStartYear')?.value.trim() || '';
+                    const graduatedYearRaw = document.getElementById('educationGraduatedYear')?.value.trim() || '';
+
+                    if (!schoolName) {
+                        alert('학교명을 입력해주세요.');
+                        return;
+                    }
+
+                    if (!startYearRaw) {
+                        alert('입학년도를 입력해주세요.');
+                        return;
+                    }
+
+                    documentDraft.educations.push({
+                        schoolName,
+                        startYear: Number(startYearRaw),
+                        graduatedYear: graduatedYearRaw ? Number(graduatedYearRaw) : null
+                    });
+
+                    educationDirty = true;
+                    renderEducationCards();
+
+                    document.getElementById('educationSchoolName').value = '';
+                    document.getElementById('educationStartYear').value = '';
+                    document.getElementById('educationGraduatedYear').value = '';
+
+                });
+
+                document.getElementById('btnAddDegree')?.addEventListener('click', () => {
+                    const degreeName = document.getElementById('degreeName')?.value.trim() || '';
+                    const major = document.getElementById('degreeMajor')?.value.trim() || '';
+
+                    if (!degreeName) {
+                        alert('학위명을 입력해주세요.');
+                        return;
+                    }
+
+                    documentDraft.degrees.push({
+                        degreeName,
+                        major
+                    });
+
+                    degreeDirty = true;
+                    renderDegreeCards();
+
+                    document.getElementById('degreeName').value = '';
+                    document.getElementById('degreeMajor').value = '';
+
+                });
+
+                document.getElementById('btnAddCertificateText')?.addEventListener('click', () => {
+                    const nameInput = document.getElementById('certificateName');
+                    const issuerInput = document.getElementById('certificateIssuer');
+                    if (!nameInput || !issuerInput) return;
+
+                    const name = nameInput.value.trim();
+                    const issuer = issuerInput.value.trim();
+                    if (!name) {
+                        alert('자격증명을 입력해주세요.');
+                        return;
+                    }
+
+                    documentDraft.certificateTexts.push({ name, issuer });
+                    certificateTextsDirty = true;
+                    renderCertificateTextCards();
+                    nameInput.value = '';
+                    issuerInput.value = '';
+                });
+
+                uploadBtn.addEventListener('click', async () => {
+                    const hasFiles =
+                        documentDraft.educationFiles.length > 0 ||
+                        documentDraft.degreeFiles.length > 0 ||
+                        documentDraft.certificateFiles.length > 0;
+                    const hasEduChanges = educationDirty || degreeDirty;
+
+                    if (!hasFiles && !certificateTextsDirty && !hasEduChanges) {
+                        alert('변경된 내용이 없습니다.');
+                        return;
+                    }
+
+                    try {
+                        if (hasEduChanges) {
+                            const ok = await saveEducationsToApi(false);
+                            if (!ok) return;
+                        }
+
+                        if (hasFiles) {
+                            await uploadDocs('EDUCATION', documentDraft.educationFiles);
+                            await uploadDocs('DEGREE', documentDraft.degreeFiles);
+                            await uploadDocs('CERTIFICATE', documentDraft.certificateFiles);
+                            resetPendingDocumentFiles();
+                        }
+
+                        if (certificateTextsDirty) {
+                            await saveCertificateTexts();
+                            certificateTextsDirty = false;
+                        }
+
+                        documentTextsInitialized = false;
+                        alert('서류 정보가 저장되었습니다.');
+                        reloadProfileEditSection('documents');
+                        return;
+                    } catch (e) {
+                        console.error(e);
+                        alert(e.message || '서류 저장 중 오류가 발생했습니다.');
+                    }
+                });
+
+                await loadDocumentList();
+            }
+
+            // 최초 섹션
+            const initial = new URLSearchParams(location.search).get('section') || 'basic';
+            showSection(sections.includes(initial) ? initial : 'basic');
+        </script>
+    </div>
+</div>

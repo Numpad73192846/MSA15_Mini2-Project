@@ -1,0 +1,55 @@
+<section class="edit-section">
+  <div class="card edit-card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="step-section-title">근무 경력</div>
+      <div class="step-section-desc">등록된 근무 경력을 확인하고 수정하세요</div>
+      <div class="admin-box">
+          <div class="mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="fw-bold mb-0">근무 경력</h5>
+            </div>
+            <p class="text-muted small mb-2">최근 경력부터 추가해 주세요. 퇴사연도는 재직 중이면 비워두세요.</p>
+            <div class="card border rounded-3 p-3 bg-light">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">회사명</label>
+                        <input type="text" class="form-control" id="careerCompany" placeholder="예) ABC학원">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">직종</label>
+                        <input type="text" class="form-control" id="careerJob" placeholder="예) 영어강사">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">직위</label>
+                        <input type="text" class="form-control" id="careerPosition" placeholder="예) 팀장">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">입사연도</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="careerStartYear" min="1950" max="2100" placeholder="2020">
+                            <span class="input-group-text">년</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">퇴사연도 (선택)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="careerEndYear" min="1950" max="2100" placeholder="2023">
+                            <span class="input-group-text">년</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end mt-3">
+                    <button type="button" class="btn btn-outline-primary" id="btnAddCareer">경력 추가</button>
+                </div>
+                <div id="careerCardList"></div>
+            </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</section>
+<div class="d-flex justify-content-end">
+  <button type="button" class="btn btn-primary px-4" onclick="saveEmploymentSection()">
+    <i class="bi bi-check-lg me-1"></i> 근무 경력 저장
+  </button>
+</div>

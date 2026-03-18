@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TutorFieldMapper">
+
+    <delete id="deleteByUserId">
+        DELETE FROM tutor_field
+        WHERE user_id = #{userId}
+    </delete>
+
+    <insert id="insertBatch">
+        INSERT INTO tutor_field (id, user_id, field_id, seq)
+        VALUES
+        <foreach collection="fieldIds" item="fieldId" index="idx" separator=",">
+            (UUID(), #{userId}, #{fieldId}, #{idx})
+        </foreach>
+    </insert>
+
+    <select id="selectByUserId" resultMap="com.aloha.teamproject.mapper.LanguageFieldMapper.languageFieldMap">
+        SELECT lf.*
+        FROM tutor_field tf
+        JOIN language_field lf ON lf.id = tf.field_id
+        WHERE tf.user_id = #{userId}
+        ORDER BY tf.seq
+    </select>
+
+</mapper>

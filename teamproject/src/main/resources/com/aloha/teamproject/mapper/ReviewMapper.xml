@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.ReviewMapper">
+
+	<resultMap id="ReviewMap" type="com.aloha.teamproject.dto.Review">
+		<id property="id" column="id"/>
+		<result property="bookingId" column="booking_id"/>
+		<result property="studentId" column="student_id"/>
+		<result property="rating" column="rating"/>
+		<result property="content" column="content"/>
+		<result property="studentName" column="student_name"/>
+		<result property="createdAt" column="created_at"/>
+	</resultMap>
+
+	<select id="selectReviewsByTutor" resultMap="ReviewMap">
+		SELECT r.id, r.booking_id, r.rating, r.content, r.created_at, b.user_id AS student_id,
+		       COALESCE(NULLIF(TRIM(u.nickname), ''), u.name) AS student_name
+		FROM review r
+		JOIN booking b ON r.booking_id = b.id
+		JOIN users u ON b.user_id = u.id
+		JOIN lesson l ON b.lesson_id = l.id
+		WHERE l.user_id = #{tutorId}
+		ORDER BY r.created_at DESC
+	</select>
+
+	<select id="selectReviewByBookingId" resultMap="ReviewMap">
+		SELECT r.id, r.booking_id, r.rating, r.content, r.created_at, b.user_id AS student_id,
+		       COALESCE(NULLIF(TRIM(u.nickname), ''), u.name) AS student_name
+		FROM review r
+		JOIN booking b ON r.booking_id = b.id
+		JOIN users u ON b.user_id = u.id
+		JOIN lesson l ON b.lesson_id = l.id
+		WHERE r.booking_id = #{bookingId}
+		ORDER BY r.created_at DESC
+		LIMIT 1
+	</select>
+
+    <select id="selectAll" resultMap="ReviewMap">
+        SELECT * FROM review
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectById" resultMap="ReviewMap">
+        SELECT * FROM review
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByBookingId" resultMap="ReviewMap">
+        SELECT * FROM review
+        WHERE booking_id = #{bookingId}
+    </select>
+
+    <select id="selectByTutorId" resultMap="ReviewMap">
+        SELECT r.id, r.booking_id, r.rating, r.content, r.created_at, b.user_id AS student_id,
+               COALESCE(NULLIF(TRIM(u.nickname), ''), u.name) AS student_name
+        FROM review r
+        JOIN booking b ON r.booking_id = b.id
+        JOIN users u ON b.user_id = u.id
+        JOIN lesson l ON b.lesson_id = l.id
+        WHERE l.user_id = #{tutorId}
+        ORDER BY r.created_at DESC
+    </select>
+
+    <insert id="insert">
+        INSERT INTO review (
+            id, booking_id, rating, content
+        ) VALUES (
+            UUID(), #{bookingId}, #{rating}, #{content}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE review
+        SET rating = #{rating}, content = #{content}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM review WHERE id = #{id}
+    </delete>
+
+</mapper>

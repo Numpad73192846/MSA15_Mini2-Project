@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TutorCareerMapper">
+
+    <resultMap id="TutorCareerMap" type="com.aloha.teamproject.dto.TutorCareer">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="companyName" column="company_name"/>
+        <result property="jobCategory" column="job_category"/>
+        <result property="jobRole" column="job_role"/>
+        <result property="startYear" column="start_year"/>
+        <result property="endYear" column="end_year"/>
+    </resultMap>
+
+    <select id="selectByUserId" resultMap="TutorCareerMap">
+        SELECT 
+            id,
+            user_id,
+            company_name,
+            job_category,
+            job_role,
+            start_year,
+            end_year
+        FROM tutor_career
+        WHERE user_id = #{userId}
+        ORDER BY start_year DESC
+    </select>
+
+    <insert id="insert">
+        INSERT INTO tutor_career (
+            id,
+            user_id,
+            company_name,
+            job_category,
+            job_role,
+            start_year,
+            end_year
+        ) VALUES (
+            UUID(),
+            #{userId},
+            #{companyName},
+            #{jobCategory},
+            #{jobRole},
+            #{startYear},
+            #{endYear}
+        )
+    </insert>
+
+    <insert id="insertBatch">
+        INSERT INTO tutor_career (
+            id,
+            user_id,
+            company_name,
+            job_category,
+            job_role,
+            start_year,
+            end_year
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                UUID(),
+                #{item.userId},
+                #{item.companyName},
+                #{item.jobCategory},
+                #{item.jobRole},
+                #{item.startYear},
+                #{item.endYear}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteByUserId">
+        DELETE FROM tutor_career
+        WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

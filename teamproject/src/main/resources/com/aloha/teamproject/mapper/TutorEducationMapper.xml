@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TutorEducationMapper">
+
+    <resultMap id="TutorEducationMap" type="com.aloha.teamproject.dto.TutorEducation">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="schoolName" column="school_name"/>
+        <result property="degree" column="degree"/>
+        <result property="startYear" column="start_year"/>
+        <result property="graduatedYear" column="graduated_year"/>
+    </resultMap>
+
+    <select id="selectByUserId" resultMap="TutorEducationMap">
+        SELECT 
+            id,
+            user_id,
+            school_name,
+            degree,
+            start_year,
+            graduated_year
+        FROM tutor_education
+        WHERE user_id = #{userId}
+        ORDER BY start_year DESC
+    </select>
+
+    <insert id="insert">
+        INSERT INTO tutor_education (
+            id,
+            user_id,
+            school_name,
+            degree,
+            start_year,
+            graduated_year
+        ) VALUES (
+            UUID(),
+            #{userId},
+            #{schoolName},
+            #{degree},
+            #{startYear},
+            #{graduatedYear}
+        )
+    </insert>
+
+    <insert id="insertBatch">
+        INSERT INTO tutor_education (
+            id,
+            user_id,
+            school_name,
+            degree,
+            start_year,
+            graduated_year
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                UUID(),
+                #{item.userId},
+                #{item.schoolName},
+                #{item.degree},
+                #{item.startYear},
+                #{item.graduatedYear}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteByUserId">
+        DELETE FROM tutor_education
+        WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

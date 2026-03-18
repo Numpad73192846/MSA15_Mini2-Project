@@ -1,0 +1,94 @@
+<section class="admin-tab">
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card admin-card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <div class="panel-title">문의/신고</div>
+              <div class="muted small">티켓을 선택 → 우측에서 답변/상태 변경</div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap justify-content-end">
+              <select class="form-select form-select-sm select-pill" id="ticketStatusFilter" style="width:140px;">
+                <option value="ALL">전체 상태</option>
+                <option value="OPEN">접수</option>
+                <option value="IN_PROGRESS">처리중</option>
+                <option value="DONE">완료</option>
+              </select>
+              <select class="form-select form-select-sm select-pill" id="ticketCatFilter" style="width:140px;">
+                <option value="ALL">전체 유형</option>
+                <option value="INQUIRY">문의</option>
+                <option value="REPORT">신고</option>
+                <option value="PAYMENT">결제</option>
+                <option value="ACCOUNT">계정</option>
+              </select>
+              <input class="form-control form-control-sm pill-input" id="ticketSearch" placeholder="제목 검색" style="width:180px;">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+              <tr>
+                <th style="width:40%;">제목</th>
+                <th style="width:16%;">작성자</th>
+                <th style="width:14%;">유형</th>
+                <th style="width:14%;">상태</th>
+                <th style="width:16%;">등록일</th>
+              </tr>
+              </thead>
+              <tbody id="ticketTbody"></tbody>
+            </table>
+          </div>
+
+          <div id="ticketEmpty" class="empty-hero d-none">
+            <div class="emoji">💬</div>
+            <div class="fw-semibold">조건에 맞는 티켓이 없습니다.</div>
+            <div class="muted small">검색/필터를 변경해보세요.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card admin-card shadow-sm">
+        <div class="card-body">
+          <div class="panel-title mb-2">티켓 처리</div>
+          <div class="muted small mb-2" id="ticketPanelHint">좌측 목록에서 티켓을 선택하세요.</div>
+
+          <div id="ticketPanelBody" class="d-none">
+            <div class="fw-semibold" id="ticketTitle">-</div>
+            <div class="muted small mb-2" id="ticketMeta">-</div>
+
+            <div class="divider"></div>
+
+            <div class="fw-bold mb-2">문의 내용</div>
+            <div class="small mb-2" id="ticketContent">-</div>
+
+            <div class="divider"></div>
+
+            <div class="fw-bold mb-2">대화 내역</div>
+            <div id="ticketThread" class="ticket-thread">
+              <div class="text-center text-muted small py-3">메시지 내역이 없습니다.</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="fw-bold mb-2">관리자 답변</div>
+            <textarea class="form-control form-control-sm" id="ticketReply" rows="4" placeholder="답변을 입력하세요"></textarea>
+
+            <div class="d-flex gap-2 mt-2">
+              <button class="btn btn-outline-primary btn-sm btn-pill px-3" id="btnTicketProgress">처리중</button>
+              <button class="btn btn-success btn-sm btn-pill px-3" id="btnTicketDone">완료</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn btn-primary btn-sm btn-pill w-100" id="btnTicketSave">답변 전송</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

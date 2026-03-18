@@ -1,0 +1,2175 @@
+﻿﻿<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" href="/css/tutor-calendar.css">
+    </th:block>
+
+    <div layout:fragment="content">
+        <div class="container py-5">
+            <!-- Header -->
+            <div class="mb-4">
+                <h2 class="h3 fw-bold mb-1">
+                    <img src="/img/mypage/book.svg" alt="마이페이지" style="width: 32px; height: 32px; margin-right: 8px; vertical-align: middle;">
+                    마이페이지
+                </h2>
+                <p class="text-muted mb-0">프로필과 학습 내역을 관리하세요</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left Column: Profile -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="profile-avatar mb-3">
+                                <div id="profileImg" class="avatar-circle bg-info text-white d-flex align-items-center justify-content-center mx-auto">
+                                    <span class="fs-1">👤</span>
+                                </div>
+                            </div>
+                            <h3 class="h5 fw-bold mb-1" id="memberName" th:text="${user.name}">홍길동</h3>
+                            <p class="text-muted small mb-3" id="memberEmail" th:text="${user.username}">
+                                hong@example.com</p>
+
+                            <div class="mb-3">
+                                <span class="badge bg-light text-dark">회원</span>
+                            </div>
+                           
+                            <a href="/member/profile-edit" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="bi bi-pencil-square me-1"></i> 회원정보 수정
+                            </a>
+                            <button class="btn btn-primary w-100" onclick="location.href='/tutors'">
+                                튜터 찾기
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- My Class Card -->
+                    <div class="card shadow-sm mt-3 border-primary" id="myClassCard" >
+                        <div class="card-header">
+                            <h3 class="h6 fw-bold mb-0">내 수업</h3>
+                        </div>
+                        <div class="card-body" id="myClassContent">
+                            <div class="text-center text-muted py-2">예정된 수업이 없습니다.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Activity -->
+                <div class="col-lg-8">
+                    <!-- Quick Stats -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="stat-card card shadow-sm h-100">
+                                <div class="card-body text-center">
+                                    <div class="stat-icon mb-2">
+                                        <img src="/img/mypage/remain.svg" alt="예정된 수업" style="width: 76px; height: 76px;">
+                                    </div>
+                                    <div class="stat-value fw-bold text-primary">3</div>
+                                    <div class="stat-label small text-muted">예정된 수업</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-card card shadow-sm h-100">
+                                <div class="card-body text-center">
+                                    <div class="stat-icon mb-2">
+                                        <img src="/img/mypage/done.svg" alt="완료한 수업" style="width: 76px; height: 76px;">
+                                    </div>
+                                    <div class="stat-value fw-bold text-success">24</div>
+                                    <div class="stat-label small text-muted">완료한 수업</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Tutor Messages Card -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                            <h3 class="h6 fw-bold mb-0">튜터 메시지</h3>
+                        </div>
+                        <div class="d-grid gap-2 p-3" id="tutorMessagesContainer">
+                            <div class="text-center text-muted py-3">메시지가 없습니다.</div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                                <div>
+                                    <h3 class="h6 fw-bold mb-1">AI 수업 요약</h3>
+                                    <p class="text-muted small mb-0">Zoom 수업 내용을 입력하면 요약 포맷으로 정리해드립니다.</p>
+                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenMemberAiSummary">
+                                    AI 수업 요약 작성
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#bookingsTab"
+                                type="button">
+                                예약 내역
+                            </button>
+                        </li>
+
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviewsTab" type="button">
+                                내 리뷰
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#weeklyScheduleTab" type="button">
+                                주간 스케줄
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Bookings Tab -->
+                        <div class="tab-pane fade show active" id="bookingsTab">
+                            <div class="card shadow-sm mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                        <h4 class="h6 fw-bold mb-0">예정된 수업</h4>
+                                        <button type="button" class="btn btn-primary btn-sm" id="btnPayAllUpcoming">튜터 통합 결제</button>
+                                    </div>
+                                    <div class="d-grid gap-2" id="upcomingBookingsContainer">
+                                        <div class="text-center text-muted py-3">예정된 수업이 없습니다.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h4 class="h6 fw-bold mb-3">지난 수업</h4>
+                                    <div class="d-grid gap-2" id="pastBookingsContainer">
+                                        <div class="text-center text-muted py-3">지난 수업이 없습니다.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <!-- Reviews Tab -->
+                        <div class="tab-pane fade" id="reviewsTab">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h4 class="h6 fw-bold mb-3">내가 작성한 리뷰</h4>
+                                    <div class="d-grid gap-3" id="reviewsContainer">
+                                        <div class="text-center text-muted py-3">작성한 리뷰가 없습니다.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="weeklyScheduleTab">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h4 class="h6 fw-bold mb-3">주간 스케줄</h4>
+                                    <div class="d-flex justify-content-between align-items-center gap-2 mb-3 flex-wrap">
+                                        <label for="memberWeeklyTutorFilter" class="small text-muted mb-0">튜터별 수업 보기</label>
+                                        <select id="memberWeeklyTutorFilter" class="form-select form-select-sm" style="max-width: 280px;">
+                                            <option value="">전체 튜터</option>
+                                        </select>
+                                    </div>
+                                    <div class="tc-toolbar mb-3">
+                                        <button type="button" class="tc-iconbtn" id="btnMemberPrevWeek" aria-label="이전 주">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 5.5 9 12l6.5 6.5"/></svg>
+                                        </button>
+                                        <div class="tc-range" id="memberWeekRangeLabel">2026.02.02 ~ 02.08</div>
+                                        <button type="button" class="tc-iconbtn" id="btnMemberNextWeek" aria-label="다음 주">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 18.5 15 12 8.5 5.5"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="weekly_calendar_wrap" id="memberWeeklySchedule">
+                                        <div class="weekly_head">
+                                            <ul class="dayHead">
+                                                <li><div class="head_in"><p class="dayTit">일</p><p class="dayDate">02.02</p></div></li>
+                                                <li><div class="head_in"><p class="dayTit">월</p><p class="dayDate">02.03</p></div></li>
+                                                <li><div class="head_in"><p class="dayTit">화</p><p class="dayDate">02.04</p></div></li>
+                                                <li><div class="head_in"><p class="dayTit">수</p><p class="dayDate">02.05</p></div></li>
+                                                <li><div class="head_in"><p class="dayTit">목</p><p class="dayDate">02.06</p></div></li>
+                                                <li><div class="head_in"><p class="dayTit">금</p><p class="dayDate">02.07</p></div></li>
+                                                <li><div class="head_in"><p class="dayTit">토</p><p class="dayDate">02.08</p></div></li>
+                                            </ul>
+                                        </div>
+                                        <div class="weekly_con">
+                                            <ul class="dayCon">
+                                                <li><div class="con_in"></div></li>
+                                                <li><div class="con_in"></div></li>
+                                                <li><div class="con_in"></div></li>
+                                                <li><div class="con_in"></div></li>
+                                                <li><div class="con_in"></div></li>
+                                                <li><div class="con_in"></div></li>
+                                                <li><div class="con_in"></div></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        <span class="badge bg-danger">●</span> 예약된 내 수업
+                                    </small>
+                                    <div id="memberWeeklyHoverInfo" class="small text-muted border rounded px-3 py-2 mt-2">
+                                        예약된 시간에 마우스를 올리면 튜터 정보를 볼 수 있습니다.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Detail & Reply Modal -->
+        <div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header border-bottom-0 pb-0">
+                        <h5 class="modal-title fw-bold">메시지 확인</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="avatar-circle bg-light text-primary d-flex align-items-center justify-content-center me-3"
+                                style="width: 48px; height: 48px; font-size: 20px;">
+                                <span id="msgTutorInitial">T</span>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0" id="msgTutorName">튜터 이름</h6>
+                                <small class="text-muted" id="msgDate">시간</small>
+                                <div class="small text-muted mt-1" id="memberMessageMeta">수업 메시지</div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div id="memberMessageThread" class="tutor-chat-thread">
+                                <div class="text-center text-muted py-4 small">No messages yet.</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="replyTutorId">
+                        <input type="hidden" id="replyBookingId">
+
+                        <hr class="border-light my-4">
+
+                        <div class="d-flex justify-content-between align-items-center mb-3 gap-2">
+                            <h6 class="fw-bold small mb-0">답장 보내기</h6>
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="form-control bg-light border-0" id="replyMessageArea" rows="3"
+                                placeholder="답장을 입력하세요..." style="resize: none;"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0 pt-0">
+                        <button type="button" class="btn btn-light text-muted" data-bs-dismiss="modal">닫기</button>
+                        <button type="button" class="btn btn-primary px-4" id="btnSendReplyMessage">
+                            <span class="me-1">📤</span> 전송하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Modal -->
+        <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header border-0 bg-light">
+                        <div>
+                            <h5 class="modal-title fw-bold mb-1">결제하기</h5>
+                            <p class="text-muted small mb-0">수업료 결제를 진행해주세요</p>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- 예약 정보 요약 -->
+                        <div class="card bg-light border-0 mb-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                                         style="width:48px;height:48px;font-size:18px;" id="paymentTutorInitial">튜</div>
+                                    <div>
+                                        <div class="fw-bold" id="paymentTutorName">튜터명</div>
+                                        <div class="small text-muted" id="paymentSubject">영어</div>
+                                    </div>
+                                </div>
+                                <div class="row g-2 small">
+                                    <div class="col-6">
+                                        <div class="text-muted">수업 일시</div>
+                                        <div class="fw-semibold" id="paymentDateTime">2026-02-06 14:00</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-muted">수업 시간</div>
+                                        <div class="fw-semibold" id="paymentDurationInfo">30분</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 寃곗젣 ?섎떒 ?좏깮 -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">결제 수단</label>
+                            <div class="d-flex flex-column gap-2">
+                                <label class="payment-method-item">
+                                    <input type="radio" name="paymentMethod" value="card" class="form-check-input" checked>
+                                    <div class="payment-method-content">
+                                        <span class="me-2">💳</span>
+                                        <span>신용/체크카드</span>
+                                    </div>
+                                </label>
+                                <label class="payment-method-item">
+                                    <input type="radio" name="paymentMethod" value="kakao" class="form-check-input">
+                                    <div class="payment-method-content">
+                                        <span class="me-2">💬</span>
+                                        <span>카카오페이</span>
+                                    </div>
+                                </label>
+                                <label class="payment-method-item">
+                                    <input type="radio" name="paymentMethod" value="toss" class="form-check-input">
+                                    <div class="payment-method-content">
+                                        <span class="me-2">📱</span>
+                                        <span>토스페이</span>
+                                    </div>
+                                </label>
+                                <label class="payment-method-item">
+                                    <input type="radio" name="paymentMethod" value="bank" class="form-check-input">
+                                    <div class="payment-method-content">
+                                        <span class="me-2">🏦</span>
+                                        <span>계좌이체</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 寃곗젣 湲덉븸 -->
+                        <div class="border-top pt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">수업료</span>
+                                <span id="paymentLessonFee">35,000원</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">플랫폼 수수료</span>
+                                <span>0원</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold fs-5 mt-3 pt-2 border-top">
+                                <span>총 결제금액</span>
+                                <span class="text-primary" id="paymentTotalAmount">35,000원</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary px-4" id="btnConfirmPayment">
+                            🔒 결제하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="uiNoticeModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content mypage-dialog">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold" id="uiNoticeTitle">알림</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-2">
+                        <p class="mb-0 text-secondary" id="uiNoticeMessage"></p>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-primary px-4" id="uiNoticeOkBtn">확인</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="uiConfirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content mypage-dialog">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold" id="uiConfirmTitle">확인</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-2">
+                        <p class="mb-0 text-secondary" id="uiConfirmMessage"></p>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal" id="uiConfirmCancelBtn">취소</button>
+                        <button type="button" class="btn btn-primary px-4" id="uiConfirmOkBtn">확인</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="uiTutorSelectModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content mypage-dialog">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold">결제할 튜터 선택</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-2">
+                        <p class="text-muted small mb-3">결제할 튜터 수업 묶음을 선택하세요.</p>
+                        <div class="list-group" id="uiTutorSelectList"></div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">취소</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="memberAiSummaryModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content mypage-dialog">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold">AI 수업 요약</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-2">
+                        <p class="small text-muted mb-3">수업 메모를 입력하면 학습 요약 포맷으로 정리합니다.</p>
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold mb-1" for="memberAiTutorName">튜터명</label>
+                                <input type="text" class="form-control form-control-sm" id="memberAiTutorName" placeholder="예: 김튜터">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold mb-1" for="memberAiSubject">수업 주제</label>
+                                <input type="text" class="form-control form-control-sm" id="memberAiSubject" placeholder="예: 중등 영어 회화">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold mb-1" for="memberAiLessonContext">수업 내용</label>
+                            <textarea class="form-control" id="memberAiLessonContext" rows="7" placeholder="오늘 진행한 수업 내용, 피드백, 숙지가 필요한 포인트를 입력해 주세요."></textarea>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label small fw-semibold mb-1" for="memberAiResult">생성 결과</label>
+
+                            <!-- ✅ typed.js 출력 영역 -->
+                            <div id="memberAiResultView" class="form-control bg-light ai-typed-box" aria-label="AI 생성 결과">
+                                <div class="ai-typed-placeholder text-muted">여기에 AI 요약 결과가 표시됩니다.</div>
+                            </div>
+
+                            <!-- ✅ 필요하면 원문 저장/복사용(숨김) -->
+                            <textarea class="form-control d-none" id="memberAiResult" rows="9" readonly></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">닫기</button>
+                        <button type="button" class="btn btn-primary px-4" id="btnRunMemberAiSummary">요약 생성</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+
+            .ai-typed-box{
+                min-height: 220px;
+                white-space: pre-wrap;
+                overflow: auto;
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+
+            .ai-typed-placeholder{
+                pointer-events: none;
+            }
+
+            .mypage-dialog {
+                border: 1px solid #e5e7eb;
+                border-radius: 16px;
+                box-shadow: 0 18px 48px rgba(15, 23, 42, 0.16);
+            }
+
+            #uiTutorSelectList .mypage-select-item {
+                border-top: 1px solid #e5e7eb !important;
+                border-bottom: 1px solid #e5e7eb !important;
+                border-left: 1px solid #e5e7eb !important;
+                border-right: 1px solid #e5e7eb !important;
+                border-radius: 12px !important;
+                margin-bottom: 8px;
+            }
+
+            #uiTutorSelectList .mypage-select-item:hover {
+                border-color: #93c5fd !important;
+                background: #f8fbff !important;
+            }
+
+            #uiConfirmModal .modal-footer {
+                display: flex;
+                gap: 12px;
+            }
+
+            #uiConfirmModal .modal-footer button {
+                flex: 1 1 0;
+                min-width: 0;
+                height: 48px;
+            }
+
+            .payment-method-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 14px 16px;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.2s;
+                background: #fff;
+            }
+            .payment-method-item:hover {
+                border-color: #2563eb;
+                background: #f8fafc;
+            }
+            .payment-method-item:has(input:checked) {
+                border-color: #2563eb;
+                background: #eff6ff;
+            }
+            .payment-method-item input {
+                margin: 0;
+            }
+            .payment-method-content {
+                display: flex;
+                align-items: center;
+            }
+
+            #tutorMessagesContainer {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .tutor-message-card {
+                background: #ffffff;
+                border: 1px solid #e9edf5 !important;
+                border-radius: 14px;
+                box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+                transition: all 0.18s ease;
+            }
+
+            .tutor-message-card:hover {
+                border-color: #cdd9ff !important;
+                box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+                transform: translateY(-1px);
+            }
+
+            .tutor-message-avatar {
+                width: 42px;
+                height: 42px;
+                border-radius: 12px;
+                background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+                color: #1d4ed8;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 16px;
+                flex: 0 0 auto;
+            }
+
+            .tutor-message-subject {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 360px;
+            }
+
+            .tutor-message-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .tutor-message-left {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                min-width: 0;
+                flex: 1 1 auto;
+            }
+
+            .tutor-message-main {
+                min-width: 0;
+                flex: 1 1 auto;
+            }
+
+            .tutor-message-date {
+                font-size: 12px;
+                white-space: nowrap;
+                color: #64748b;
+            }
+
+            .tutor-message-preview {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                word-break: break-word;
+                line-height: 1.45;
+                min-height: 2.6em;
+            }
+
+            .tutor-chat-thread {
+                max-height: 320px;
+                min-height: 180px;
+                overflow-y: auto;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 14px;
+                padding: 12px;
+            }
+
+            .tutor-chat-row {
+                display: flex;
+                justify-content: flex-start;
+                margin-bottom: 8px;
+            }
+
+            .tutor-chat-row.mine {
+                justify-content: flex-end;
+            }
+
+            .tutor-chat-bubble {
+                max-width: 78%;
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 10px 12px;
+                color: #1f2937;
+                word-break: break-word;
+                box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+            }
+
+            .tutor-chat-row.mine .tutor-chat-bubble {
+                background: #eef2ff;
+                border-color: #c7d2fe;
+                color: #312e81;
+            }
+
+            .tutor-chat-meta {
+                font-size: 11px;
+                color: #64748b;
+            }
+
+            #memberWeeklySchedule .weekly_head {
+                position: static;
+            }
+
+            #memberWeeklySchedule .dayCon {
+                max-height: none;
+                overflow-y: visible;
+            }
+
+            #memberWeeklySchedule .con_in {
+                gap: 2px;
+                padding: 6px 4px;
+                min-height: 0;
+            }
+
+            #memberWeeklySchedule .sch_time a {
+                height: 24px;
+                font-size: 0.72rem;
+                padding: 0 4px;
+            }
+
+            @media (max-width: 768px) {
+                .tutor-message-subject {
+                    max-width: 200px;
+                }
+
+                .tutor-chat-bubble {
+                    max-width: 88%;
+                }
+            }
+        </style>
+
+        <script th:inline="javascript">
+            window.tossClientKey = /*[[${tossClientKey}]]*/ '';
+        </script>
+        <script src="https://js.tosspayments.com/v2/standard"></script>
+        <script src="/js/tutor-calendar.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+        <script>
+            // 결제 모달 열기 함수
+            let pendingPayment = null;
+            let memberUserId = null;
+            let memberMypageData = null;
+            let memberWeeklyCalendar = null;
+            let memberWeeklyFilterBound = false;
+
+            const DEFAULT_MEMBER_BASE_TIME_RANGES = {
+                0: [{ start: '00:00', end: '24:00' }],
+                1: [{ start: '00:00', end: '24:00' }],
+                2: [{ start: '00:00', end: '24:00' }],
+                3: [{ start: '00:00', end: '24:00' }],
+                4: [{ start: '00:00', end: '24:00' }],
+                5: [{ start: '00:00', end: '24:00' }],
+                6: [{ start: '00:00', end: '24:00' }]
+            };
+
+            function normalizeTimeToStep(rawTime, stepMinutes = 30) {
+                const matched = String(rawTime || '').match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+                if (!matched) return '';
+                const hour = Number(matched[1]);
+                const minute = Number(matched[2]);
+                const second = Number(matched[3] || '0');
+                if (!Number.isFinite(hour) || !Number.isFinite(minute) || !Number.isFinite(second)) return '';
+                if (minute % stepMinutes !== 0 || second !== 0) return '';
+                return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+            }
+
+            function toLocalDateKey(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
+            function expandBookingToSlots(booking, stepMinutes = 30) {
+                if (!booking?.startAt) return [];
+                const start = new Date(booking.startAt);
+                if (Number.isNaN(start.getTime())) return [];
+
+                const parsedEnd = booking.endAt ? new Date(booking.endAt) : null;
+                const end = parsedEnd && !Number.isNaN(parsedEnd.getTime()) && parsedEnd > start
+                    ? parsedEnd
+                    : new Date(start.getTime() + (stepMinutes * 60000));
+
+                const slots = [];
+                for (let cursor = new Date(start); cursor < end; cursor = new Date(cursor.getTime() + (stepMinutes * 60000))) {
+                    const time = normalizeTimeToStep(
+                        `${String(cursor.getHours()).padStart(2, '0')}:${String(cursor.getMinutes()).padStart(2, '0')}:00`,
+                        stepMinutes
+                    );
+                    if (!time) continue;
+                    slots.push({ date: toLocalDateKey(cursor), time });
+                }
+                return slots;
+            }
+
+            function getMemberScheduleBookings() {
+                const upcoming = Array.isArray(memberMypageData?.upcomingBookings) ? memberMypageData.upcomingBookings : [];
+                const past = Array.isArray(memberMypageData?.pastBookings) ? memberMypageData.pastBookings : [];
+                return [...upcoming, ...past].filter((booking) => booking && booking.status !== 'CANCELLED');
+            }
+
+            function buildMemberWeeklyCalendarData(selectedTutorId = '') {
+                const bookedMap = new Map();
+                const metaByDate = new Map();
+                const bookings = getMemberScheduleBookings();
+
+                bookings.forEach((booking) => {
+                    if (selectedTutorId && booking.tutorId !== selectedTutorId) return;
+                    const slots = expandBookingToSlots(booking, 30);
+                    slots.forEach(({ date, time }) => {
+                        if (!bookedMap.has(date)) bookedMap.set(date, new Set());
+                        bookedMap.get(date).add(time);
+
+                        if (!metaByDate.has(date)) metaByDate.set(date, {});
+                        if (!metaByDate.get(date)[time]) {
+                            metaByDate.get(date)[time] = {
+                                bookingId: booking.bookingId || '',
+                                tutorId: booking.tutorId || '',
+                                tutorName: booking.tutorName || '튜터',
+                                subject: booking.subject || '',
+                                status: booking.status || ''
+                            };
+                        }
+                    });
+                });
+
+                const initialData = [];
+                bookedMap.forEach((times, date) => {
+                    initialData.push({
+                        date,
+                        slots: Array.from(times),
+                        booked: true,
+                        metaByTime: metaByDate.get(date) || {}
+                    });
+                });
+                const availableSlots = [];
+                bookedMap.forEach((times, date) => {
+                    availableSlots.push({
+                        date,
+                        slots: Array.from(times)
+                    });
+                });
+
+                return { initialData, availableSlots };
+            }
+
+            function populateMemberWeeklyTutorFilter() {
+                const select = document.getElementById('memberWeeklyTutorFilter');
+                if (!select) return;
+
+                const previousValue = select.value || '';
+                const tutorMap = new Map();
+                getMemberScheduleBookings().forEach((booking) => {
+                    if (!booking?.tutorId) return;
+                    if (!tutorMap.has(booking.tutorId)) {
+                        tutorMap.set(booking.tutorId, booking.tutorName || '튜터');
+                    }
+                });
+
+                select.innerHTML = '<option value="">전체 튜터</option>';
+                Array.from(tutorMap.entries()).forEach(([tutorId, tutorName]) => {
+                    const option = document.createElement('option');
+                    option.value = tutorId;
+                    option.textContent = tutorName;
+                    select.appendChild(option);
+                });
+
+                if (previousValue && tutorMap.has(previousValue)) {
+                    select.value = previousValue;
+                } else {
+                    select.value = '';
+                }
+            }
+
+            function updateMemberWeeklyHoverInfo(meta) {
+                const info = document.getElementById('memberWeeklyHoverInfo');
+                if (!info) return;
+                if (!meta) {
+                    info.className = 'small text-muted border rounded px-3 py-2 mt-2';
+                    info.textContent = '예약된 시간에 마우스를 올리면 튜터 정보를 볼 수 있습니다.';
+                    return;
+                }
+
+                const tutorName = meta.tutorName || '튜터';
+                const subject = meta.subject || '과목 정보 없음';
+                const date = meta.date || '';
+                const time = meta.time || '';
+                info.className = 'small border border-primary-subtle bg-primary-subtle rounded px-3 py-2 mt-2';
+                info.textContent = `${tutorName} | ${subject} | ${date} ${time}`;
+            }
+
+            async function refreshMemberWeeklySchedule() {
+                if (!memberWeeklyCalendar) return;
+                const selectedTutorId = document.getElementById('memberWeeklyTutorFilter')?.value || '';
+                const { initialData, availableSlots } = buildMemberWeeklyCalendarData(selectedTutorId);
+                memberWeeklyCalendar.options.availableSlots = availableSlots;
+                memberWeeklyCalendar.state.availableSlots.clear();
+                memberWeeklyCalendar.loadAvailableSlots();
+                memberWeeklyCalendar.setInitialData(initialData);
+                updateMemberWeeklyHoverInfo(null);
+            }
+
+            async function initMemberWeeklySchedule() {
+                if (memberWeeklyCalendar) return;
+
+                const { initialData, availableSlots } = buildMemberWeeklyCalendarData();
+                memberWeeklyCalendar = new TutorCalendar({
+                    containerId: 'memberWeeklySchedule',
+                    prevBtnId: 'btnMemberPrevWeek',
+                    nextBtnId: 'btnMemberNextWeek',
+                    rangeLabelId: 'memberWeekRangeLabel',
+                    mode: 'readonly',
+                    baseTimeRanges: DEFAULT_MEMBER_BASE_TIME_RANGES,
+                    renderOnlyInRange: true,
+                    timeStepMinutes: 30,
+                    initialData: initialData,
+                    availableSlots: availableSlots,
+                    availableSlotsOnly: true,
+                    onBookedSlotHover: updateMemberWeeklyHoverInfo,
+                    onWeekChange: () => {
+                        updateMemberWeeklyHoverInfo(null);
+                    }
+                });
+
+                const tutorFilter = document.getElementById('memberWeeklyTutorFilter');
+                if (tutorFilter && !memberWeeklyFilterBound) {
+                    memberWeeklyFilterBound = true;
+                    tutorFilter.addEventListener('change', async () => {
+                        await refreshMemberWeeklySchedule();
+                    });
+                }
+            }
+
+            function getPayableUpcomingBookings() {
+                const upcoming = Array.isArray(memberMypageData?.upcomingBookings) ? memberMypageData.upcomingBookings : [];
+                return upcoming.filter((booking) => {
+                    if (!booking || !booking.bookingId) return false;
+                    const status = String(booking.status || '').toUpperCase();
+                    return status === 'CONFIRMED' && !booking.paidAt;
+                });
+            }
+
+            function getPayableUpcomingTotal(bookings) {
+                return bookings.reduce((sum, booking) => sum + Number(booking?.price || 0), 0);
+            }
+
+            function groupPayableBookingsByTutor(bookings) {
+                const grouped = new Map();
+                bookings.forEach((booking) => {
+                    const tutorId = booking?.tutorId;
+                    if (!tutorId) return;
+
+                    if (!grouped.has(tutorId)) {
+                        grouped.set(tutorId, {
+                            tutorId,
+                            tutorName: booking.tutorName || '튜터',
+                            bookings: [],
+                            totalAmount: 0
+                        });
+                    }
+
+                    const group = grouped.get(tutorId);
+                    group.bookings.push(booking);
+                    group.totalAmount += Number(booking?.price || 0);
+                });
+
+                return Array.from(grouped.values());
+            }
+
+            async function selectTutorGroupForBatchPayment(groups) {
+                if (!Array.isArray(groups) || groups.length === 0) return null;
+                if (groups.length === 1) return groups[0];
+                return showTutorSelectDialog(groups);
+            }
+
+            function updatePayAllUpcomingButtonState() {
+                const payAllBtn = document.getElementById('btnPayAllUpcoming');
+                if (!payAllBtn) return;
+
+                const payableBookings = getPayableUpcomingBookings();
+                const count = payableBookings.length;
+                payAllBtn.disabled = count === 0;
+                payAllBtn.textContent = count > 0 ? `튜터 통합 결제 (${count}건)` : '튜터 통합 결제';
+            }
+
+            function showNoticeDialog(message, options = {}) {
+                return new Promise((resolve) => {
+                    const modalEl = document.getElementById('uiNoticeModal');
+                    const titleEl = document.getElementById('uiNoticeTitle');
+                    const messageEl = document.getElementById('uiNoticeMessage');
+                    const okBtn = document.getElementById('uiNoticeOkBtn');
+                    if (!modalEl || !titleEl || !messageEl || !okBtn || !window.bootstrap) {
+                        window.alert(message);
+                        resolve();
+                        return;
+                    }
+
+                    titleEl.textContent = options.title || '알림';
+                    messageEl.textContent = message || '';
+                    okBtn.textContent = options.okText || '확인';
+
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    let settled = false;
+
+                    const cleanup = () => {
+                        okBtn.removeEventListener('click', onOk);
+                        modalEl.removeEventListener('hidden.bs.modal', onHidden);
+                    };
+
+                    const onOk = () => {
+                        if (settled) return;
+                        settled = true;
+                        cleanup();
+                        resolve();
+                        modal.hide();
+                    };
+
+                    const onHidden = () => {
+                        if (settled) return;
+                        settled = true;
+                        cleanup();
+                        resolve();
+                    };
+
+                    okBtn.addEventListener('click', onOk);
+                    modalEl.addEventListener('hidden.bs.modal', onHidden);
+                    modal.show();
+                });
+            }
+
+            function showConfirmDialog(message, options = {}) {
+                return new Promise((resolve) => {
+                    const modalEl = document.getElementById('uiConfirmModal');
+                    const titleEl = document.getElementById('uiConfirmTitle');
+                    const messageEl = document.getElementById('uiConfirmMessage');
+                    const okBtn = document.getElementById('uiConfirmOkBtn');
+                    const cancelBtn = document.getElementById('uiConfirmCancelBtn');
+                    if (!modalEl || !titleEl || !messageEl || !okBtn || !cancelBtn || !window.bootstrap) {
+                        resolve(window.confirm(message));
+                        return;
+                    }
+
+                    titleEl.textContent = options.title || '확인';
+                    messageEl.textContent = message || '';
+                    okBtn.textContent = options.okText || '확인';
+                    cancelBtn.textContent = options.cancelText || '취소';
+
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    let settled = false;
+
+                    const cleanup = () => {
+                        okBtn.removeEventListener('click', onOk);
+                        cancelBtn.removeEventListener('click', onCancel);
+                        modalEl.removeEventListener('hidden.bs.modal', onHidden);
+                    };
+
+                    const onOk = () => {
+                        if (settled) return;
+                        settled = true;
+                        cleanup();
+                        resolve(true);
+                        modal.hide();
+                    };
+
+                    const onCancel = () => {
+                        if (settled) return;
+                        settled = true;
+                        cleanup();
+                        resolve(false);
+                        modal.hide();
+                    };
+
+                    const onHidden = () => {
+                        if (settled) return;
+                        settled = true;
+                        cleanup();
+                        resolve(false);
+                    };
+
+                    okBtn.addEventListener('click', onOk);
+                    cancelBtn.addEventListener('click', onCancel);
+                    modalEl.addEventListener('hidden.bs.modal', onHidden);
+                    modal.show();
+                });
+            }
+
+            function showTutorSelectDialog(groups) {
+                return new Promise((resolve) => {
+                    const modalEl = document.getElementById('uiTutorSelectModal');
+                    const listEl = document.getElementById('uiTutorSelectList');
+                    if (!modalEl || !listEl || !window.bootstrap) {
+                        resolve(groups[0] || null);
+                        return;
+                    }
+
+                    const formatter = new Intl.NumberFormat('ko-KR');
+                    listEl.innerHTML = '';
+
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    let settled = false;
+
+                    const cleanup = () => {
+                        modalEl.removeEventListener('hidden.bs.modal', onHidden);
+                    };
+
+                    const onHidden = () => {
+                        if (settled) return;
+                        settled = true;
+                        cleanup();
+                        resolve(null);
+                    };
+
+                    modalEl.addEventListener('hidden.bs.modal', onHidden);
+
+                    groups.forEach((group) => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'list-group-item list-group-item-action mypage-select-item d-flex justify-content-between align-items-center';
+
+                        const left = document.createElement('div');
+                        left.className = 'fw-semibold text-dark';
+                        left.textContent = `${group.tutorName} 튜터`;
+
+                        const right = document.createElement('div');
+                        right.className = 'text-muted small';
+                        right.textContent = `${group.bookings.length}건 · ${formatter.format(group.totalAmount)}원`;
+
+                        btn.appendChild(left);
+                        btn.appendChild(right);
+
+                        btn.addEventListener('click', () => {
+                            if (settled) return;
+                            settled = true;
+                            cleanup();
+                            resolve(group);
+                            modal.hide();
+                        });
+
+                        listEl.appendChild(btn);
+                    });
+
+                    modal.show();
+                });
+            }
+             
+            function openPaymentModal(bookingId, tutorName, subject, lessonDate, startTime, price) {
+                pendingPayment = { bookingId, tutorName, subject, lessonDate, startTime, price };
+                
+                document.getElementById('paymentTutorInitial').textContent = tutorName ? tutorName.charAt(0) : '튜';
+                document.getElementById('paymentTutorName').textContent = tutorName || '튜터';
+                document.getElementById('paymentSubject').textContent = subject;
+                document.getElementById('paymentDateTime').textContent = `${lessonDate} ${startTime}`;
+                document.getElementById('paymentDurationInfo').textContent = '30분';
+                
+                const formattedPrice = new Intl.NumberFormat('ko-KR').format(price);
+                document.getElementById('paymentLessonFee').textContent = `${formattedPrice}원`;
+                document.getElementById('paymentTotalAmount').textContent = `${formattedPrice}원`;
+                
+                const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+                paymentModal.show();
+            }
+
+            async function startTossPayment(methodKey) {
+                if (!window.TossPayments) {
+                    throw new Error('TossPayments SDK not loaded.');
+                }
+                if (!window.tossClientKey) {
+                    throw new Error('Toss client key is missing.');
+                }
+
+                const isTutorBatch = pendingPayment?.type === 'TUTOR_BATCH';
+                const orderId = isTutorBatch
+                    ? pendingPayment.orderId
+                    : `${pendingPayment.bookingId}_${Date.now()}`;
+                const amountValue = isTutorBatch
+                    ? Number(pendingPayment.amount || 0)
+                    : Number(pendingPayment.price || 0);
+                const orderName = isTutorBatch
+                    ? `${pendingPayment.tutorName || '튜터'} 튜터 수업 ${pendingPayment.bookingCount || 0}건`
+                    : `${pendingPayment.subject} lesson`;
+                const successUrl = `${window.location.origin}/payments/toss/success`;
+                const failUrl = `${window.location.origin}/payments/toss/fail`;
+                const customerName = document.getElementById('memberName')?.textContent || 'Member';
+                const customerEmail = document.getElementById('memberEmail')?.textContent?.trim();
+
+                const tossPayments = TossPayments(window.tossClientKey);
+                const payment = tossPayments.payment({
+                    customerKey: memberUserId || 'guest'
+                });
+
+                const request = {
+                    amount: {
+                        currency: "KRW",
+                        value: amountValue
+                    },
+                    orderId: orderId,
+                    orderName: orderName,
+                    successUrl: successUrl,
+                    failUrl: failUrl,
+                    customerName: customerName
+                };
+
+                if (customerEmail) {
+                    request.customerEmail = customerEmail;
+                }
+
+                if (methodKey === 'bank') {
+                    request.method = 'TRANSFER';
+                } else if (methodKey === 'kakao') {
+                    request.method = 'CARD';
+                    request.card = { flowMode: 'DIRECT', easyPay: 'KAKAOPAY' };
+                } else if (methodKey === 'toss') {
+                    request.method = 'CARD';
+                    request.card = { flowMode: 'DIRECT', easyPay: 'TOSSPAY' };
+                } else {
+                    request.method = 'CARD';
+                    request.card = { flowMode: 'DEFAULT' };
+                }
+
+                await payment.requestPayment(request);
+            }
+
+            // 결제 확인 버튼 핸들러
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('btnConfirmPayment')?.addEventListener('click', async () => {
+                    if (!pendingPayment) {
+                        await showNoticeDialog('결제 정보가 없습니다.');
+                        return;
+                    }
+
+                    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+                    const btnConfirm = document.getElementById('btnConfirmPayment');
+                    const token = localStorage.getItem('accessToken');
+                    
+                    if (!token) {
+                        await showNoticeDialog('로그인이 필요합니다.');
+                        location.href = '/login';
+                        return;
+                    }
+                    
+                    // 버튼 비활성화 및 로딩 표시
+                    btnConfirm.disabled = true;
+                    btnConfirm.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> 처리중...';
+
+                    try {
+                        await startTossPayment(paymentMethod);
+                        return;
+                    } catch (error) {
+                        console.error('결제 실패:', error);
+                        await showNoticeDialog('결제 처리 중 오류가 발생했습니다.');
+                    } finally {
+                        // 버튼 복원
+                        btnConfirm.disabled = false;
+                        btnConfirm.innerHTML = '<i class="bi bi-lock-fill me-1"></i> 결제하기';
+                    }
+                });
+
+                const btnPayAllUpcoming = document.getElementById('btnPayAllUpcoming');
+                btnPayAllUpcoming?.addEventListener('click', async () => {
+                    const token = localStorage.getItem('accessToken');
+                    if (!token) {
+                        await showNoticeDialog('로그인이 필요합니다.');
+                        location.href = '/login';
+                        return;
+                    }
+
+                    const payableBookings = getPayableUpcomingBookings();
+                    const count = payableBookings.length;
+                    if (count === 0) {
+                        await showNoticeDialog('튜터 통합 결제할 수업이 없습니다.');
+                        updatePayAllUpcomingButtonState();
+                        return;
+                    }
+
+                    const groups = groupPayableBookingsByTutor(payableBookings);
+                    if (groups.length === 0) {
+                        await showNoticeDialog('결제 가능한 튜터 수업이 없습니다.');
+                        updatePayAllUpcomingButtonState();
+                        return;
+                    }
+
+                    const selectedGroup = await selectTutorGroupForBatchPayment(groups);
+                    if (!selectedGroup) {
+                        return;
+                    }
+
+                    const formattedAmount = new Intl.NumberFormat('ko-KR').format(selectedGroup.totalAmount);
+                    const confirmed = await showConfirmDialog(
+                        `${selectedGroup.tutorName} 튜터 수업 ${selectedGroup.bookings.length}건을 통합 결제하시겠습니까?\n총 결제금액: ${formattedAmount}원`,
+                        { title: '통합 결제 확인', okText: '결제 진행' }
+                    );
+                    if (!confirmed) {
+                        return;
+                    }
+
+                    const originalText = btnPayAllUpcoming.textContent;
+                    btnPayAllUpcoming.disabled = true;
+                    btnPayAllUpcoming.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> 처리중...';
+
+                    try {
+                        const response = await fetch('/api/payments/toss/prepare-tutor-batch', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ tutorId: selectedGroup.tutorId })
+                        });
+                        const result = await response.json();
+
+                        if (!result.success) {
+                            await showNoticeDialog(result.message || '튜터 통합 결제 준비에 실패했습니다.');
+                            return;
+                        }
+
+                        const prepared = result.data || {};
+                        if (!prepared.orderId || !prepared.amount) {
+                            await showNoticeDialog('결제 주문 정보가 올바르지 않습니다.');
+                            return;
+                        }
+
+                        pendingPayment = {
+                            type: 'TUTOR_BATCH',
+                            orderId: prepared.orderId,
+                            tutorId: prepared.tutorId || selectedGroup.tutorId,
+                            tutorName: prepared.tutorName || selectedGroup.tutorName || '튜터',
+                            bookingCount: Number(prepared.bookingCount || selectedGroup.bookings.length || 0),
+                            amount: Number(prepared.amount || selectedGroup.totalAmount || 0)
+                        };
+
+                        const batchAmountText = `${new Intl.NumberFormat('ko-KR').format(pendingPayment.amount)}원`;
+                        document.getElementById('paymentTutorInitial').textContent = (pendingPayment.tutorName || '튜').charAt(0);
+                        document.getElementById('paymentTutorName').textContent = `${pendingPayment.tutorName} 튜터`;
+                        document.getElementById('paymentSubject').textContent = `튜터 통합 결제 (${pendingPayment.bookingCount}건)`;
+                        document.getElementById('paymentDateTime').textContent = '확정된 수업 일괄 결제';
+                        document.getElementById('paymentDurationInfo').textContent = `${pendingPayment.bookingCount}건`;
+                        document.getElementById('paymentLessonFee').textContent = batchAmountText;
+                        document.getElementById('paymentTotalAmount').textContent = batchAmountText;
+
+                        const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+                        paymentModal.show();
+                    } catch (e) {
+                        console.error('튜터 통합 결제 준비 실패', e);
+                        await showNoticeDialog('튜터 통합 결제 준비 중 오류가 발생했습니다.');
+                    } finally {
+                        btnPayAllUpcoming.disabled = false;
+                        btnPayAllUpcoming.textContent = originalText;
+                        updatePayAllUpcomingButtonState();
+                    }
+                });
+
+                updatePayAllUpcomingButtonState();
+            });
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const weeklyTabBtn = document.querySelector('[data-bs-target="#weeklyScheduleTab"]');
+                if (weeklyTabBtn) {
+                    weeklyTabBtn.addEventListener('shown.bs.tab', async function() {
+                        await initMemberWeeklySchedule();
+                        await refreshMemberWeeklySchedule();
+                    });
+                }
+            });
+             
+            // 예약 취소 함수
+            async function cancelBooking(bookingId) {
+                if (!confirm('정말로 예약을 취소하시겠습니까?')) return;
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    alert('로그인이 필요합니다.');
+                    location.href = '/login';
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/api/bookings/${bookingId}/cancel`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('예약이 취소되었습니다.');
+                        location.reload();
+                    } else {
+                        alert(result.message || '취소에 실패했습니다.');
+                    }
+                } catch (e) {
+                    console.error('취소 실패', e);
+                    alert('취소 처리 중 오류가 발생했습니다.');
+                }
+            }
+            
+            // 페이지 로드 시 마이페이지 데이터 초기화
+            document.addEventListener('DOMContentLoaded', async function() {
+                try {
+                    const token = localStorage.getItem('accessToken');
+                    if (!token) {
+                        location.href = '/login';
+                        return;
+                    }
+                    const response = await fetch('/api/users/me/mypage', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!response.ok) throw new Error('Failed to fetch');
+                    
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const mypage = result.data;
+                        memberUserId = mypage.userId;
+                        memberMypageData = mypage;
+                        populateMemberWeeklyTutorFilter();
+                        if (memberWeeklyCalendar) {
+                            await refreshMemberWeeklySchedule();
+                        }
+
+                        console.log('MyPage Data:', mypage);
+                        
+                        // 프로필 정보 반영
+                        document.getElementById('memberName').textContent = mypage.name || '회원';
+                        document.getElementById('memberEmail').textContent = mypage.email || '';
+                        
+                        // 프로필 이미지
+                        const profileImgContainer = document.getElementById('profileImg');
+                        if (mypage.profileImg) {
+                            profileImgContainer.classList.remove('bg-info');
+                            profileImgContainer.innerHTML = `
+                                <img src="${mypage.profileImg}"
+                                    alt="프로필 이미지"
+                                    class="rounded-circle w-100 h-100 object-fit-cover">
+                            `;
+                        } else {
+                            profileImgContainer.classList.add('bg-info');
+                            profileImgContainer.innerHTML = `
+                                <span class="fs-1">👤</span>
+                            `;
+                        }
+                        
+                        // 모달 폼에 반영
+                        document.getElementById('editName').value = mypage.name || '';
+                        document.getElementById('editNickname').value = mypage.nickname || '';
+                        document.getElementById('editEmail').value = mypage.email || '';
+                        
+                        // Stats 반영
+                        if (mypage.memberStats) {
+                            const stats = mypage.memberStats;
+                            const statValues = document.querySelectorAll('.stat-value');
+                            statValues[0].textContent = stats.upcomingLessons || 0;
+                            statValues[1].textContent = stats.completedLessons || 0;
+                        }
+
+                        // 튜터 메시지 반영
+                        const tutorMessages = Array.isArray(mypage.tutorMessages) ? mypage.tutorMessages : [];
+                        const tutorMessagesContainer = document.getElementById('tutorMessagesContainer');
+                        if (tutorMessagesContainer) {
+                            tutorMessagesContainer.innerHTML = '';
+                            if (tutorMessages.length === 0) {
+                                tutorMessagesContainer.innerHTML = '<div class="text-center text-muted py-3">메시지가 없습니다.</div>';
+                            } else {
+                                tutorMessages.forEach(msg => {
+                                    const item = document.createElement('button');
+                                    item.type = 'button';
+                                    item.className = 'tutor-message-card w-100 text-start border-0 px-3 py-3';
+                                    item.setAttribute('data-bs-toggle', 'modal');
+                                    item.setAttribute('data-bs-target', '#messageModal');
+
+                                    const tutorName = msg.tutorName || '튜터';
+                                    const tutorId = msg.tutorId || '';
+                                    const bookingId = msg.bookingId || '';
+                                    const subject = msg.subject || '';
+                                    const createdAtText = msg.createdAt
+                                        ? new Date(msg.createdAt).toLocaleString('ko-KR')
+                                        : '';
+                                    const content = msg.content || '';
+
+                                    item.setAttribute('data-tutor', tutorName);
+                                    item.setAttribute('data-tutor-id', tutorId);
+                                    item.setAttribute('data-booking-id', bookingId);
+                                    item.setAttribute('data-subject', subject);
+                                    item.setAttribute('data-date', createdAtText);
+                                    item.setAttribute('data-message', content);
+
+                                    const top = document.createElement('div');
+                                    top.className = 'tutor-message-header';
+
+                                    const left = document.createElement('div');
+                                    left.className = 'tutor-message-left';
+
+                                    const avatar = document.createElement('div');
+                                    avatar.className = 'tutor-message-avatar';
+                                    avatar.textContent = tutorName.trim().charAt(0) || 'T';
+
+                                    const nameWrap = document.createElement('div');
+                                    nameWrap.className = 'tutor-message-main';
+
+                                    const nameEl = document.createElement('div');
+                                    nameEl.className = 'fw-semibold';
+                                    nameEl.textContent = `${tutorName} 튜터`;
+
+                                    const subjectEl = document.createElement('div');
+                                    subjectEl.className = 'small text-primary tutor-message-subject';
+                                    subjectEl.textContent = subject || '과목 정보 없음';
+
+                                    const subEl = document.createElement('div');
+                                    subEl.className = 'small text-muted';
+                                    subEl.textContent = '최신 메시지';
+
+                                    const dateEl = document.createElement('small');
+                                    dateEl.className = 'tutor-message-date';
+                                    dateEl.textContent = createdAtText;
+
+                                    const contentEl = document.createElement('div');
+                                    contentEl.className = 'small text-muted mt-2 tutor-message-preview';
+                                    contentEl.textContent = content;
+
+                                    nameWrap.appendChild(nameEl);
+                                    nameWrap.appendChild(subjectEl);
+                                    nameWrap.appendChild(subEl);
+                                    left.appendChild(avatar);
+                                    left.appendChild(nameWrap);
+
+                                    top.appendChild(left);
+                                    top.appendChild(dateEl);
+                                    item.appendChild(top);
+                                    item.appendChild(contentEl);
+                                    tutorMessagesContainer.appendChild(item);
+                                });
+                            }
+                        }
+                        
+                        // 내 수업 카드 바인딩                      
+                        const upcomingBookings = Array.isArray(mypage.upcomingBookings) ? mypage.upcomingBookings : [];
+                        const myClassContent = document.getElementById('myClassContent');
+
+                        const normalizeZoomJoinUrl = (rawUrl) => {
+                            const zoomJoinUrlRaw = String(rawUrl || '').trim();
+                            const zoomJoinUrl = /^https?:\/\//i.test(zoomJoinUrlRaw)
+                                ? zoomJoinUrlRaw
+                                : 'https://zoom.us/wc/join';
+                            return zoomJoinUrl
+                                .replace(/\"/g, '&quot;')
+                                .replace(/'/g, '&#39;');
+                        };
+
+                        const toLessonTime = (booking) => {
+                            const lessonDateTime = new Date(`${booking.lessonDate}T${booking.startTime}`);
+                            return Number.isNaN(lessonDateTime.getTime()) ? Number.MAX_SAFE_INTEGER : lessonDateTime.getTime();
+                        };
+
+                        const formatDurationLabel = (booking) => {
+                            const hours = Number(booking?.durationHours || 0);
+                            if (!Number.isFinite(hours) || hours <= 0) return '30분';
+                            if (Number.isInteger(hours)) return `${hours}시간`;
+                            return `${Math.round(hours * 60)}분`;
+                        };
+
+                        const canCancelPaidBooking = (booking) => {
+                            if (!booking?.startAt) return false;
+                            const startAt = new Date(booking.startAt);
+                            if (Number.isNaN(startAt.getTime())) return false;
+                            const deadline = new Date(startAt.getTime() - (3 * 24 * 60 * 60 * 1000));
+                            return Date.now() <= deadline.getTime();
+                        };
+
+                        if (myClassContent) {
+                            const zoomAvailableBookings = upcomingBookings
+                                .filter(booking => booking.status === 'CONFIRMED' && Boolean(booking.paidAt))
+                                .sort((a, b) => toLessonTime(a) - toLessonTime(b));
+
+                            if (zoomAvailableBookings.length > 0) {
+                                const nextZoomBooking = zoomAvailableBookings[0];
+                                const safeZoomJoinUrl = normalizeZoomJoinUrl(nextZoomBooking.zoomJoinUrl);
+                                myClassContent.innerHTML = `
+                                    <div class="small text-muted mb-2">결제 완료된 다음 수업</div>
+                                    <div class="fw-semibold">${nextZoomBooking.tutorName} 튜터</div>
+                                    <div class="small text-muted mt-1">
+                                        날짜 ${nextZoomBooking.lessonDate} | 시간 ${nextZoomBooking.startTime} (${formatDurationLabel(nextZoomBooking)})
+                                    </div>
+                                    <div class="small text-muted mb-3">${nextZoomBooking.subject}</div>
+                                    <a class="btn btn-primary w-100" href="${safeZoomJoinUrl}" target="_blank" rel="noopener noreferrer">Zoom 입장</a>
+                                `;
+                            } else {
+                                myClassContent.innerHTML = '<div class="text-center text-muted py-2">결제 완료된 예정 수업이 없습니다.</div>';
+                            }
+                        }
+
+                        if (upcomingBookings.length > 0) {
+                            const upcomingContainer = document.getElementById('upcomingBookingsContainer');
+                            if (upcomingContainer) {
+                                upcomingContainer.innerHTML = '';
+                                upcomingBookings.forEach(booking => {
+                                    const item = document.createElement('div');
+                                    item.className = 'booking-item p-3 border rounded';
+                                    const statusBadge = booking.status === 'CONFIRMED' ? 'bg-success' : 'bg-warning text-dark';
+                                    const statusText = booking.status === 'CONFIRMED' ? '확정'
+                                        : booking.status === 'PENDING' ? '대기중' : '취소';
+                                    const isPaid = Boolean(booking.paidAt);
+                                    const canCancel = booking.status === 'PENDING'
+                                        || (booking.status === 'CONFIRMED' && isPaid && canCancelPaidBooking(booking));
+                                    const cancelBtn = canCancel
+                                        ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelBooking('${booking.bookingId}')">취소</button>`
+                                        : '';
+                                    const paymentBtn = booking.status === 'CONFIRMED' && !isPaid
+                                        ? `<button class="btn btn-sm btn-primary" onclick="openPaymentModal('${booking.bookingId}', '${booking.tutorName}', '${booking.subject}', '${booking.lessonDate}', '${booking.startTime}', ${booking.price})">결제하기</button>` 
+                                        : '';
+                                    const paidBadge = isPaid
+                                        ? '<span class="badge bg-success">결제완료</span>'
+                                        : '';
+                                    const cancelPolicyHint = (booking.status === 'CONFIRMED' && isPaid && !canCancelPaidBooking(booking))
+                                        ? '<span class="small text-muted">취소 가능 기간(수업 3일 전) 경과</span>'
+                                        : '';
+                                    item.innerHTML = `
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <div class="fw-semibold">${booking.tutorName} 튜터</div>
+                                                <div class="small text-muted mt-1">
+                                                    날짜 ${booking.lessonDate} | 시간 ${booking.startTime} (${formatDurationLabel(booking)})
+                                                </div>
+                                            </div>
+                                            <span class="badge ${statusBadge}">${statusText}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-light text-dark">${booking.subject}</span>
+                                            <div class="d-flex gap-2 align-items-center">
+                                                <span class="fw-semibold text-primary">${new Intl.NumberFormat('ko-KR').format(booking.price)}원</span>
+                                                ${paidBadge}
+                                                ${paymentBtn}
+                                                ${cancelBtn}
+                                            </div>
+                                        </div>
+                                        ${cancelPolicyHint ? `<div class="text-end mt-1">${cancelPolicyHint}</div>` : ''}
+                                    `;
+                                    upcomingContainer.appendChild(item);
+                                });
+                            }
+                        }
+                        updatePayAllUpcomingButtonState();
+                        
+                        // 지난 수업 바인딩
+                        if (mypage.pastBookings && mypage.pastBookings.length > 0) {
+                            const pastContainer = document.querySelector('#bookingsTab .card:nth-child(2) .d-grid');
+                            if (pastContainer) {
+                                pastContainer.innerHTML = '';
+                                mypage.pastBookings.forEach(booking => {
+                                    const item = document.createElement('div');
+                                    item.className = 'booking-item p-3 border rounded opacity-75';
+                                    const isCompleted = booking.status === 'COMPLETED';
+                                    const hasReview = Boolean(booking.reviewId);
+                                    const reviewBtn = isCompleted && !hasReview
+                                        ? `<a class="btn btn-sm btn-outline-primary" href="/tutors/${booking.tutorProfileId}?review=1&bookingId=${booking.bookingId}">리뷰 작성</a>`
+                                        : '';
+                                    const reviewDoneBadge = hasReview
+                                        ? '<span class="badge bg-light text-success">리뷰작성완료</span>'
+                                        : '';
+                                    item.innerHTML = `
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <div class="fw-semibold">${booking.tutorName} 튜터</div>
+                                                <div class="small text-muted mt-1">
+                                                    날짜 ${booking.lessonDate} | 시간 ${booking.startTime} (${formatDurationLabel(booking)})
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-secondary">완료</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-light text-dark">${booking.subject}</span>
+                                            ${reviewDoneBadge}
+                                            ${reviewBtn}
+                                        </div>
+                                    `;
+                                    pastContainer.appendChild(item);
+                                });
+                            }
+                        }
+                        
+                        // 리뷰 바인딩
+                        if (mypage.studentReviews && mypage.studentReviews.length > 0) {
+                            const reviewContainer = document.querySelector('#reviewsTab .d-grid');
+                            if (reviewContainer) {
+                                reviewContainer.innerHTML = '';
+                                mypage.studentReviews.forEach(review => {
+                                    const rating = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+                                    const createdDate = new Date(review.createdAt).toLocaleDateString('ko-KR');
+                                    const item = document.createElement('div');
+                                    item.className = 'review-item p-3 bg-light rounded';
+                                    item.style.cursor = 'pointer';
+                                    item.onclick = () => location.href = `/tutors/${review.tutorProfileId}`;
+                                    item.innerHTML = `
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <div class="fw-semibold">${review.tutorName} 튜터 <small class="text-primary opacity-75 ms-1">자세히 보기</small></div>
+                                            <div class="text-warning">${rating}</div>
+                                        </div>
+                                        <p class="small mb-1">${review.content}</p>
+                                        <div class="small text-muted">${createdDate}</div>
+                                    `;
+                                    reviewContainer.appendChild(item);
+                                });
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('마이페이지 데이터 로드 중 오류 발생', e);
+                }
+            });
+            
+            // Message modal (thread style)
+            document.addEventListener('DOMContentLoaded', function () {
+                const messageModal = document.getElementById('messageModal');
+                const replyArea = document.getElementById('replyMessageArea');
+                const replyBtn = document.getElementById('btnSendReplyMessage');
+                const threadBox = document.getElementById('memberMessageThread');
+                const metaBox = document.getElementById('memberMessageMeta');
+                let memberThreadTimer = null;
+                let memberThreadMessages = [];
+                let currentMessageSubject = '';
+                let currentMessageTutor = '';
+
+                function escapeHtml(value) {
+                    return String(value ?? '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
+                }
+
+                function formatMessageTime(value) {
+                    if (!value) return '';
+                    const date = new Date(value);
+                    if (Number.isNaN(date.getTime())) return String(value);
+                    return date.toLocaleString('ko-KR', { hour12: false });
+                }
+
+                function setEmptyThread() {
+                    if (!threadBox) return;
+                    memberThreadMessages = [];
+                    threadBox.innerHTML = '<div class="text-center text-muted py-4 small">아직 메시지가 없습니다.</div>';
+                }
+
+                function scrollThreadToBottom() {
+                    if (!threadBox) return;
+                    threadBox.scrollTop = threadBox.scrollHeight;
+                }
+
+                function renderThread(messages, forceScroll = false) {
+                    if (!threadBox) return;
+                    if (!Array.isArray(messages) || messages.length === 0) {
+                        setEmptyThread();
+                        return;
+                    }
+                    memberThreadMessages = messages;
+
+                    const html = messages.map((msg) => {
+                        const mine = (msg.senderRole || '').toUpperCase() === 'STUDENT';
+                        const roleText = mine ? '나' : '튜터';
+                        const content = escapeHtml(msg.content || '');
+                        const createdAt = formatMessageTime(msg.createdAt);
+                        return `
+                            <div class="tutor-chat-row${mine ? ' mine' : ''}">
+                                <div class="tutor-chat-bubble">
+                                    <div class="small">${content}</div>
+                                    <div class="tutor-chat-meta mt-1">${roleText}${createdAt ? ' · ' + createdAt : ''}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    threadBox.innerHTML = html;
+                    if (forceScroll) {
+                        scrollThreadToBottom();
+                        return;
+                    }
+
+                    const distanceFromBottom = threadBox.scrollHeight - threadBox.scrollTop - threadBox.clientHeight;
+                    if (distanceFromBottom < 60) {
+                        scrollThreadToBottom();
+                    }
+                }
+
+                function stopMemberThreadPolling() {
+                    if (memberThreadTimer) {
+                        clearInterval(memberThreadTimer);
+                        memberThreadTimer = null;
+                    }
+                }
+
+                async function loadThread(tutorId, bookingId, forceScroll = false) {
+                    const token = localStorage.getItem('accessToken');
+                    if (!token || !tutorId || !bookingId) {
+                        setEmptyThread();
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/api/tutor/messages/thread/member?tutorId=${encodeURIComponent(tutorId)}&bookingId=${encodeURIComponent(bookingId)}`, {
+                            method: 'GET',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            renderThread(result.data || [], forceScroll);
+                        }
+                    } catch (e) {
+                        console.error('대화 내역 조회 실패', e);
+                    }
+                }
+
+                function getDefaultMemberAiTutorName() {
+                    const upcoming = Array.isArray(memberMypageData?.upcomingBookings) ? memberMypageData.upcomingBookings : [];
+                    const firstTutor = upcoming.find((booking) => booking?.tutorName)?.tutorName;
+                    return String(firstTutor || currentMessageTutor || '').trim();
+                }
+
+                function openMemberAiSummaryModal() {
+                    const modalEl = document.getElementById('memberAiSummaryModal');
+                    if (!modalEl || !window.bootstrap) {
+                        return;
+                    }
+
+                    const tutorInput = document.getElementById('memberAiTutorName');
+                    const subjectInput = document.getElementById('memberAiSubject');
+                    const contextInput = document.getElementById('memberAiLessonContext');
+                    const resultInput = document.getElementById('memberAiResult');
+
+                    if (tutorInput) tutorInput.value = getDefaultMemberAiTutorName();
+                    if (subjectInput) subjectInput.value = '';
+                    if (contextInput) contextInput.value = '';
+                    if (resultInput) resultInput.value = '';
+
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
+                }
+
+                // =========================
+                // ✅ AI 수업 요약 (typed.js)
+                // =========================
+
+                // typed 인스턴스 1개만 유지
+                let memberAiTyped = null;
+
+                function resetMemberAiResultView() {
+                const view = document.getElementById('memberAiResultView');
+                const hidden = document.getElementById('memberAiResult');
+
+                if (hidden) hidden.value = '';
+
+                if (memberAiTyped) {
+                    memberAiTyped.destroy();
+                    memberAiTyped = null;
+                }
+
+                if (view) {
+                    view.innerHTML = '<div class="ai-typed-placeholder text-muted">여기에 AI 요약 결과가 표시됩니다.</div>';
+                    view.scrollTop = 0;
+                }
+                }
+
+                function renderMemberAiTyped(text) {
+                const view = document.getElementById('memberAiResultView');
+                const hidden = document.getElementById('memberAiResult');
+                if (!view) return;
+
+                const safeText = String(text || '').trim();
+                if (hidden) hidden.value = safeText;
+
+                // 이전 typed 제거
+                if (memberAiTyped) {
+                    memberAiTyped.destroy();
+                    memberAiTyped = null;
+                }
+
+                // placeholder 제거
+                const html = marked.parse(text || '');
+
+                memberAiTyped = new Typed('#memberAiResultView', {
+                    strings: [html],
+                    typeSpeed: 10,
+                    backSpeed: 0,
+                    showCursor: true,
+                    cursorChar: '|',
+                    loop: false,
+                    contentType: 'html'   // 🔥 이게 핵심
+                });
+
+                view.scrollTop = 0;
+                }
+
+                function getDefaultMemberAiTutorName() {
+                const upcoming = Array.isArray(memberMypageData?.upcomingBookings) ? memberMypageData.upcomingBookings : [];
+                const firstTutor = upcoming.find((booking) => booking?.tutorName)?.tutorName;
+                return String(firstTutor || '').trim();
+                }
+
+                function openMemberAiSummaryModal() {
+                const modalEl = document.getElementById('memberAiSummaryModal');
+                if (!modalEl || !window.bootstrap) return;
+
+                const tutorInput = document.getElementById('memberAiTutorName');
+                const subjectInput = document.getElementById('memberAiSubject');
+                const contextInput = document.getElementById('memberAiLessonContext');
+                const resultHidden = document.getElementById('memberAiResult');
+
+                if (tutorInput) tutorInput.value = getDefaultMemberAiTutorName() || '튜터';
+                if (subjectInput) subjectInput.value = '';
+                if (contextInput) contextInput.value = '';
+                if (resultHidden) resultHidden.value = '';
+
+                // ✅ 결과 뷰 초기화
+                resetMemberAiResultView();
+
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+                }
+
+                async function runMemberAiSummaryFromModal(triggerBtn) {
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    await showNoticeDialog('로그인이 필요합니다.');
+                    location.href = '/login';
+                    return;
+                }
+
+                const tutorName = String(document.getElementById('memberAiTutorName')?.value || '').trim() || '튜터';
+                const subject = String(document.getElementById('memberAiSubject')?.value || '').trim();
+                const lessonContext = String(document.getElementById('memberAiLessonContext')?.value || '').trim();
+
+                if (!subject) {
+                    await showNoticeDialog('수업 주제를 입력해 주세요.');
+                    return;
+                }
+                if (!lessonContext) {
+                    await showNoticeDialog('수업 내용을 입력해 주세요.');
+                    return;
+                }
+
+                const originalText = triggerBtn?.textContent || '요약 생성';
+                if (triggerBtn) {
+                    triggerBtn.disabled = true;
+                    triggerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>요약 생성중';
+                }
+
+                // ✅ 요청 시작 시 이전 결과 초기화(원하면 주석 처리 가능)
+                resetMemberAiResultView();
+
+                try {
+                    const response = await fetch('/api/ai/lesson-summary', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        tutorName,
+                        studentName: (document.getElementById('memberName')?.textContent || '').trim() || '학습자',
+                        subject,
+                        lessonContext
+                    })
+                    });
+
+                    const result = await response.json();
+
+                    if (!result?.success || !result?.data?.text) {
+                    await showNoticeDialog(result?.message || 'AI 수업 요약 생성에 실패했습니다.');
+                    return;
+                    }
+
+                    const generatedText = String(result.data.text).trim();
+                    if (!generatedText) {
+                    await showNoticeDialog('생성된 요약 내용이 없습니다.');
+                    return;
+                    }
+
+                    // ✅ typed 출력
+                    renderMemberAiTyped(generatedText);
+
+                } catch (e) {
+                    console.error('AI 수업 요약 생성 실패', e);
+                    await showNoticeDialog('AI 수업 요약 생성 중 오류가 발생했습니다.');
+                } finally {
+                    if (triggerBtn) {
+                    triggerBtn.disabled = false;
+                    triggerBtn.textContent = originalText;
+                    }
+                }
+                }
+
+                // ✅ 버튼 이벤트 연결 (한 번만!)
+                document.getElementById('btnOpenMemberAiSummary')?.addEventListener('click', openMemberAiSummaryModal);
+
+                document.getElementById('btnRunMemberAiSummary')?.addEventListener('click', async function () {
+                await runMemberAiSummaryFromModal(this);
+                });
+
+
+                function setReplyReadOnly(readOnly, label) {
+                    if (replyArea) replyArea.readOnly = readOnly;
+                    if (replyBtn) {
+                        replyBtn.disabled = readOnly;
+                        replyBtn.innerHTML = readOnly
+                            ? (label || '읽기 전용')
+                            : '<span class="me-1">📤</span> 전송하기';
+                    }
+                }
+
+                async function syncReplyWritableState(tutorId, bookingId) {
+                    const token = localStorage.getItem('accessToken');
+                    if (!token || !tutorId || !bookingId) {
+                        setReplyReadOnly(true, '읽기 전용');
+                        return;
+                    }
+
+                    setReplyReadOnly(true, '확인 중...');
+                    try {
+                        const response = await fetch(`/api/tutor/messages/reply-writable?tutorId=${encodeURIComponent(tutorId)}&bookingId=${encodeURIComponent(bookingId)}`, {
+                            method: 'GET',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const result = await response.json();
+                        const writable = Boolean(result.success && result.data === true);
+                        setReplyReadOnly(!writable, writable ? '' : '읽기 전용');
+                    } catch (e) {
+                        console.error('답장 가능 여부 조회 실패', e);
+                        setReplyReadOnly(true, '읽기 전용');
+                    }
+                }
+
+                messageModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const tutor = button?.getAttribute('data-tutor') || '튜터';
+                    const tutorId = button?.getAttribute('data-tutor-id') || '';
+                    const bookingId = button?.getAttribute('data-booking-id') || '';
+                    const subject = button?.getAttribute('data-subject') || '';
+                    const date = button?.getAttribute('data-date') || '';
+                    currentMessageSubject = subject || '';
+                    currentMessageTutor = tutor || '';
+
+                    document.getElementById('msgTutorName').textContent = tutor;
+                    document.getElementById('msgDate').textContent = date;
+                    document.getElementById('replyTutorId').value = tutorId;
+                    document.getElementById('replyBookingId').value = bookingId;
+
+                    const initial = tutor.trim().charAt(0);
+                    document.getElementById('msgTutorInitial').textContent = initial;
+                    if (metaBox) {
+                        if (subject && bookingId) {
+                            metaBox.textContent = `${subject} · Booking: ${bookingId}`;
+                        } else if (subject) {
+                            metaBox.textContent = subject;
+                        } else if (bookingId) {
+                            metaBox.textContent = `Booking: ${bookingId}`;
+                        } else {
+                            metaBox.textContent = '수업 메시지';
+                        }
+                    }
+
+                    replyArea.value = '';
+                    setEmptyThread();
+                    syncReplyWritableState(tutorId, bookingId);
+                    loadThread(tutorId, bookingId, true);
+
+                    stopMemberThreadPolling();
+                    memberThreadTimer = setInterval(() => {
+                        loadThread(tutorId, bookingId, false);
+                    }, 4000);
+                });
+
+                messageModal.addEventListener('hidden.bs.modal', function () {
+                    stopMemberThreadPolling();
+                    document.getElementById('replyTutorId').value = '';
+                    document.getElementById('replyBookingId').value = '';
+                    currentMessageSubject = '';
+                    currentMessageTutor = '';
+                    memberThreadMessages = [];
+                    if (replyArea) replyArea.value = '';
+                    setEmptyThread();
+                });
+
+                document.getElementById('btnOpenMemberAiSummary')?.addEventListener('click', () => {
+                    openMemberAiSummaryModal();
+                });
+
+                document.getElementById('btnRunMemberAiSummary')?.addEventListener('click', async function() {
+                    await runMemberAiSummaryFromModal(this);
+                });
+
+                document.getElementById('btnSendReplyMessage')?.addEventListener('click', async function() {
+                    const tutorId = document.getElementById('replyTutorId').value;
+                    const bookingId = document.getElementById('replyBookingId').value;
+                    const content = document.getElementById('replyMessageArea').value.trim();
+                    const token = localStorage.getItem('accessToken');
+
+                    if (document.getElementById('replyMessageArea').readOnly) {
+                        await showNoticeDialog('현재는 읽기 전용 상태입니다.');
+                        return;
+                    }
+                    if (!token) {
+                        await showNoticeDialog('로그인이 필요합니다.');
+                        location.href = '/login';
+                        return;
+                    }
+                    if (!tutorId) {
+                        await showNoticeDialog('튜터 정보를 찾을 수 없습니다.');
+                        return;
+                    }
+                    if (!bookingId) {
+                        await showNoticeDialog('수업 정보를 찾을 수 없습니다.');
+                        return;
+                    }
+                    if (!content) {
+                        await showNoticeDialog('답장 내용을 입력해 주세요.');
+                        return;
+                    }
+
+                    const btn = this;
+                    try {
+                        btn.disabled = true;
+                        const response = await fetch('/api/tutor/messages/reply', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                tutorId: tutorId,
+                                bookingId: bookingId,
+                                content: content
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            document.getElementById('replyMessageArea').value = '';
+                            await loadThread(tutorId, bookingId, true);
+                        } else {
+                            if ((result.message || '').includes('학생 메시지 작성은 불가')) {
+                                setReplyReadOnly(true, '읽기 전용');
+                            }
+                            await showNoticeDialog(result.message || '답장 전송에 실패했습니다.');
+                        }
+                    } catch (e) {
+                        console.error('답장 전송 실패', e);
+                        await showNoticeDialog('답장 전송 중 오류가 발생했습니다.');
+                    } finally {
+                        if (!document.getElementById('replyMessageArea').readOnly) {
+                            btn.disabled = false;
+                        }
+                    }
+                });
+            });
+
+        </script>
+        <!-- Profile Edit Modal -->
+        <div class="modal fade" id="profileEditModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form action="/member/mypage/update" method="POST" enctype="multipart/form-data">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold">프로필 수정</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="editName" class="form-label">이름</label>
+                                <input type="text" class="form-control" id="editName" name="name"
+                                    th:value="${user.name}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editNickname" class="form-label">닉네임</label>
+                                <input type="text" class="form-control" id="editNickname" name="nickname"
+                                    th:value="${user.nickname}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editEmail" class="form-label">이메일(ID)</label>
+                                <input type="email" class="form-control" id="editEmail" name="username"
+                                    th:value="${user.username}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editProfileImage" class="form-label">프로필 이미지</label>
+                                <input type="file" class="form-control" id="editProfileImage" name="profileImage"
+                                    accept="image/*">
+                                <div class="mt-2 text-center" id="imagePreviewContainer" style="display: none;">
+                                    <img id="imagePreview" src="" alt="Profile Preview" class="rounded-circle shadow-sm"
+                                        style="width: 100px; height: 100px; object-fit: cover;">
+                                </div>
+                            </div>
+                            <script>
+                                document.getElementById('editProfileImage').addEventListener('change', function (e) {
+                                    if (e.target.files && e.target.files[0]) {
+                                        var reader = new FileReader();
+                                        reader.onload = function (e) {
+                                            document.getElementById('imagePreview').src = e.target.result;
+                                            document.getElementById('imagePreviewContainer').style.display = 'block';
+                                        }
+                                        reader.readAsDataURL(e.target.files[0]);
+                                    }
+                                });
+                            </script>
+                            <!-- Password change could be added here -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                            <button type="submit" class="btn btn-primary">저장</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

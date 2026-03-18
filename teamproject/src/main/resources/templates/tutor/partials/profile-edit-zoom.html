@@ -1,0 +1,110 @@
+<section class="edit-section">
+  <div class="card edit-card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="step-section-title">Zoom 연동</div>
+      <div class="step-section-desc">수업 예약 시 학생에게 전달할 기본 Zoom 참여 링크를 설정합니다.</div>
+
+      <div class="admin-box mb-3">
+        <div class="alert alert-info small mb-3">
+          <i class="bi bi-info-circle me-1"></i>
+          저장한 링크는 신규 예약 생성 시 기본 참여 링크로 사용됩니다.
+        </div>
+
+        <label class="form-label" for="editDefaultZoomUrl">기본 Zoom 참여 링크 <span class="text-danger">*</span></label>
+        <input
+          type="url"
+          class="form-control"
+          id="editDefaultZoomUrl"
+          name="defaultZoomUrl"
+          placeholder="https://zoom.us/j/1234567890"
+          autocomplete="off"
+        >
+        <small class="text-muted d-block mt-2">
+          개인 회의실 링크 또는 고정 회의 링크를 입력하는 것을 권장합니다.
+        </small>
+
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <button type="button" class="btn btn-sm btn-outline-primary" id="btnZoomTemplate">
+            <i class="bi bi-magic me-1"></i> 예시 링크 넣기
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btnZoomClear">
+            <i class="bi bi-eraser me-1"></i> 입력 초기화
+          </button>
+        </div>
+
+        <div class="border rounded p-3 bg-light mt-3">
+          <div class="small text-muted mb-1">링크 미리보기</div>
+          <a id="zoomLinkPreview" href="#" target="_blank" rel="noopener noreferrer" class="small fw-semibold text-decoration-none text-break">
+            링크를 입력하면 여기에 표시됩니다.
+          </a>
+        </div>
+      </div>
+
+      <div class="admin-box">
+        <div class="fw-semibold mb-2"><i class="bi bi-shield-check me-1"></i> 운영 가이드</div>
+        <ul class="small text-muted mb-0 ps-3">
+          <li>Zoom 링크 변경 시 기존 예약이 아니라 신규 예약부터 반영됩니다.</li>
+          <li>비밀번호, 대기실 등 보안 설정은 Zoom 관리자 페이지에서 별도로 관리하세요.</li>
+          <li>테스트 링크 저장 후 실제 예약 화면에서 정상 노출되는지 확인하세요.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="d-flex justify-content-end gap-2">
+  <button type="button" class="btn btn-primary px-4" onclick="saveSection('zoom')">
+    <i class="bi bi-check-lg me-1"></i> Zoom 설정 저장
+  </button>
+</div>
+
+<script>
+  (function initZoomSection() {
+    const input = document.getElementById('editDefaultZoomUrl');
+    const preview = document.getElementById('zoomLinkPreview');
+    const btnTemplate = document.getElementById('btnZoomTemplate');
+    const btnClear = document.getElementById('btnZoomClear');
+
+    if (!input || !preview) return;
+
+    const normalizeUrl = (raw) => {
+      const value = String(raw || '').trim();
+      if (!value) return '';
+      if (/^https?:\/\//i.test(value)) return value;
+      if (value.startsWith('zoom.us/') || value.startsWith('www.zoom.us/')) {
+        return `https://${value}`;
+      }
+      return value;
+    };
+
+    const renderPreview = () => {
+      const normalized = normalizeUrl(input.value);
+      if (!normalized) {
+        preview.href = '#';
+        preview.textContent = '링크를 입력하면 여기에 표시됩니다.';
+        preview.classList.add('text-muted');
+        return;
+      }
+
+      preview.href = normalized;
+      preview.textContent = normalized;
+      preview.classList.remove('text-muted');
+    };
+
+    input.addEventListener('input', renderPreview);
+
+    btnTemplate?.addEventListener('click', () => {
+      input.value = 'https://zoom.us/j/1234567890';
+      input.focus();
+      renderPreview();
+    });
+
+    btnClear?.addEventListener('click', () => {
+      input.value = '';
+      input.focus();
+      renderPreview();
+    });
+
+    renderPreview();
+  })();
+</script>

@@ -1,0 +1,261 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <!-- ============================== 수정 (Hero 섹션 이미지 추가) ==============================
+             작성일: 2026-02-02
+             수정 내용: Hero 섹션에 guide.png 이미지 추가 (텍스트 가운데, 이미지 오른쪽 배경처럼 배치)
+        ============================== -->
+        <!-- Hero Section -->
+        <section class="py-5 position-relative overflow-hidden" style="background: linear-gradient(135deg, #0F4C81 100%); min-height: 200px;">
+            <!-- 배경 이미지 (오른쪽, 섹션 높이에 맞춤) -->
+            <img src="/img/guide.png" alt="이용안내 가이드" 
+                 class="position-absolute d-none d-lg-block" 
+                 style="right: 25%; top: 50%; transform: translateY(-50%); height: calc(100% - 20px); width: auto; object-fit: contain;">
+            <!-- 텍스트 영역 (가운데 정렬) -->
+            <div class="container py-4 position-relative" style="z-index: 1;">
+                <div class="text-center text-white">
+                    <h1 class="display-4 fw-bold mb-3">이용 안내</h1>
+                    <p class="lead mb-0 opacity-75">튜터링고에서 함께 쉽고 편리하게 학습을 시작하세요</p>
+                </div>
+            </div>
+        </section>
+        <!-- ============================== 수정 종료 ============================== -->
+
+        <!-- 서비스 소개 -->
+        <section class="py-5 bg-white">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold mb-3">튜터링고는 어떤 서비스인가요?</h2>
+                    <p class="text-muted fs-5">검증된 전문 튜터와 학습자를 연결하는 1:1 맞춤 학습 플랫폼입니다</p>
+                </div>
+                <div class="row g-4 justify-content-center">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4">
+                            <div class="mb-3">
+                                <div class="d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                    <img src="/img/guide/guide-ts.png" alt="다양한 튜터 탐색" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                </div>
+                            </div>
+                            <h5 class="fw-bold">다양한 튜터 탐색</h5>
+                            <p class="text-muted mb-0">언어, 학문 등 다양한 분야의 전문 튜터를 검색하고 비교할 수 있습니다.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4">
+                            <div class="mb-3">
+                                <div class="d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                    <img src="/img/guide/cal.svg" alt="간편한 예약" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                </div>
+                            </div>
+                            <h5 class="fw-bold">간편한 예약</h5>
+                            <p class="text-muted mb-0">원하는 시간에 튜터의 수업을 쉽게 예약할 수 있습니다.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4">
+                            <div class="mb-1">
+                                 <div class="d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                                    <img src="/img/guide/promise.svg" alt="간편한 예약" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                </div>
+                            </div>
+                            <h5 class="fw-bold">믿을 수 있는 리뷰</h5>
+                            <p class="text-muted mb-0">실제 수강생들의 솔직한 리뷰로 나에게 맞는 튜터를 선택하세요.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 이용 방법 - 학습자 -->
+        <section class="py-5" style="background-color: #f8fafc;">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <span class="badge bg-primary rounded-pill px-3 py-2 mb-3">For Learners</span>
+                    <h2 class="fw-bold mb-3">학습자 이용 방법</h2>
+                    <p class="text-muted">4단계로 간편하게 학습을 시작하세요</p>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                            <div class="card-body text-center p-4">
+                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 48px; height: 48px; font-size: 20px; font-weight: bold;">1</div>
+                                <h5 class="fw-bold">회원가입</h5>
+                                <p class="text-muted small mb-0">간단한 정보 입력으로<br>빠르게 가입하세요</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                            <div class="card-body text-center p-4">
+                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 48px; height: 48px; font-size: 20px; font-weight: bold;">2</div>
+                                <h5 class="fw-bold">튜터 검색</h5>
+                                <p class="text-muted small mb-0">과목, 가격, 리뷰를 보고<br>원하는 튜터를 찾으세요</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                            <div class="card-body text-center p-4">
+                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 48px; height: 48px; font-size: 20px; font-weight: bold;">3</div>
+                                <h5 class="fw-bold">수업 예약</h5>
+                                <p class="text-muted small mb-0">튜터의 가능한 시간 중<br>원하는 시간을 선택하세요</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                            <div class="card-body text-center p-4">
+                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 48px; height: 48px; font-size: 20px; font-weight: bold;">4</div>
+                                <h5 class="fw-bold">학습 시작</h5>
+                                <p class="text-muted small mb-0">예약된 시간에 튜터와<br>1:1 학습을 진행하세요</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-5">
+                    <a href="/tutors" class="btn btn-primary btn-lg rounded-pill px-5">튜터 찾아보기</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 이용 방법 - 튜터 -->
+        <section class="py-5 bg-white">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <span class="badge bg-success rounded-pill px-3 py-2 mb-3">For Tutors</span>
+                    <h2 class="fw-bold mb-3">튜터 등록 방법</h2>
+                    <p class="text-muted">전문성을 공유하고 수익을 창출하세요</p>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                            <div class="card-body text-center p-4">
+                                <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 48px; height: 48px; font-size: 20px; font-weight: bold;">1</div>
+                                <h5 class="fw-bold">튜터 신청</h5>
+                                <p class="text-muted small mb-0">튜터 등록 버튼을 클릭하여<br>신청 절차를 시작하세요</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                            <div class="card-body text-center p-4">
+                                <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 48px; height: 48px; font-size: 20px; font-weight: bold;">2</div>
+                                <h5 class="fw-bold">프로필 작성</h5>
+                                <p class="text-muted small mb-0">경력, 전문 분야, 소개 등<br>상세 정보를 입력하세요</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                            <div class="card-body text-center p-4">
+                                <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 48px; height: 48px; font-size: 20px; font-weight: bold;">3</div>
+                                <h5 class="fw-bold">일정 설정</h5>
+                                <p class="text-muted small mb-0">수업 가능한 시간대와<br>요금을 자유롭게 설정하세요</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                            <div class="card-body text-center p-4">
+                                <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 48px; height: 48px; font-size: 20px; font-weight: bold;">4</div>
+                                <h5 class="fw-bold">수업 진행</h5>
+                                <p class="text-muted small mb-0">학습자의 예약을 확인하고<br>수업을 진행하세요</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-5">
+                    <a href="/tutor/register" class="btn btn-success btn-lg rounded-pill px-5">튜터로 등록하기</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="py-5" style="background-color: #f8fafc;">
+            <div class="container" style="max-width: 800px;">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold mb-3">자주 묻는 질문</h2>
+                    <p class="text-muted">궁금한 점이 있으신가요?</p>
+                </div>
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                수업은 어떤 방식으로 진행되나요?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                수업은 온라인 화상 수업 또는 오프라인 대면 수업으로 진행됩니다. 튜터마다 제공하는 수업 방식이 다르니 튜터 프로필에서 확인해 주세요. 화상 수업의 경우 Zoom, Google Meet 등의 도구를 활용합니다.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                예약 취소는 어떻게 하나요?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                마이페이지 > 예약 내역에서 예약을 취소할 수 있습니다. 수업 시작 24시간 전까지 취소 시 전액 환불되며, 24시간 이내 취소 시에는 환불 규정에 따라 일부 차감될 수 있습니다.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                결제는 어떻게 이루어지나요?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                수업 예약 시 신용카드, 체크카드, 간편결제(카카오페이, 네이버페이 등)로 결제할 수 있습니다. 수업료는 수업 완료 후 튜터에게 정산됩니다.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                튜터가 되려면 어떤 조건이 필요한가요?
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                특별한 자격 제한은 없습니다. 본인의 전문 분야에 대한 지식과 열정이 있다면 누구나 튜터로 등록할 수 있습니다. 다만, 학력/경력 증명서를 첨부하면 학습자에게 더 많은 신뢰를 줄 수 있습니다.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0 shadow-sm rounded-3 overflow-hidden">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                                수업료는 튜터가 직접 정하나요?
+                            </button>
+                        </h2>
+                        <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                네, 튜터가 직접 시간당 수업료를 설정합니다. 경력, 전문성, 시장 상황 등을 고려하여 자유롭게 가격을 책정할 수 있습니다. 플랫폼에서는 10%의 추가결제로 간편하게 수수료를 처리합니다.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-5 bg-white">
+            <div class="container">
+                <div class="card border-0 rounded-4 p-5 text-center" style="background: linear-gradient(135deg, #51b9c7 100%);">
+                    <h2 class="fw-bold text-white mb-3">지금 바로 시작하세요!</h2>
+                    <p class="text-white opacity-75 mb-4">검증된 전문 튜터와 함께 새로운 학습 경험을 시작해 보세요</p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="/join" class="btn btn-light btn-lg rounded-pill px-5 fw-semibold">회원가입</a>
+                        <a href="/tutors" class="btn btn-outline-light btn-lg rounded-pill px-5">튜터 둘러보기</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

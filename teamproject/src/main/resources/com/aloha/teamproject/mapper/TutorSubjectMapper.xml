@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TutorSubjectMapper">
+
+    <resultMap id="TutorSubjectMap" type="com.aloha.teamproject.dto.TutorSubject">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="subjectId" column="subject_id"/>
+        <result property="seq" column="seq"/>
+    </resultMap>
+
+    <select id="selectByUserId" resultMap="TutorSubjectMap">
+        SELECT 
+            id,
+            user_id,
+            subject_id,
+            seq
+        FROM tutor_subject
+        WHERE user_id = #{userId}
+        ORDER BY seq ASC
+    </select>
+
+    <insert id="insert">
+        INSERT INTO tutor_subject (
+            id,
+            user_id,
+            subject_id,
+            seq
+        ) VALUES (
+            UUID(),
+            #{userId},
+            #{subjectId},
+            #{seq}
+        )
+    </insert>
+
+    <insert id="insertBatch">
+        INSERT INTO tutor_subject (
+            id,
+            user_id,
+            subject_id,
+            seq
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                UUID(),
+                #{item.userId},
+                #{item.subjectId},
+                #{item.seq}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteByUserId">
+        DELETE FROM tutor_subject
+        WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

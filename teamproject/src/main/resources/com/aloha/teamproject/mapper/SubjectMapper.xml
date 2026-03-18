@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.SubjectMapper">
+
+    <resultMap id="SubjectMap" type="com.aloha.teamproject.dto.Subject">
+        <id property="id" column="id"/>
+        <result property="groupId" column="group_id"/>
+        <result property="name" column="name"/>
+        <result property="seqInGroup" column="seq_in_group"/>
+    </resultMap>
+
+    <resultMap id="SubjectGroupMap" type="com.aloha.teamproject.dto.SubjectGroup">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="seq" column="seq"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="SubjectMap">
+        SELECT * FROM subject
+        ORDER BY group_id, seq_in_group
+    </select>
+
+    <select id="selectById" resultMap="SubjectMap">
+        SELECT * FROM subject
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByName" resultMap="SubjectMap">
+        SELECT * FROM subject
+        WHERE name = #{name}
+        ORDER BY seq_in_group LIMIT 1
+    </select>
+
+    <select id="selectByGroupId" resultMap="SubjectMap">
+        SELECT * FROM subject
+        WHERE group_id = #{groupId}
+        ORDER BY seq_in_group
+    </select>
+
+    <insert id="insert">
+        INSERT INTO subject (
+            id, group_id, name, seq_in_group
+        ) VALUES (
+            UUID(), #{groupId}, #{name}, #{seqInGroup}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE subject
+        SET name = #{name}, seq_in_group = #{seqInGroup}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM subject WHERE id = #{id}
+    </delete>
+
+    <select id="selectAllGroups" resultMap="SubjectGroupMap">
+        SELECT * FROM subject_group
+        ORDER BY seq
+    </select>
+
+    <select id="selectGroupById" resultMap="SubjectGroupMap">
+        SELECT * FROM subject_group
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insertGroup">
+        INSERT INTO subject_group (
+            id, name, seq
+        ) VALUES (
+            UUID(), #{name}, #{seq}
+        )
+    </insert>
+
+    <update id="updateGroup">
+        UPDATE subject_group
+        SET name = #{name}, seq = #{seq}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteGroup">
+        DELETE FROM subject_group WHERE id = #{id}
+    </delete>
+
+</mapper>

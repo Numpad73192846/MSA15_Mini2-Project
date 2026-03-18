@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TutorAvailabilityMapper">
+
+    <resultMap id="TutorAvailabilityMap" type="TutorAvailability">
+        <id property="no" column="no"/>
+        <result property="userId" column="user_id"/>
+        <result property="id" column="id"/>
+        <result property="startAt" column="start_at"/>
+        <result property="endAt" column="end_at"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="selectByUserIdAndDateRange" resultMap="TutorAvailabilityMap">
+        SELECT no, user_id, id, start_at, end_at, status, created_at, updated_at
+        FROM tutor_availability
+        WHERE user_id = #{userId}
+          AND start_at &lt; #{endDate}
+          AND end_at &gt; #{startDate}
+        ORDER BY start_at
+    </select>
+
+    <select id="selectById" resultMap="TutorAvailabilityMap">
+        SELECT no, user_id, id, start_at, end_at, status, created_at, updated_at
+        FROM tutor_availability
+        WHERE id = #{id}
+        LIMIT 1
+    </select>
+
+    <insert id="insert">
+        INSERT INTO tutor_availability (user_id, id, start_at, end_at, status)
+        VALUES (#{userId}, #{id}, #{startAt}, #{endAt}, #{status})
+    </insert>
+
+    <insert id="insertBatch">
+        INSERT INTO tutor_availability (user_id, id, start_at, end_at, status)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.id}, #{item.startAt}, #{item.endAt}, #{item.status})
+        </foreach>
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE tutor_availability
+        SET status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateRangeAndStatus">
+        UPDATE tutor_availability
+        SET start_at = #{startAt},
+            end_at = #{endAt},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatusBatch">
+        UPDATE tutor_availability
+        SET status = #{status}
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM tutor_availability
+        WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteOpenWithoutBookingByUserIdAndDateRange">
+        DELETE ta
+        FROM tutor_availability ta
+        LEFT JOIN booking b
+               ON b.availability_id = ta.id
+              AND b.canceled_at IS NULL
+        WHERE ta.user_id = #{userId}
+          AND ta.start_at &gt;= #{startDate}
+          AND ta.end_at &lt;= #{endDate}
+          AND ta.status = 'OPEN'
+          AND b.id IS NULL
+    </delete>
+
+</mapper>
