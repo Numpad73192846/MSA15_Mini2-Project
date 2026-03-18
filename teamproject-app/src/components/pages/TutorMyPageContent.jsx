@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import AiAssistantModal from '../common/AiAssistantModal'
 import Layout from '../common/Layout'
 import api from '../../services/api'
 import useAuth from '../../utils/hooks/useAuth'
@@ -73,6 +74,22 @@ const isSameDay = (left, right) => (
 	&& left.getMonth() === right.getMonth()
 	&& left.getDate() === right.getDate()
 )
+
+const buildAiDefaults = (lesson, tutorName) => ({
+	tutorName: tutorName || '',
+	studentName: lesson?.studentName || lesson?.studentNickname || '',
+	subject: lesson?.subject || '',
+	lessonContext: lesson
+		? [
+			`${lesson.studentName || lesson.studentNickname || '학생'} 학생과 진행한 ${lesson.subject || '수업'} 정리`,
+			`수업 일정: ${formatDateTime(lesson.startAt)}`,
+			`수업료: ${formatCurrency(lesson.price)}`,
+			'핵심 진행 내용:',
+			'학생 반응 및 이해도:',
+			'다음 수업 계획:',
+		].join('\n')
+		: '',
+})
 
 const getStudentKey = (lesson) => String(
 	lesson?.studentId
@@ -157,12 +174,16 @@ const EmptyPanel = ({ message }) => (
 
 const TutorMyPage = () => {
 	const { isLoading: authLoading, isLogin, hasRole } = useAuth()
+	const [searchParams] = useSearchParams()
 	const [activeTab, setActiveTab] = useState('schedule')
 	const [weekOffset, setWeekOffset] = useState(0)
 	const [selectedStudentKey, setSelectedStudentKey] = useState('')
 	const [mypage, setMypage] = useState(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
+	const [aiModalOpen, setAiModalOpen] = useState(false)
+	const [aiMode, setAiMode] = useState('lesson-summary')
+	const [aiDefaults, setAiDefaults] = useState(buildAiDefaults(null, ''))
 
 	useEffect(() => {
 		if (authLoading) return
@@ -221,6 +242,17 @@ const TutorMyPage = () => {
 	}, [allLessons])
 
 	useEffect(() => {
+		const tab = searchParams.get('tab')
+		if (tab && tabItems.some((item) => item.key === tab)) {
+			setActiveTab(tab)
+		}
+		const student = searchParams.get('student')
+		if (student) {
+			setSelectedStudentKey(student)
+		}
+	}, [searchParams])
+
+	useEffect(() => {
 		if (!selectedStudentKey) return
 		const exists = studentOptions.some((option) => option.value === selectedStudentKey)
 		if (!exists) setSelectedStudentKey('')
@@ -263,6 +295,13 @@ const TutorMyPage = () => {
 	const profileHeadline = profile?.headline || '등록된 한 줄 소개가 없습니다.'
 	const profileBio = profile?.bio || profile?.selfIntro || '등록된 소개가 없습니다.'
 	const profileVideoUrl = toEmbedVideoUrl(profile?.videoUrl)
+
+	const openAiAssistant = (mode) => {
+		const sourceLesson = upcomingLessons[0] || pastLessons[0] || allLessons[0] || null
+		setAiMode(mode)
+		setAiDefaults(buildAiDefaults(sourceLesson, profileName === '-' ? '' : profileName))
+		setAiModalOpen(true)
+	}
 
 	if (authLoading || loading) {
 		return (
@@ -420,12 +459,12 @@ const TutorMyPage = () => {
 										<p className='mb-0 text-sm text-slate-500'>수업 요약과 과제 초안을 빠르게 작성할 수 있습니다.</p>
 									</div>
 									<div className='flex gap-2'>
-										<Link to='/tutor/dashboard' className='inline-flex h-[31px] items-center rounded-md border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50'>
+										<button type='button' onClick={() => openAiAssistant('lesson-summary')} className='inline-flex h-[31px] items-center rounded-md border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50'>
 											AI 수업 요약
-										</Link>
-										<Link to='/tutor/dashboard' className='inline-flex h-[31px] items-center rounded-md bg-[#4f46e5] px-3 text-xs font-semibold text-white hover:bg-[#4338ca]'>
+										</button>
+										<button type='button' onClick={() => openAiAssistant('homework')} className='inline-flex h-[31px] items-center rounded-md bg-[#4f46e5] px-3 text-xs font-semibold text-white hover:bg-[#4338ca]'>
 											AI 과제 초안
-										</Link>
+										</button>
 									</div>
 								</div>
 							</div>
@@ -620,8 +659,15 @@ const TutorMyPage = () => {
 					</div>
 				</div>
 			</section>
+			<AiAssistantModal
+				isOpen={aiModalOpen}
+				onClose={() => setAiModalOpen(false)}
+				mode={aiMode}
+				defaults={aiDefaults}
+			/>
 		</Layout>
 	)
 }
 
 export default TutorMyPage
+

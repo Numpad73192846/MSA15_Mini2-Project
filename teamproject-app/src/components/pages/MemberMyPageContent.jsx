@@ -1,6 +1,8 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import AiAssistantModal from '../common/AiAssistantModal'
 import Layout from '../common/Layout'
+import MessageThreadModal from '../common/MessageThreadModal'
 import api from '../../services/api'
 import useAuth from '../../utils/hooks/useAuth'
 import bookIcon from '../../assets/image/mypage/book.svg'
@@ -123,6 +125,22 @@ const isSameDay = (left, right) => (
 	&& left.getDate() === right.getDate()
 )
 
+const buildAiDefaults = (booking, memberName) => ({
+	tutorName: booking?.tutorName || '',
+	studentName: memberName || '',
+	subject: booking?.subject || '',
+	lessonContext: booking
+		? [
+			`${booking.tutorName || '튜터'} 튜터와 진행한 ${booking.subject || '수업'} 내용`,
+			`수업 날짜: ${formatLessonDateText(booking)}`,
+			`수업 시간: ${formatLessonTimeText(booking)} (${formatDurationLabel(booking)})`,
+			'핵심 학습 내용:',
+			'학생이 어려워한 부분:',
+			'복습/숙제:',
+		].join('\n')
+		: '',
+})
+
 const MemberMyPage = () => {
 	const navigate = useNavigate()
 	const { isLoading: authLoading, isLogin } = useAuth()
@@ -136,6 +154,9 @@ const MemberMyPage = () => {
 	const [payMessage, setPayMessage] = useState('')
 	const [payError, setPayError] = useState('')
 	const [cancelLoadingId, setCancelLoadingId] = useState('')
+	const [aiModalOpen, setAiModalOpen] = useState(false)
+	const [aiDefaults, setAiDefaults] = useState(buildAiDefaults(null, ''))
+	const [threadTarget, setThreadTarget] = useState(null)
 
 	const loadMypage = useCallback(async () => {
 		setLoading(true)
@@ -208,9 +229,44 @@ const MemberMyPage = () => {
 		}
 	}
 
-	const handleSinglePaymentFallback = () => {
+	const handlePayBooking = async (booking) => {
+		if (!booking?.bookingId) return
 		setPayMessage('')
-		setPayError('개별 결제는 준비 중입니다. 상단의 "튜터 통합 결제"를 이용해 주세요.')
+		setPayError('')
+		setPayLoading(true)
+		try {
+			const amount = Number(booking.price || 0)
+			await api.post(`/bookings/${booking.bookingId}/pay`, {
+				paymentMethod: 'CARD',
+				amount: Number.isFinite(amount) ? amount : 0,
+			})
+			setPayMessage('개별 결제가 완료되었습니다.')
+			await loadMypage()
+		} catch (err) {
+			setPayError(err?.response?.data?.message || '개별 결제에 실패했습니다.')
+		} finally {
+			setPayLoading(false)
+		}
+	}
+
+	const openAiSummary = () => {
+		const sourceBooking = nextZoomBooking || paidUpcomingBookings[0] || upcomingBookings[0] || pastBookings[0] || null
+		setAiDefaults(buildAiDefaults(sourceBooking, mypage?.name || mypage?.nickname || ''))
+		setAiModalOpen(true)
+	}
+
+	const openMessageThread = (message) => {
+		if (!message?.bookingId || !message?.tutorId) return
+		setThreadTarget({
+			bookingId: message.bookingId,
+			tutorId: message.tutorId,
+			tutorName: message.tutorName,
+			subject: message.subject,
+		})
+	}
+
+	const closeMessageThread = () => {
+		setThreadTarget(null)
 	}
 
 	const stats = mypage?.memberStats || {}
@@ -379,7 +435,13 @@ const MemberMyPage = () => {
 										{tutorMessages.length === 0 ? (
 											<div className='py-3 text-center text-sm text-slate-500'>메시지가 없습니다.</div>
 										) : tutorMessages.slice(0, 5).map((message) => (
-											<div key={message.id || `${message.tutorId}-${message.createdAt}`} className='rounded-[14px] border border-[#e9edf5] bg-white px-3 py-3 shadow-[0_4px_14px_rgba(15,23,42,0.04)] transition hover:-translate-y-[1px] hover:border-[#cdd9ff] hover:shadow-[0_8px_20px_rgba(37,99,235,0.12)]'>
+											<button
+												key={message.id || `${message.tutorId}-${message.createdAt}`}
+												type='button'
+												onClick={() => openMessageThread(message)}
+												disabled={!message?.bookingId || !message?.tutorId}
+												className='w-full rounded-[14px] border border-[#e9edf5] bg-white px-3 py-3 text-left shadow-[0_4px_14px_rgba(15,23,42,0.04)] transition hover:-translate-y-[1px] hover:border-[#cdd9ff] hover:shadow-[0_8px_20px_rgba(37,99,235,0.12)] disabled:cursor-default disabled:hover:translate-y-0 disabled:hover:border-[#e9edf5] disabled:hover:shadow-[0_4px_14px_rgba(15,23,42,0.04)]'
+											>
 												<div className='flex items-start justify-between gap-2'>
 													<div>
 														<div className='font-semibold text-slate-900'>{message.tutorName || '튜터'} 튜터</div>
@@ -388,7 +450,8 @@ const MemberMyPage = () => {
 													<div className='text-xs text-slate-400'>{formatDate(message.createdAt, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
 												</div>
 												<div className='mt-2 line-clamp-2 text-sm text-slate-500'>{message.content || '내용이 없습니다.'}</div>
-											</div>
+												{message?.bookingId && message?.tutorId && <div className='mt-2 text-xs font-semibold text-[#4f46e5]'>대화 열기</div>}
+											</button>
 										))}
 									</div>
 								</div>
@@ -399,7 +462,7 @@ const MemberMyPage = () => {
 											<h3 className='mb-1 text-sm font-bold text-slate-900'>AI 수업 요약</h3>
 											<p className='text-sm text-slate-500'>Zoom 수업 내용을 입력하면 요약 포맷으로 정리해드립니다.</p>
 										</div>
-										<button type='button' className='inline-flex h-[31px] items-center rounded-md border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50'>AI 수업 요약 작성</button>
+										<button type='button' onClick={openAiSummary} className='inline-flex h-[31px] items-center rounded-md border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50'>AI 수업 요약 작성</button>
 									</div>
 								</div>
 
@@ -458,7 +521,7 @@ const MemberMyPage = () => {
 																		<span className='text-sm font-semibold text-[#4f46e5]'>{formatCurrency(booking.price)}</span>
 																		{isPaid && <span className='rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700'>결제완료</span>}
 																		{booking.status === 'CONFIRMED' && !isPaid && (
-																			<button type='button' onClick={handleSinglePaymentFallback} className='inline-flex h-[29px] items-center rounded-md bg-[#4f46e5] px-2.5 text-xs font-semibold text-white hover:bg-[#4338ca]'>결제하기</button>
+																			<button type='button' onClick={() => handlePayBooking(booking)} disabled={payLoading} className='inline-flex h-[29px] items-center rounded-md bg-[#4f46e5] px-2.5 text-xs font-semibold text-white hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60'>{payLoading ? '결제중...' : '결제하기'}</button>
 																		)}
 																		{canCancel && (
 																			<button
@@ -604,8 +667,27 @@ const MemberMyPage = () => {
 					)}
 				</div>
 			</section>
+			<AiAssistantModal
+				isOpen={aiModalOpen}
+				onClose={() => setAiModalOpen(false)}
+				mode='lesson-summary'
+				defaults={aiDefaults}
+			/>
+			<MessageThreadModal
+				isOpen={Boolean(threadTarget)}
+				onClose={closeMessageThread}
+				viewer='member'
+				bookingId={threadTarget?.bookingId}
+				tutorId={threadTarget?.tutorId}
+				tutorName={threadTarget?.tutorName}
+				studentName={mypage?.name || mypage?.nickname || '회원'}
+				subject={threadTarget?.subject}
+			/>
 		</Layout>
 	)
 }
 
 export default MemberMyPage
+
+
+

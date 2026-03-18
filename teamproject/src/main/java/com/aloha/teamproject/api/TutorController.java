@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +40,9 @@ import com.aloha.teamproject.dto.Subject;
 import com.aloha.teamproject.dto.TutorCareer;
 import com.aloha.teamproject.dto.TutorDocument;
 import com.aloha.teamproject.dto.TutorEducation;
+import com.aloha.teamproject.dto.TutorDashboardStudent;
 import com.aloha.teamproject.dto.TutorList;
+import com.aloha.teamproject.dto.TutorStudentNote;
 import com.aloha.teamproject.dto.TutorMyPage;
 import com.aloha.teamproject.dto.TutorProfile;
 import com.aloha.teamproject.dto.UserAuth;
@@ -52,6 +55,7 @@ import com.aloha.teamproject.service.TutorFieldService;
 import com.aloha.teamproject.service.TutorListService;
 import com.aloha.teamproject.service.TutorMyPageService;
 import com.aloha.teamproject.service.TutorProfileService;
+import com.aloha.teamproject.service.TutorStudentNoteService;
 import com.aloha.teamproject.service.TutorSubjectService;
 import com.aloha.teamproject.service.UserService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -80,6 +84,7 @@ public class TutorController {
     private final UserService userService;
     private final SubjectService subjectService;
     private final LessonService lessonService;
+    private final TutorStudentNoteService tutorStudentNoteService;
     private final ObjectMapper objectMapper;
 
     private static final String DOC_UPLOAD_DIR = "uploads/tutors/documents/";
@@ -107,6 +112,10 @@ public class TutorController {
             tutorMyPage.setPastLessons(tutorMyPageService.selectPastBookingsByUserId(userId));
             tutorMyPage.setTutorReviews(tutorMyPageService.selectTutorReviewsByUserId(userId));
             tutorMyPage.setMonthlyEarnings(tutorMyPageService.selectMonthlyEarningsByUserId(userId));
+            tutorMyPage.setStudents(buildDashboardStudents(
+                    tutorMyPage.getUpcomingLessons(),
+                    tutorMyPage.getPastLessons(),
+                    tutorStudentNoteService.selectByTutorId(userId)));
 
             return ApiResponse.ok(tutorMyPage);
         } catch (Exception e) {
@@ -695,6 +704,64 @@ public class TutorController {
                 .filter(Objects::nonNull)
                 .filter(doc -> docType.equalsIgnoreCase(doc.getDocType()))
                 .anyMatch(doc -> doc.getReviewedAt() != null && !StringUtils.hasText(doc.getRejectReason()));
+    }
+
+    private List<TutorDashboardStudent> buildDashboardStudents(
+            List<com.aloha.teamproject.dto.UpcomingLesson> upcomingLessons,
+            List<com.aloha.teamproject.dto.UpcomingLesson> pastLessons,
+            List<TutorStudentNote> studentNotes) {
+
+        Map<String, TutorStudentNote> noteMap = new HashMap<>();
+        if (studentNotes != null) {
+            for (TutorStudentNote note : studentNotes) {
+                if (note != null && StringUtils.hasText(note.getStudentId())) {
+                    noteMap.put(note.getStudentId(), note);
+                }
+            }
+        }
+
+        Map<String, TutorDashboardStudent> studentMap = new LinkedHashMap<>();
+        List<com.aloha.teamproject.dto.UpcomingLesson> allLessons = new ArrayList<>();
+        if (upcomingLessons != null) {
+            allLessons.addAll(upcomingLessons);
+        }
+        if (pastLessons != null) {
+            allLessons.addAll(pastLessons);
+        }
+
+        for (com.aloha.teamproject.dto.UpcomingLesson lesson : allLessons) {
+            if (lesson == null || !StringUtils.hasText(lesson.getStudentId())) {
+                continue;
+            }
+
+            TutorDashboardStudent student = studentMap.computeIfAbsent(lesson.getStudentId(), studentId -> {
+                TutorDashboardStudent item = new TutorDashboardStudent();
+                TutorStudentNote note = noteMap.get(studentId);
+                item.setId(studentId);
+                item.setName(lesson.getStudentName());
+                item.setEmail("");
+                item.setPhone("");
+                item.setSubjects(new ArrayList<>());
+                item.setTotalSessions(0);
+                item.setLastSession(lesson.getLessonDate());
+                item.setProgress(note != null && note.getProgress() != null ? note.getProgress() : "");
+                item.setNotes(note != null && note.getNotes() != null ? note.getNotes() : "");
+                return item;
+            });
+
+            if (StringUtils.hasText(lesson.getSubject()) && !student.getSubjects().contains(lesson.getSubject())) {
+                student.getSubjects().add(lesson.getSubject());
+            }
+            student.setTotalSessions((student.getTotalSessions() == null ? 0 : student.getTotalSessions()) + 1);
+            if (!StringUtils.hasText(student.getLastSession())
+                    || Objects.equals(student.getLastSession(), lesson.getLessonDate())
+                    || (lesson.getStartAt() != null
+                    && lesson.getLessonDate().compareTo(student.getLastSession()) > 0)) {
+                student.setLastSession(lesson.getLessonDate());
+            }
+        }
+
+        return new ArrayList<>(studentMap.values());
     }
 
     private boolean hasTutorAuthority(Authentication authentication) {

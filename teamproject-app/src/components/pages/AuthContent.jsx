@@ -169,6 +169,11 @@ const Auth = ({ initialTab = 'login' }) => {
 	const loginWithGoogle = () => { window.location.href = '/oauth2/authorization/google' }
 	const loginWithNaver = () => { window.location.href = '/oauth2/authorization/naver' }
 	const loginWithKakao = () => { window.location.href = '/oauth2/authorization/kakao' }
+	const handleForgotPassword = () => {
+		const subject = encodeURIComponent('튜터링고 비밀번호 재설정 문의')
+		const body = encodeURIComponent(`가입 이메일: ${loginForm.username || ''}\n문의 내용: 비밀번호 재설정을 요청합니다.`)
+		window.location.href = `mailto:thejoen@gmail.com?subject=${subject}&body=${body}`
+	}
 
 	return (
 		<Layout>
@@ -247,7 +252,7 @@ const Auth = ({ initialTab = 'login' }) => {
 											<input name='rememberId' type='checkbox' checked={loginForm.rememberId} onChange={updateLoginField} className='h-4 w-4 rounded border-[#adb5bd]' />아이디 저장
 										</label>
 									</div>
-									<button type='button' className='text-sm text-[#6c757d] hover:text-[#495057]'>비밀번호 찾기</button>
+									<button type='button' onClick={handleForgotPassword} className='text-sm text-[#6c757d] hover:text-[#495057]'>비밀번호 찾기</button>
 								</div>
 								{authError && <p className='text-sm text-red-500'>{authError}</p>}
 								<button type='submit' disabled={isSubmitting || isLoading} className='inline-flex h-[38px] w-full items-center justify-center rounded-md border border-[#4f46e5] bg-[#4f46e5] px-4 text-base font-normal text-white transition hover:border-[#4338ca] hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60'>로그인</button>

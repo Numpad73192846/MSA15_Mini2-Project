@@ -14,5 +14,6 @@ public class TutorMyPage {
 	private List<UpcomingLesson> pastLessons;
 	private List<TutorReview> tutorReviews;
 	private List<MonthlyEarning> monthlyEarnings;
+	private List<TutorDashboardStudent> students;
 
 }

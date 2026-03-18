@@ -1,6 +1,7 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '../common/Layout'
+import MessageThreadModal from '../common/MessageThreadModal'
 import api from '../../services/api'
 import useAuth from '../../utils/hooks/useAuth'
 
@@ -68,13 +69,13 @@ const getStatusBadge = (status) => {
 	}
 }
 
-const BookingCard = ({ booking, actionLoadingId, onAction }) => {
+const BookingCard = ({ booking, actionLoadingId, onAction, onMessage }) => {
 	const actionState = getBookingActionState(booking)
 	const statusMeta = getStatusBadge(booking?.status)
 	const isBusy = actionLoadingId === booking?.bookingId || actionLoadingId === '__all__'
 
 	return (
-		<div className='h-full rounded-[14px] border border-[#e5e7eb] bg-[#f8fafc] p-4'>
+		<div className='h-full rounded-md border border-[#dee2e6] bg-[#f8f9fa] p-4'>
 			<div className='mb-2 flex items-start justify-between gap-2'>
 				<div>
 					<div className='font-bold text-slate-900'>{booking?.studentName || '학생'}</div>
@@ -96,9 +97,9 @@ const BookingCard = ({ booking, actionLoadingId, onAction }) => {
 			<div className='grid gap-2'>
 				{actionState === 'PAID' && (
 					<>
-						<Link to='/tutor/mypage' className='inline-flex h-[31px] items-center justify-center rounded-md border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50'>
+						<button type='button' onClick={() => onMessage(booking)} className='inline-flex h-[31px] items-center justify-center rounded-md border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50'>
 							메시지
-						</Link>
+						</button>
 						<button type='button' disabled className='h-[31px] rounded-md bg-emerald-600 px-3 text-xs font-semibold text-white opacity-90'>
 							결제 완료
 						</button>
@@ -159,6 +160,222 @@ const BookingCard = ({ booking, actionLoadingId, onAction }) => {
 	)
 }
 
+const StudentDetailModal = ({ isOpen, student, tutorName, onClose, onSaved }) => {
+	const [isEditing, setIsEditing] = useState(false)
+	const [progress, setProgress] = useState('')
+	const [notes, setNotes] = useState('')
+	const [saving, setSaving] = useState(false)
+	const [aiLoading, setAiLoading] = useState('')
+	const [error, setError] = useState('')
+	const [notice, setNotice] = useState('')
+
+	useEffect(() => {
+		if (!isOpen || !student) return
+		setIsEditing(false)
+		setProgress(student.progress || '')
+		setNotes(student.notes || '')
+		setSaving(false)
+		setAiLoading('')
+		setError('')
+		setNotice('')
+	}, [isOpen, student])
+
+	if (!isOpen || !student) return null
+
+	const buildLessonContext = () => (
+		[
+			progress.trim() ? `진도: ${progress.trim()}` : '',
+			notes.trim() ? `메모: ${notes.trim()}` : '',
+		].filter(Boolean).join('\n').trim()
+	)
+
+	const handleAiGenerate = async (type) => {
+		const lessonContext = buildLessonContext()
+		if (!lessonContext) {
+			setError('수업 요약/과제 생성을 위해 진도 또는 메모를 먼저 입력해 주세요.')
+			return
+		}
+
+		setError('')
+		setNotice('')
+		setIsEditing(true)
+		setAiLoading(type)
+
+		try {
+			const endpoint = type === 'homework' ? '/ai/homework' : '/ai/lesson-summary'
+			const response = await api.post(endpoint, {
+				tutorName: tutorName || '튜터',
+				studentName: student.name || '학생',
+				subject: student.subjects?.[0] || '맞춤 수업',
+				lessonContext,
+			})
+			const generatedText = String(response.data?.data?.text || '').trim()
+			if (!generatedText) {
+				setError('생성된 내용이 없습니다.')
+				return
+			}
+
+			if (type === 'homework') {
+				setNotes((prev) => (prev.trim() ? `${prev.trim()}\n\n${generatedText}` : generatedText))
+			} else {
+				setProgress(generatedText)
+			}
+			setNotice(type === 'homework' ? 'AI 과제를 메모에 반영했습니다.' : 'AI 수업 요약을 진도 현황에 반영했습니다.')
+		} catch (requestError) {
+			setError(requestError?.response?.data?.message || 'AI 생성에 실패했습니다.')
+		} finally {
+			setAiLoading('')
+		}
+	}
+
+	const handleSave = async () => {
+		if (!student.id) {
+			setError('학생 정보를 찾을 수 없습니다.')
+			return
+		}
+
+		setSaving(true)
+		setError('')
+		setNotice('')
+		try {
+			await api.put('/tutor/students/note', {
+				studentId: student.id,
+				progress: progress.trim(),
+				notes: notes.trim(),
+			})
+			const updatedStudent = {
+				...student,
+				progress: progress.trim(),
+				notes: notes.trim(),
+			}
+			onSaved(updatedStudent)
+			setNotice('학생 정보가 저장되었습니다.')
+			setIsEditing(false)
+		} catch (requestError) {
+			setError(requestError?.response?.data?.message || '학생 정보 저장에 실패했습니다.')
+		} finally {
+			setSaving(false)
+		}
+	}
+
+	return (
+		<div className='fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/55 px-3 py-6'>
+			<div className='w-full max-w-[540px] rounded-xl border-0 bg-white shadow-2xl'>
+				<div className='flex items-center justify-between px-6 pb-0 pt-5'>
+					<h3 className='text-lg font-bold text-slate-900'>학생 상세 정보</h3>
+					<div className='flex items-center gap-2'>
+						{!isEditing && (
+							<button type='button' onClick={() => setIsEditing(true)} className='inline-flex h-8 items-center rounded-lg border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50'>
+								수정
+							</button>
+						)}
+						<button type='button' onClick={onClose} className='rounded-md px-2 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-700'>
+							닫기
+						</button>
+					</div>
+				</div>
+
+				<div className='px-6 py-5'>
+					<div className='mb-4 flex items-center gap-3'>
+						<div className='flex h-[50px] w-[50px] items-center justify-center rounded-full bg-slate-100 text-xl font-bold text-[#4f46e5]'>
+							{String(student.name || '학').charAt(0)}
+						</div>
+						<div>
+							<h4 className='text-lg font-bold text-slate-900'>{student.name || '학생'}</h4>
+							<div className='text-sm text-slate-500'>{student.email || '-'}</div>
+						</div>
+					</div>
+
+					<div className='mb-4 grid gap-3 sm:grid-cols-2'>
+						<div className='rounded-xl bg-[#f8f9fa] p-4 text-center'>
+							<div className='mb-1 text-xs text-slate-500'>총 수업</div>
+							<div className='font-bold text-slate-900'>{student.totalSessions || 0}회</div>
+						</div>
+						<div className='rounded-xl bg-[#f8f9fa] p-4 text-center'>
+							<div className='mb-1 text-xs text-slate-500'>연락처</div>
+							<div className='font-bold text-sm text-slate-900'>{student.phone || '-'}</div>
+						</div>
+					</div>
+
+					<div className='mb-4'>
+						<div className='mb-2 flex items-center justify-between gap-2'>
+							<h5 className='text-sm font-bold text-slate-500'>진도 현황</h5>
+							<button type='button' onClick={() => handleAiGenerate('summary')} disabled={aiLoading === 'summary'} className='inline-flex h-8 items-center rounded-lg border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-60'>
+								{aiLoading === 'summary' ? '생성중...' : 'AI 수업 요약'}
+							</button>
+						</div>
+						{isEditing ? (
+							<textarea
+								value={progress}
+								onChange={(event) => setProgress(event.target.value)}
+								rows={4}
+								className='w-full rounded-2xl border border-slate-300 px-3 py-3 text-sm leading-6 text-slate-900 outline-none transition focus:border-[#4f46e5]'
+								placeholder='진도 현황을 입력하세요.'
+							/>
+						) : (
+							<div className='rounded-xl bg-[#f8f9fa] p-4 text-sm leading-6 text-slate-700 whitespace-pre-wrap'>
+								{student.progress || '진도 현황 내용이 없습니다.'}
+							</div>
+						)}
+					</div>
+
+					<div className='mb-3'>
+						<div className='mb-2 flex items-center justify-between gap-2'>
+							<h5 className='text-sm font-bold text-slate-500'>특이사항 메모</h5>
+							<button type='button' onClick={() => handleAiGenerate('homework')} disabled={aiLoading === 'homework'} className='inline-flex h-8 items-center rounded-lg border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-60'>
+								{aiLoading === 'homework' ? '생성중...' : 'AI 과제 작성'}
+							</button>
+						</div>
+						{isEditing ? (
+							<textarea
+								value={notes}
+								onChange={(event) => setNotes(event.target.value)}
+								rows={4}
+								className='w-full rounded-2xl border border-slate-300 px-3 py-3 text-sm leading-6 text-slate-900 outline-none transition focus:border-[#4f46e5]'
+								placeholder='특이사항 메모를 입력하세요.'
+							/>
+						) : (
+							<div className='rounded-xl bg-[#f8f9fa] p-4 text-sm leading-6 text-slate-700 whitespace-pre-wrap'>
+								{student.notes || '메모 내용이 없습니다.'}
+							</div>
+						)}
+					</div>
+
+					{error && <div className='mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600'>{error}</div>}
+					{notice && <div className='mb-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-600'>{notice}</div>}
+				</div>
+
+				<div className='flex items-center justify-end gap-2 px-6 pb-5 pt-0'>
+					{isEditing ? (
+						<>
+							<button
+								type='button'
+								onClick={() => {
+									setProgress(student.progress || '')
+									setNotes(student.notes || '')
+									setIsEditing(false)
+									setError('')
+									setNotice('')
+								}}
+								className='inline-flex h-10 items-center rounded-xl border border-slate-300 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50'
+							>
+								취소
+							</button>
+							<button type='button' onClick={handleSave} disabled={saving} className='inline-flex h-10 items-center rounded-xl bg-[#4f46e5] px-4 text-sm font-semibold text-white hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60'>
+								{saving ? '저장중...' : '저장'}
+							</button>
+						</>
+					) : (
+						<button type='button' onClick={onClose} className='inline-flex h-10 w-full items-center justify-center rounded-xl bg-[#4f46e5] px-4 text-sm font-semibold text-white hover:bg-[#4338ca]'>
+							확인
+						</button>
+					)}
+				</div>
+			</div>
+		</div>
+	)
+}
+
 const TutorDashboard = () => {
 	const { isLoading: authLoading, isLogin, hasRole } = useAuth()
 	const [loading, setLoading] = useState(true)
@@ -167,6 +384,8 @@ const TutorDashboard = () => {
 	const [notice, setNotice] = useState('')
 	const [noticeError, setNoticeError] = useState('')
 	const [actionLoadingId, setActionLoadingId] = useState('')
+	const [threadTarget, setThreadTarget] = useState(null)
+	const [studentDetailTarget, setStudentDetailTarget] = useState(null)
 
 	const loadDashboard = useCallback(async () => {
 		setLoading(true)
@@ -204,7 +423,7 @@ const TutorDashboard = () => {
 		[bookings]
 	)
 
-	const students = useMemo(() => {
+	const derivedStudents = useMemo(() => {
 		const map = new Map()
 		bookings.forEach((booking) => {
 			const key = String(booking?.studentId || booking?.studentName || booking?.bookingId || '')
@@ -230,6 +449,8 @@ const TutorDashboard = () => {
 			subjects: Array.from(student.subjects),
 		})).sort((left, right) => toTimeValue(right.lastSession) - toTimeValue(left.lastSession))
 	}, [bookings])
+
+	const students = mypage?.students ?? derivedStudents
 
 	const executeBookingAction = async (booking, action) => {
 		const bookingId = booking?.bookingId
@@ -269,6 +490,43 @@ const TutorDashboard = () => {
 		} finally {
 			setActionLoadingId('')
 		}
+	}
+
+	const openThread = (booking) => {
+		if (!booking?.bookingId || !booking?.studentId) return
+		setThreadTarget({
+			bookingId: booking.bookingId,
+			studentId: booking.studentId,
+			studentName: booking.studentName,
+			subject: booking.subject,
+		})
+	}
+
+	const closeThread = () => {
+		setThreadTarget(null)
+	}
+
+	const openStudentDetail = (student) => {
+		setStudentDetailTarget(student)
+	}
+
+	const closeStudentDetail = () => {
+		setStudentDetailTarget(null)
+	}
+
+	const handleStudentSaved = (updatedStudent) => {
+		setStudentDetailTarget(updatedStudent)
+		setMypage((prev) => {
+			if (!prev || !Array.isArray(prev.students)) return prev
+			return {
+				...prev,
+				students: prev.students.map((item) => (
+					item.id === updatedStudent.id
+						? { ...item, progress: updatedStudent.progress, notes: updatedStudent.notes }
+						: item
+				)),
+			}
+		})
 	}
 
 	const acceptAllBookings = async () => {
@@ -366,18 +624,18 @@ const TutorDashboard = () => {
 
 	return (
 		<Layout>
-			<section className='bg-[#f8fafc] py-12'>
+			<section className='bg-white py-12'>
 				<div className='mx-auto w-full max-w-[1140px] px-3'>
 					<div className='mb-4'>
 						<h2 className='mb-1 text-[1.75rem] font-bold text-slate-900'>튜터 대시보드</h2>
-						<p className='mb-0 text-sm text-slate-500'>예약 현황과 학생 활동을 확인하고 관리하세요.</p>
+						<p className='mb-0 text-sm text-slate-500'>Mock 데이터 화면입니다.</p>
 					</div>
 
 					{notice && <div className='mb-3 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700'>{notice}</div>}
 					{noticeError && <div className='mb-3 rounded-md border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700'>{noticeError}</div>}
 
 					<div className='space-y-4'>
-						<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+						<div className='rounded-md border border-[#dee2e6] bg-white shadow-sm'>
 							<div className='p-6'>
 								<div className='mb-3 flex flex-wrap items-center justify-between gap-2'>
 									<h3 className='text-lg font-bold text-slate-900'>예약 목록</h3>
@@ -398,7 +656,7 @@ const TutorDashboard = () => {
 
 								<div className='grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
 									{bookings.length === 0 ? (
-										<div className='col-span-full rounded-[14px] border border-dashed border-slate-300 py-8 text-center text-sm text-slate-500'>
+										<div className='col-span-full rounded-md border border-dashed border-slate-300 py-8 text-center text-sm text-slate-500'>
 											예약 내역이 없습니다.
 										</div>
 									) : bookings.map((booking) => (
@@ -407,29 +665,31 @@ const TutorDashboard = () => {
 											booking={booking}
 											actionLoadingId={actionLoadingId}
 											onAction={executeBookingAction}
+											onMessage={openThread}
 										/>
 									))}
 								</div>
 							</div>
 						</div>
 
-						<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+						<div className='rounded-md border border-[#dee2e6] bg-white shadow-sm'>
 							<div className='p-6'>
 								<h3 className='mb-3 text-lg font-bold text-slate-900'>학생 목록</h3>
 								<div className='grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
 									{students.length === 0 ? (
-										<div className='col-span-full rounded-[14px] border border-dashed border-slate-300 py-8 text-center text-sm text-slate-500'>
+										<div className='col-span-full rounded-md border border-dashed border-slate-300 py-8 text-center text-sm text-slate-500'>
 											등록된 학생이 없습니다.
 										</div>
 									) : students.map((student) => (
-										<div key={student.id} className='h-full rounded-[14px] border border-[#e5e7eb] bg-white p-4'>
+										<div key={student.id} className='h-full rounded-md border border-[#dee2e6] bg-white p-4'>
 											<div className='mb-3 flex items-center gap-3'>
-												<div className='flex h-12 w-12 items-center justify-center rounded-full bg-[#4f46e5] text-xl font-bold text-white'>
+												<div className='flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#4f46e5] text-[1.5rem] font-bold text-white'>
 													{String(student.name || '학').charAt(0)}
 												</div>
 												<div>
 													<h4 className='text-base font-bold text-slate-900'>{student.name}</h4>
-													<div className='text-xs text-slate-500'>연락처 정보 없음</div>
+													<div className='text-xs text-slate-500'>{student.email || '-'}</div>
+													<div className='text-xs text-slate-500'>{student.phone || '-'}</div>
 												</div>
 											</div>
 
@@ -449,9 +709,9 @@ const TutorDashboard = () => {
 												</div>
 											</div>
 
-											<Link to='/tutor/mypage' className='inline-flex h-[31px] w-full items-center justify-center rounded-md border border-slate-300 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50'>
+											<button type='button' onClick={() => openStudentDetail(student)} className='inline-flex h-[31px] w-full items-center justify-center rounded-md border border-slate-300 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50'>
 												상세보기
-											</Link>
+											</button>
 										</div>
 									))}
 								</div>
@@ -460,8 +720,26 @@ const TutorDashboard = () => {
 					</div>
 				</div>
 			</section>
+			<MessageThreadModal
+				isOpen={Boolean(threadTarget)}
+				onClose={closeThread}
+				viewer='tutor'
+				bookingId={threadTarget?.bookingId}
+				studentId={threadTarget?.studentId}
+				studentName={threadTarget?.studentName}
+				tutorName={mypage?.tutorProfile?.name || mypage?.tutorProfile?.nickname || '튜터'}
+				subject={threadTarget?.subject}
+			/>
+			<StudentDetailModal
+				isOpen={Boolean(studentDetailTarget)}
+				student={studentDetailTarget}
+				tutorName={mypage?.tutorProfile?.name || mypage?.tutorProfile?.nickname || '튜터'}
+				onClose={closeStudentDetail}
+				onSaved={handleStudentSaved}
+			/>
 		</Layout>
 	)
 }
 
 export default TutorDashboard
+
